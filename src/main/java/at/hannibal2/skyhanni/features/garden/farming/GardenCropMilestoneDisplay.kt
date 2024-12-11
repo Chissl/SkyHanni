@@ -5,16 +5,17 @@ import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig.MilestoneTextEntry
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig.TimeFormatEntry
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.MushroomPetPerkConfig.MushroomTextEntry
+import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
 import at.hannibal2.skyhanni.data.GardenCropMilestones
-import at.hannibal2.skyhanni.data.GardenCropMilestones.getCounter
+import at.hannibal2.skyhanni.data.GardenCropMilestones.getMilestoneCounter
 import at.hannibal2.skyhanni.data.GardenCropMilestones.isMaxed
-import at.hannibal2.skyhanni.data.GardenCropMilestones.setCounter
 import at.hannibal2.skyhanni.data.ProfileStorageData
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.OwnInventoryItemUpdateEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropMilestoneUpdateEvent
+import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.FarmingFortuneDisplay
 import at.hannibal2.skyhanni.features.garden.GardenAPI
@@ -92,7 +93,7 @@ object GardenCropMilestoneDisplay {
 
     @HandleEvent(priority = HandleEvent.LOW)
     fun onProfileJoin(event: ProfileJoinEvent) {
-        GardenCropMilestones.cropCounter?.let {
+        GardenCropMilestones.cropMilestoneCounter?.let {
             if (it.values.sum() == 0L) {
                 needsInventory = true
             }
@@ -117,10 +118,10 @@ object GardenCropMilestoneDisplay {
             val crop = item.getCropType() ?: return
             if (cultivatingData.containsKey(crop)) {
                 val old = cultivatingData[crop]!!
-                val addedCounter = (counter - old).toInt()
-                FarmingWeightDisplay.addCrop(crop, addedCounter)
+                val addedCounter = (counter - old)
+                FarmingWeightDisplay.addCrop(crop, addedCounter.toInt())
                 update()
-                crop.setCounter(crop.getCounter() + addedCounter)
+                crop.addCollectionCounter(CropCollectionType.BREAKING_CROPS, addedCounter, true)
             }
             cultivatingData[crop] = counter
         } catch (e: Throwable) {
@@ -143,7 +144,7 @@ object GardenCropMilestoneDisplay {
     }
 
     private fun drawProgressDisplay(crop: CropType): List<Renderable> {
-        val counter = crop.getCounter()
+        val counter = crop.getMilestoneCounter()
         val lineMap = mutableMapOf<MilestoneTextEntry, Renderable>()
         lineMap[MilestoneTextEntry.TITLE] = Renderable.string("§6Crop Milestones")
 
@@ -287,7 +288,7 @@ object GardenCropMilestoneDisplay {
         }
 
         val lineMap = HashMap<MushroomTextEntry, Renderable>()
-        val counter = mushroom.getCounter()
+        val counter = mushroom.getMilestoneCounter()
 
         val currentTier = GardenCropMilestones.getTierForCropCount(counter, mushroom, allowOverflow)
         val nextTier = currentTier + 1

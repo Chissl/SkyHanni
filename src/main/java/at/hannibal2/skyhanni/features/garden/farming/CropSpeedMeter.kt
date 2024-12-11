@@ -1,7 +1,7 @@
 package at.hannibal2.skyhanni.features.garden.farming
 
 import at.hannibal2.skyhanni.api.event.HandleEvent
-import at.hannibal2.skyhanni.data.GardenCropMilestones.getCounter
+import at.hannibal2.skyhanni.data.GardenCropMilestones.getMilestoneCounter
 import at.hannibal2.skyhanni.events.CropClickEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.LorenzTickEvent
@@ -82,7 +82,7 @@ object CropSpeedMeter {
         if (!isEnabled()) return
         val counters = mutableMapOf<CropType, Long>()
         for (cropType in CropType.entries) {
-            counters[cropType] = cropType.getCounter()
+            counters[cropType] = cropType.getMilestoneCounter()
         }
         if (startCrops.isEmpty()) {
             startCrops = counters
@@ -90,7 +90,7 @@ object CropSpeedMeter {
             snapshot = emptyList()
         } else {
             currentCrop?.let {
-                val crops = it.getCounter() - (startCrops[it] ?: 0L)
+                val crops = it.getMilestoneCounter() - (startCrops[it] ?: 0L)
                 val blocks = currentBlocks
                 val cropsPerBlocks = (crops.toDouble() / blocks.toDouble()).roundTo(3)
 

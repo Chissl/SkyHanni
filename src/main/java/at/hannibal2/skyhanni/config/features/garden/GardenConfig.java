@@ -3,6 +3,7 @@ package at.hannibal2.skyhanni.config.features.garden;
 import at.hannibal2.skyhanni.config.FeatureToggle;
 import at.hannibal2.skyhanni.config.core.config.Position;
 import at.hannibal2.skyhanni.config.features.garden.composter.ComposterConfig;
+import at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig;
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig;
 import at.hannibal2.skyhanni.config.features.garden.laneswitch.FarmingLaneConfig;
 import at.hannibal2.skyhanni.config.features.garden.optimalspeed.OptimalSpeedConfig;
@@ -34,6 +35,10 @@ public class GardenConfig {
     @Expose
     @Category(name = "Crop Milestones", desc = "Crop Milestones Settings")
     public CropMilestonesConfig cropMilestones = new CropMilestonesConfig();
+
+    @Expose
+    @Category(name = "Crop Collections", desc = "Crop Collection Settings")
+    public CropCollectionsConfig cropCollections = new CropCollectionsConfig();
 
     // TODO moulconfig runnable support
     @Expose

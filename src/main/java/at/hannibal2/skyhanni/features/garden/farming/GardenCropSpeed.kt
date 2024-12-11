@@ -3,14 +3,14 @@ package at.hannibal2.skyhanni.features.garden.farming
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.data.ClickType
-import at.hannibal2.skyhanni.data.GardenCropMilestones.getCounter
-import at.hannibal2.skyhanni.data.GardenCropMilestones.setCounter
+import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
 import at.hannibal2.skyhanni.data.jsonobjects.repo.DicerDropsJson
 import at.hannibal2.skyhanni.data.jsonobjects.repo.DicerType
 import at.hannibal2.skyhanni.events.CropClickEvent
 import at.hannibal2.skyhanni.events.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.events.RepositoryReloadEvent
+import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
@@ -47,8 +47,8 @@ object GardenCropSpeed {
         fixedRateTimer(name = "skyhanni-crop-milestone-speed", period = 1000L) {
             if (isEnabled()) {
                 if (GardenAPI.mushroomCowPet) {
-                    CropType.MUSHROOM.setCounter(
-                        CropType.MUSHROOM.getCounter() + blocksBroken * (lastBrokenCrop?.multiplier ?: 1)
+                    CropType.MUSHROOM.addCollectionCounter(
+                        CropCollectionType.MOOSHROOM_COW, blocksBroken * (lastBrokenCrop?.multiplier ?: 1).toLong(), true
                     )
                 }
                 checkSpeed()

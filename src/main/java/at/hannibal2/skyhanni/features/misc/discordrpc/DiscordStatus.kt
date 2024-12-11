@@ -3,7 +3,7 @@ package at.hannibal2.skyhanni.features.misc.discordrpc
 // SkyblockAddons code, adapted for SkyHanni with some additions and fixes
 
 import at.hannibal2.skyhanni.data.ActionBarStatsData
-import at.hannibal2.skyhanni.data.GardenCropMilestones.getCounter
+import at.hannibal2.skyhanni.data.GardenCropMilestones.getMilestoneCounter
 import at.hannibal2.skyhanni.data.GardenCropMilestones.getTierForCropCount
 import at.hannibal2.skyhanni.data.GardenCropMilestones.isMaxed
 import at.hannibal2.skyhanni.data.GardenCropMilestones.progressToNextLevel
@@ -63,7 +63,7 @@ fun getPetDisplay(): String = PetAPI.currentPet?.let {
 
 private fun getCropMilestoneDisplay(): String {
     val crop = InventoryUtils.getItemInHand()?.getCropType()
-    val cropCounter = crop?.getCounter()
+    val cropCounter = crop?.getMilestoneCounter()
     val allowOverflow = GardenAPI.config.cropMilestones.overflow.discordRPC
     val tier = cropCounter?.let { getTierForCropCount(it, crop, allowOverflow) }
     val progress = tier?.let {

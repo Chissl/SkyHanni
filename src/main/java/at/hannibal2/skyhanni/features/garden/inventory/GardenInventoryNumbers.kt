@@ -3,7 +3,7 @@ package at.hannibal2.skyhanni.features.garden.inventory
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.data.GardenCropMilestones
-import at.hannibal2.skyhanni.data.GardenCropMilestones.getCounter
+import at.hannibal2.skyhanni.data.GardenCropMilestones.getMilestoneCounter
 import at.hannibal2.skyhanni.data.model.ComposterUpgrade
 import at.hannibal2.skyhanni.events.RenderItemTipEvent
 import at.hannibal2.skyhanni.features.garden.GardenAPI
@@ -38,7 +38,7 @@ object GardenInventoryNumbers {
             if (!config.cropMilestone) return
 
             val crop = GardenCropMilestones.getCropTypeByLore(event.stack) ?: return
-            val counter = crop.getCounter()
+            val counter = crop.getMilestoneCounter()
             val allowOverflow = GardenAPI.config.cropMilestones.overflow.inventoryStackSize
             val currentTier = GardenCropMilestones.getTierForCropCount(counter, crop, allowOverflow)
             event.stackTip = "" + currentTier

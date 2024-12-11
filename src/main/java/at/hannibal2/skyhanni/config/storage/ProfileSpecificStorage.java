@@ -22,6 +22,7 @@ import at.hannibal2.skyhanni.features.fishing.tracker.FishingProfitTracker;
 import at.hannibal2.skyhanni.features.fishing.tracker.SeaCreatureTracker;
 import at.hannibal2.skyhanni.features.fishing.trophy.TrophyRarity;
 import at.hannibal2.skyhanni.features.garden.CropAccessory;
+import at.hannibal2.skyhanni.features.garden.CropCollectionType;
 import at.hannibal2.skyhanni.features.garden.CropType;
 import at.hannibal2.skyhanni.features.garden.GardenPlotAPI;
 import at.hannibal2.skyhanni.features.garden.farming.ArmorDropTracker;
@@ -364,7 +365,16 @@ public class ProfileSpecificStorage {
         public Long experience = null;
 
         @Expose
-        public Map<CropType, Long> cropCounter = new HashMap<>();
+        public SimpleTimeMark lastMilestoneFix = SimpleTimeMarkFarPast();
+
+        @Expose
+        public Map<CropType, SimpleTimeMark> lastCollectionFix = new HashMap<>();
+
+        @Expose
+        public Map<CropType, Map<CropCollectionType, Long>> cropCollectionCounter = new HashMap<>();
+
+        @Expose
+        public Map<CropType, Long> cropMilestoneCounter = new HashMap<>();
 
         @Expose
         public Map<CropType, Integer> cropUpgrades = new HashMap<>();

@@ -61,6 +61,8 @@ object LorenzUtils {
 
     val noTradeMode get() = HypixelData.noTrade
 
+    val isCoop get() = HypixelData.coop
+
     val isStrandedProfile get() = inSkyBlock && HypixelData.stranded
 
     val isBingoProfile get() = inSkyBlock && (HypixelData.bingo || TestBingo.testBingo)
