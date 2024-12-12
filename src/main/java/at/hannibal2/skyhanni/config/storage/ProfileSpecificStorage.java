@@ -545,7 +545,7 @@ public class ProfileSpecificStorage {
         public Map<CropType, Integer> customGoalMilestone = new HashMap<>();
 
         @Expose
-        public PestProfitTracker.Data pestProfitTracker = new PestProfitTracker.Data();
+        public PestProfitTracker.BucketData pestProfitTracker = new PestProfitTracker.BucketData();
 
         @Expose
         public VinylType activeVinyl = null;
