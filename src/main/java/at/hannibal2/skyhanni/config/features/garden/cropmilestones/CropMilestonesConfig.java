@@ -37,6 +37,12 @@ public class CropMilestonesConfig {
     public boolean progress = true;
 
     @Expose
+    @ConfigOption(name = "Show Without Tool", desc = "Show progress display when not holding a farming tool")
+    @ConfigEditorBoolean
+    @FeatureToggle
+    public boolean showWithoutTool = false;
+
+    @Expose
     @ConfigOption(name = "Overflow", desc = "")
     @Accordion
     public CropMilestonesOverflowConfig overflow = new CropMilestonesOverflowConfig();

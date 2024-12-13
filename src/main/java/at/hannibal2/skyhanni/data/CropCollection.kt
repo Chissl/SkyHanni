@@ -1,6 +1,5 @@
 package at.hannibal2.skyhanni.data
 
-import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
 import at.hannibal2.skyhanni.data.GardenCropMilestones.addMilestoneCounter
 import at.hannibal2.skyhanni.events.CropCollectionUpdateEvent
 import at.hannibal2.skyhanni.events.InventoryFullyOpenedEvent
@@ -10,10 +9,7 @@ import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.ItemUtils.getLore
-import at.hannibal2.skyhanni.utils.ItemUtils.itemName
-import at.hannibal2.skyhanni.utils.ItemUtils.name
 import at.hannibal2.skyhanni.utils.LorenzUtils
-import at.hannibal2.skyhanni.utils.NumberUtil.formatDouble
 import at.hannibal2.skyhanni.utils.NumberUtil.formatLong
 import at.hannibal2.skyhanni.utils.RegexUtils.firstMatcher
 import at.hannibal2.skyhanni.utils.RegexUtils.matchGroup
@@ -22,7 +18,6 @@ import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.StringUtils.cleanPlayerName
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import java.util.Locale
 
 @SkyHanniModule
 object CropCollection {
@@ -66,23 +61,33 @@ object CropCollection {
     private val cropCollectionCounter:
         MutableMap<CropType, MutableMap<CropCollectionType, Long>>? get() = GardenAPI.storage?.cropCollectionCounter
 
-    fun CropType.getTotalCropCollection() = cropCollectionCounter?.get(this)?.values?.sum() ?: 0L
+    var lastGainedCrop: CropType? = null
+
+    fun CropType.getTotalCropCollection() =
+        cropCollectionCounter?.get(this)?.values?.sum() ?: 0L
 
     fun CropType.getCollectionCounter(collectionType: CropCollectionType) =
         cropCollectionCounter?.get(this)?.get(collectionType) ?: 0L
 
-    private fun CropType.setCollectionCounter(type: CropCollectionType, counter: Long) {
-        cropCollectionCounter?.get(this)?.set(type, counter) ?: {
+    private fun CropType.setCollectionCounter(
+        collectionType: CropCollectionType,
+        counter: Long
+    ) {
+        cropCollectionCounter?.get(this)?.set(collectionType, counter) ?: {
             val innerMap = mutableMapOf<CropCollectionType, Long>()
-            innerMap[type] = counter
+            innerMap[collectionType] = counter
             cropCollectionCounter?.set(this, innerMap)
         }
+        CropCollectionUpdateEvent.post()
     }
 
+    //Todo make compatible with crop milestone fixes
     fun CropType.addCollectionCounter(type: CropCollectionType, amount: Long, addMilestoneCounter: Boolean = false) {
-        ChatUtils.debug("Add Collection: Crop: $this Type: ${type.displayName} Amount: $amount " +
-            "Type Total: ${this.getCollectionCounter(type)} Collection Total: ${this.getTotalCropCollection()}")
+        //ChatUtils.debug("Add Collection: Crop: $this Type: ${type.displayName} Amount: $amount " +
+        //    "Type Total: ${this.getCollectionCounter(type)} Collection Total: ${this.getTotalCropCollection()}")
         if (amount == 0L) return
+        if (type != CropCollectionType.UNKNOWN && amount > 1) lastGainedCrop = this
+
         this.setCollectionCounter(type, amount + this.getCollectionCounter(type))
 
         if (addMilestoneCounter) {
@@ -126,13 +131,11 @@ object CropCollection {
                         val oldAmountString = oldAmount.toString()
                         if (amountLong > oldAmount ||
                             amountString.length != oldAmountString.length || amountString[0] != oldAmountString[0]) {
-                            crop.addCollectionCounter(CropCollectionType.UNKNOWN, amountLong - crop.getTotalCropCollection())
+                            crop.setCollectionCounter(CropCollectionType.UNKNOWN, amountLong)
                         }
-
                     }
                 }
             }
-            CropCollectionUpdateEvent.post()
         }
     }
 }

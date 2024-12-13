@@ -5,6 +5,7 @@ import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig.MilestoneTextEntry
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig.TimeFormatEntry
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.MushroomPetPerkConfig.MushroomTextEntry
+import at.hannibal2.skyhanni.data.CropCollection
 import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
 import at.hannibal2.skyhanni.data.GardenCropMilestones
 import at.hannibal2.skyhanni.data.GardenCropMilestones.getMilestoneCounter
@@ -99,6 +100,7 @@ object GardenCropMilestoneDisplay {
         }
     }
 
+    //Todo use different event for needsinventory
     @HandleEvent
     fun onCropMilestoneUpdate(event: CropMilestoneUpdateEvent) {
         needsInventory = false
@@ -110,7 +112,7 @@ object GardenCropMilestoneDisplay {
         progressDisplay = emptyList()
         mushroomCowPerkDisplay = emptyList()
         GardenBestCropTime.display = emptyList()
-        val currentCrop = GardenAPI.getCurrentlyFarmedCrop()
+        val currentCrop = if (config.showWithoutTool) CropCollection.lastGainedCrop else GardenAPI.getCurrentlyFarmedCrop()
         currentCrop?.let {
             progressDisplay = drawProgressDisplay(it)
         }

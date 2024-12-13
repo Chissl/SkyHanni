@@ -93,7 +93,6 @@ object GardenCropMilestones {
             }
         }
         storage?.lastMilestoneFix = SimpleTimeMark.now()
-        CropMilestoneUpdateEvent.post()
         GardenCropMilestonesCommunityFix.openInventory(event.inventoryItems)
     }
 
@@ -172,12 +171,13 @@ object GardenCropMilestones {
 
     private fun CropType.setMilestoneCounter(counter: Long) {
         cropMilestoneCounter?.set(this, counter)
+        CropMilestoneUpdateEvent.post()
     }
 
     fun CropType.addMilestoneCounter(counter: Long) {
         if (counter == 0L) return
         this.setMilestoneCounter(this.getMilestoneCounter() + counter)
-        ChatUtils.debug("Crop Milestone: Crop: $this Added: $counter Total ${this.getMilestoneCounter()}")
+        //ChatUtils.debug("Crop Milestone: Crop: $this Added: $counter Total ${this.getMilestoneCounter()}")
     }
 
     fun CropType.isMaxed(useOverflow: Boolean): Boolean {

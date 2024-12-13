@@ -49,9 +49,8 @@ object GardenCropBreakTracker {
         //Todo get by pet level
         if (GardenAPI.mushroomCowPet) {
             CropType.MUSHROOM.addCollectionCounter(
-                CropCollectionType.MOOSHROOM_COW, weightedRandomRound(GardenAPI.mushroomCowPetLevel).toLong(), true
+                CropCollectionType.MOOSHROOM_COW, weightedRandomRound(GardenAPI.mushroomCowPetLevel/100.0).toLong(), true
                 )
-            ChatUtils.debug(GardenAPI.mushroomCowPetLevel.toString())
         }
 
         if (itemHasCounter) return

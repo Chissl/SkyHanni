@@ -52,6 +52,16 @@ object DicerRngDropTracker {
 
     private val patternGroup = RepoPattern.group("garden.dicer")
 
+    /**
+     * REGEX-TEST: §a§lUNCOMMON DROP! §r§eDicer dropped §r§a4x §r§aEnchanted Melon§r§e!
+     * REGEX-TEST: §9§lRARE DROP! §r§eDicer dropped §r§a16x §r§aEnchanted Melon§r§e!
+     * REGEX-TEST: §d§lCRAZY RARE DROP! §r§eDicer dropped §r§92x §r§9Enchanted Melon Block§r§e!
+     * REGEX-TEST: §5§lPRAY TO RNGESUS DROP! §r§eDicer dropped §r§98x §r§9Enchanted Melon Block§r§e!
+     * REGEX-TEST: §a§lUNCOMMON DROP! §r§eDicer dropped §r§a3x §r§aEnchanted Pumpkin§r§e!
+     * REGEX-TEST: §9§lRARE DROP! §r§eDicer dropped §r§a5x §r§aEnchanted Pumpkin§r§e!
+     * REGEX-TEST: §d§lCRAZY RARE DROP! §r§eDicer dropped §r§a45x §r§aEnchanted Pumpkin§r§e!
+     * REGEX-TEST: §5§lPRAY TO RNGESUS DROP! §r§eDicer dropped §r§92x §r§9Polished Pumpkin§r§e!
+     */
     private val dicerDrop by patternGroup.pattern(
         "drop",
         "§.§l(?<drop>[\\w\\s]+)Drop! §r§eDicer dropped §r§.(?<amount>\\w+)x §r§.(?<item>[\\w\\s]+)",
@@ -72,7 +82,7 @@ object DicerRngDropTracker {
     @SubscribeEvent
     fun onChat(event: LorenzChatEvent) {
         if (!GardenAPI.inGarden()) return
-        if (!config.hideChat && !config.display) return
+        if (!config.hideChat && !config.display && !GardenAPI.config.cropCollections.collectionDisplay) return
 
         val message = event.message
         dicerDrop.matchMatcher(message) {
@@ -88,7 +98,7 @@ object DicerRngDropTracker {
             val dropType = DropRarity.getByName(drop) ?: return@matchMatcher
 
             addDrop(cropType, dropType)
-            cropType.addCollectionCounter(CropCollectionType.DICER_DROPS, primitiveStack.amount * amount, true)
+            cropType.addCollectionCounter(CropCollectionType.DICER, primitiveStack.amount * amount, true)
             if (config.hideChat) {
                 event.blockedReason = "dicer_drop_tracker"
             }
