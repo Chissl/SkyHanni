@@ -66,27 +66,23 @@ object CropCollection {
     private val cropCollectionCounter:
         MutableMap<CropType, MutableMap<CropCollectionType, Long>>? get() = GardenAPI.storage?.cropCollectionCounter
 
-    private val totalCropCollection: MutableMap<CropType, Long> get() =
-        (cropCollectionCounter?.mapValues { (_, collectionType) -> collectionType.values.sum() } ?:
-        emptyMap()) as MutableMap<CropType, Long>
+    fun CropType.getTotalCropCollection() = cropCollectionCounter?.get(this)?.values?.sum() ?: 0L
 
-    fun CropType.getTotalCropCollection() = totalCropCollection.get(this) ?: 0
-
-    fun CropType.getCollectionCounter(collectionType: CropCollectionType): Long =
-        cropCollectionCounter?.get(this)?.get(collectionType) ?: 0
+    fun CropType.getCollectionCounter(collectionType: CropCollectionType) =
+        cropCollectionCounter?.get(this)?.get(collectionType) ?: 0L
 
     private fun CropType.setCollectionCounter(type: CropCollectionType, counter: Long) {
-        ChatUtils.debug("Collection: Set: Crop: $this Type: $type Amount: $counter")
-
-        val innerMap = mutableMapOf<CropCollectionType, Long>()
-        innerMap[type] = counter
-        cropCollectionCounter?.set(this, innerMap)
-
-        ChatUtils.debug("Collection: Crop: $this Amount: ${this.getTotalCropCollection()}")
+        cropCollectionCounter?.get(this)?.set(type, counter) ?: {
+            val innerMap = mutableMapOf<CropCollectionType, Long>()
+            innerMap[type] = counter
+            cropCollectionCounter?.set(this, innerMap)
+        }
     }
 
     fun CropType.addCollectionCounter(type: CropCollectionType, amount: Long, addMilestoneCounter: Boolean = false) {
-        ChatUtils.debug("Collection: Add: Crop: $this Type: $type Amount: $amount")
+        ChatUtils.debug("Add Collection: Crop: $this Type: ${type.displayName} Amount: $amount " +
+            "Type Total: ${this.getCollectionCounter(type)} Collection Total: ${this.getTotalCropCollection()}")
+        if (amount == 0L) return
         this.setCollectionCounter(type, amount + this.getCollectionCounter(type))
 
         if (addMilestoneCounter) {
@@ -94,18 +90,14 @@ object CropCollection {
         }
     }
 
-    // TODO repo
-    private val incorrectCollectionNames = mapOf(
-        "Mushroom" to CropType.getByNameOrNull("Red Mushroom"),
-    )
-
     @SubscribeEvent
     fun onInventoryOpen(event: InventoryFullyOpenedEvent) {
         val inventoryName = event.inventoryName
         if (inventoryName.endsWith("Farming Collections")) {
             for (stack in event.inventoryItems.values) {
                 val name = collectionNamePattern.matchGroup(stack.displayName, "name") ?: continue
-                val crop = incorrectCollectionNames[name] ?: CropType.getByNameOrNull(name) ?: continue
+                if (name == "Seeds") continue
+                val crop = CropType.getByNameOrNull(name) ?: continue
                 val oldAmount = crop.getTotalCropCollection()
 
                 soloCounterPattern.firstMatcher(stack.getLore()) {
@@ -124,11 +116,12 @@ object CropCollection {
                         ChatUtils.debug("Name: $name Crop: $crop Player: $playerName Amount: $amount")
 
                         val amountLong = when {
-                            amount.endsWith("K") -> amount.removeSuffix("K").toLong() * 1000
-                            amount.endsWith("M") -> amount.removeSuffix("M").toLong() * 1000000
-                            amount.endsWith("B") -> amount.removeSuffix("B").toLong() * 1000000000
-                            else -> amount.toLong()
-                        }
+                            amount.endsWith("K") -> amount.removeSuffix("K").toFloat() * 1000
+                            amount.endsWith("M") -> amount.removeSuffix("M").toFloat() * 1000000
+                            amount.endsWith("B") -> amount.removeSuffix("B").toFloat() * 1000000000
+                            else -> amount.toFloat()
+                        }.toLong()
+
                         val amountString = amountLong.toString()
                         val oldAmountString = oldAmount.toString()
                         if (amountLong > oldAmount ||

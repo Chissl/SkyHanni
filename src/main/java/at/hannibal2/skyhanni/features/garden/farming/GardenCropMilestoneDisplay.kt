@@ -46,7 +46,6 @@ object GardenCropMilestoneDisplay {
 
     private var progressDisplay = emptyList<Renderable>()
     private var mushroomCowPerkDisplay = emptyList<Renderable>()
-    private val cultivatingData = mutableMapOf<CropType, Long>()
     private val config get() = GardenAPI.config.cropMilestones
     private val overflowConfig get() = config.overflow
     private val storage get() = ProfileStorageData.profileSpecific?.garden?.customGoalMilestone
@@ -105,28 +104,6 @@ object GardenCropMilestoneDisplay {
         needsInventory = false
         GardenBestCropTime.updateTimeTillNextCrop()
         update()
-    }
-
-    @HandleEvent
-    fun onOwnInventoryItemUpdate(event: OwnInventoryItemUpdateEvent) {
-        if (!GardenAPI.inGarden()) return
-
-        try {
-            val item = event.itemStack
-            val counter = GardenAPI.readCounter(item)
-            if (counter == -1L) return
-            val crop = item.getCropType() ?: return
-            if (cultivatingData.containsKey(crop)) {
-                val old = cultivatingData[crop]!!
-                val addedCounter = (counter - old)
-                FarmingWeightDisplay.addCrop(crop, addedCounter.toInt())
-                update()
-                crop.addCollectionCounter(CropCollectionType.BREAKING_CROPS, addedCounter, true)
-            }
-            cultivatingData[crop] = counter
-        } catch (e: Throwable) {
-            ErrorManager.logErrorWithData(e, "Updating crop counter by reading farming tool nbt data.")
-        }
     }
 
     fun update() {

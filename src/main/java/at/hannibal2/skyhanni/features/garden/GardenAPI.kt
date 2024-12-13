@@ -44,6 +44,8 @@ import at.hannibal2.skyhanni.utils.NEUItems
 import at.hannibal2.skyhanni.utils.RenderUtils.addItemIcon
 import at.hannibal2.skyhanni.utils.SkyBlockItemModifierUtils.getCultivatingCounter
 import at.hannibal2.skyhanni.utils.SkyBlockItemModifierUtils.getHoeCounter
+import at.hannibal2.skyhanni.utils.SkyBlockItemModifierUtils.getItemUuid
+import at.hannibal2.skyhanni.utils.SkyBlockItemModifierUtils.getPetLevel
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import net.minecraft.client.Minecraft
 import net.minecraft.item.ItemStack
@@ -63,6 +65,7 @@ object GardenAPI {
         get() = PetAPI.isCurrentPet("Mooshroom Cow") &&
             storage?.fortune?.farmingItems?.get(FarmingItems.MOOSHROOM_COW)
                 ?.let { it.getItemRarityOrNull()?.isAtLeast(LorenzRarity.RARE) } ?: false
+    val mushroomCowPetLevel get() = storage?.fortune?.farmingItems?.get(FarmingItems.MOOSHROOM_COW)?.getPetLevel()?.div(100.0) ?: 1.0
     private var inBarn = false
     val onBarnPlot get() = inBarn && inGarden()
     val storage get() = ProfileStorageData.profileSpecific?.garden
@@ -137,7 +140,7 @@ object GardenAPI {
         val toolItem = InventoryUtils.getItemInHand()
         val crop = toolItem?.getCropType()
         val newTool = getToolInHand(toolItem, crop)
-        if (toolInHand != newTool) {
+        if (itemInHand?.getItemUuid() != toolItem?.getItemUuid() && !(toolInHand == null && newTool == null)) {
             toolInHand = newTool
             cropInHand = crop
             itemInHand = toolItem
@@ -171,6 +174,10 @@ object GardenAPI {
     }
 
     fun readCounter(itemStack: ItemStack): Long = itemStack.getHoeCounter() ?: itemStack.getCultivatingCounter() ?: -1L
+
+    fun readHoeCounter(itemStack: ItemStack): Long? = itemStack.getHoeCounter()
+
+    fun readCultivatingCounter(itemStack: ItemStack): Long? = itemStack.getCultivatingCounter()
 
     @Deprecated("use renderable list instead", ReplaceWith(""))
     fun MutableList<Any>.addCropIcon(

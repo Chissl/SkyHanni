@@ -421,6 +421,12 @@ public class ProfileSpecificStorage {
         public Map<CropType, Boolean> toolWithBountiful = new HashMap<>();
 
         @Expose
+        public Map<String, Long> counterData = new HashMap<>();
+
+        @Expose
+        public Map<CropType, Long> blocksBroken = new HashMap<>();
+
+        @Expose
         public NEUInternalName composterCurrentOrganicMatterItem = NEUInternalName.Companion.getNONE();
 
         @Expose

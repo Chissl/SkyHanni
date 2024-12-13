@@ -172,13 +172,12 @@ object GardenCropMilestones {
 
     private fun CropType.setMilestoneCounter(counter: Long) {
         cropMilestoneCounter?.set(this, counter)
-        ChatUtils.debug("Milestone: Set $this to $counter")
     }
 
     fun CropType.addMilestoneCounter(counter: Long) {
-        ChatUtils.debug("Milestone: Added $counter to $this")
+        if (counter == 0L) return
         this.setMilestoneCounter(this.getMilestoneCounter() + counter)
-        ChatUtils.debug("Milestone: Total $this: ${this.getMilestoneCounter()}")
+        ChatUtils.debug("Crop Milestone: Crop: $this Added: $counter Total ${this.getMilestoneCounter()}")
     }
 
     fun CropType.isMaxed(useOverflow: Boolean): Boolean {
@@ -318,11 +317,12 @@ object GardenCropMilestones {
     private val tabListCropProgress = mutableMapOf<CropType, Long>()
 
     private val loadedCrops = mutableListOf<CropType>()
-    //Todo fix path
+    //Todo check path
     @SubscribeEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
-        event.move(70, "garden.cropCounter", "garden.cropMilestoneCounter")
+        event.move(70, "#profile.garden.cropCounter", "#profile.garden.cropMilestoneCounter")
     }
+
     @SubscribeEvent
     fun onRepoReload(event: RepositoryReloadEvent) {
         cropMilestoneData = event.getConstant<GardenJson>("Garden").cropMilestones

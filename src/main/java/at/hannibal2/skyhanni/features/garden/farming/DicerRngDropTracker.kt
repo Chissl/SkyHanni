@@ -3,10 +3,12 @@ package at.hannibal2.skyhanni.features.garden.farming
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
+import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.LorenzChatEvent
+import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
@@ -14,7 +16,10 @@ import at.hannibal2.skyhanni.utils.CollectionUtils.addOrPut
 import at.hannibal2.skyhanni.utils.CollectionUtils.addSearchString
 import at.hannibal2.skyhanni.utils.CollectionUtils.sortedDesc
 import at.hannibal2.skyhanni.utils.ConditionalUtils
+import at.hannibal2.skyhanni.utils.ItemUtils.itemNameWithoutColor
 import at.hannibal2.skyhanni.utils.ItemUtils.name
+import at.hannibal2.skyhanni.utils.NEUInternalName
+import at.hannibal2.skyhanni.utils.NEUItems
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
 import at.hannibal2.skyhanni.utils.renderables.Renderable
@@ -30,7 +35,6 @@ import java.util.regex.Pattern
 @SkyHanniModule
 object DicerRngDropTracker {
 
-    private val itemDrops = mutableListOf<ItemDrop>()
     private val config get() = GardenAPI.config.dicerCounters
     private val tracker = SkyHanniTracker("Dicer RNG Drop Tracker", { Data() }, { it.garden.dicerDropTracker }) {
         drawDisplay(it)
@@ -46,59 +50,23 @@ object DicerRngDropTracker {
         var drops: MutableMap<CropType, MutableMap<DropRarity, Int>> = mutableMapOf()
     }
 
-    private val melonPatternGroup = RepoPattern.group("garden.dicer.melon")
-    private val melonUncommonDropPattern by melonPatternGroup.pattern(
-        "uncommon",
-        "§a§lUNCOMMON DROP! §r§eDicer dropped §r§a\\d+x §r§aEnchanted Melon§r§e!",
-    )
-    private val melonRareDropPattern by melonPatternGroup.pattern(
-        "rare",
-        "§9§lRARE DROP! §r§eDicer dropped §r§a\\d+x §r§aEnchanted Melon§r§e!",
-    )
-    private val melonCrazyRareDropPattern by melonPatternGroup.pattern(
-        "crazyrare",
-        "§d§lCRAZY RARE DROP! §r§eDicer dropped §r§[a|9]\\d+x §r§[a|9]Enchanted Melon(?: Block)?§r§e!",
-    )
-    private val melonRngesusDropPattern by melonPatternGroup.pattern(
-        "rngesus",
-        "§5§lPRAY TO RNGESUS DROP! §r§eDicer dropped §r§9\\d+x §r§9Enchanted Melon Block§r§e!",
-    )
+    private val patternGroup = RepoPattern.group("garden.dicer")
 
-    private val pumpkinPatternGroup = RepoPattern.group("garden.dicer.pumpkin")
-    private val pumpkinUncommonDropPattern by pumpkinPatternGroup.pattern(
-        "uncommon",
-        "§a§lUNCOMMON DROP! §r§eDicer dropped §r§a\\d+x §r§aEnchanted Pumpkin§r§e!",
+    private val dicerDrop by patternGroup.pattern(
+        "drop",
+        "§.§l(?<drop>[\\w\\s]+)Drop! §r§eDicer dropped §r§.(?<amount>\\w+)x §r§.(?<item>[\\w\\s]+)",
     )
-    private val pumpkinRareDropPattern by pumpkinPatternGroup.pattern(
-        "rare",
-        "§9§lRARE DROP! §r§eDicer dropped §r§a\\d+x §r§aEnchanted Pumpkin§r§e!",
-    )
-    private val pumpkinCrazyRareDropPattern by pumpkinPatternGroup.pattern(
-        "crazyrare",
-        "§d§lCRAZY RARE DROP! §r§eDicer dropped §r§a\\d+x §r§aEnchanted Pumpkin§r§e!",
-    )
-    private val pumpkinRngesusDropPattern by pumpkinPatternGroup.pattern(
-        "rngesus",
-        "§5§lPRAY TO RNGESUS DROP! §r§eDicer dropped §r§[a|9]\\d+x §r§(?:aEnchanted|9Polished) Pumpkin§r§e!",
-    )
-
-    init {
-        itemDrops.add(ItemDrop(CropType.MELON, DropRarity.UNCOMMON, melonUncommonDropPattern))
-        itemDrops.add(ItemDrop(CropType.MELON, DropRarity.RARE, melonRareDropPattern))
-        itemDrops.add(ItemDrop(CropType.MELON, DropRarity.CRAZY_RARE, melonCrazyRareDropPattern))
-        itemDrops.add(ItemDrop(CropType.MELON, DropRarity.PRAY_TO_RNGESUS, melonRngesusDropPattern))
-
-        itemDrops.add(ItemDrop(CropType.PUMPKIN, DropRarity.UNCOMMON, pumpkinUncommonDropPattern))
-        itemDrops.add(ItemDrop(CropType.PUMPKIN, DropRarity.RARE, pumpkinRareDropPattern))
-        itemDrops.add(ItemDrop(CropType.PUMPKIN, DropRarity.CRAZY_RARE, pumpkinCrazyRareDropPattern))
-        itemDrops.add(ItemDrop(CropType.PUMPKIN, DropRarity.PRAY_TO_RNGESUS, pumpkinRngesusDropPattern))
-    }
 
     enum class DropRarity(val colorCode: Char, val displayName: String) {
         UNCOMMON('a', "UNCOMMON"),
         RARE('9', "RARE"),
         CRAZY_RARE('d', "CRAZY RARE"),
         PRAY_TO_RNGESUS('5', "PRAY TO RNGESUS"),
+        ;
+
+        companion object {
+            fun getByName(name: String) = DropRarity.entries.firstOrNull { it.displayName == name }
+        }
     }
 
     @SubscribeEvent
@@ -107,14 +75,24 @@ object DicerRngDropTracker {
         if (!config.hideChat && !config.display) return
 
         val message = event.message
-        for (drop in itemDrops) {
-            drop.pattern.matchMatcher(message) {
-                addDrop(drop.crop, drop.rarity)
-                if (config.hideChat) {
-                    event.blockedReason = "dicer_drop_tracker"
-                }
-                return
+        dicerDrop.matchMatcher(message) {
+            val itemType = group("item")
+            val amount = group("amount").toLong()
+            val drop = group("drop")
+
+            val internalName = NEUInternalName.fromItemNameOrNull(itemType) ?: return@matchMatcher
+            val primitiveStack = NEUItems.getPrimitiveMultiplier(internalName)
+            val rawName = primitiveStack.internalName.itemNameWithoutColor
+            val cropType = CropType.getByNameOrNull(rawName) ?: return@matchMatcher
+
+            val dropType = DropRarity.getByName(drop) ?: return@matchMatcher
+
+            addDrop(cropType, dropType)
+            cropType.addCollectionCounter(CropCollectionType.DICER_DROPS, primitiveStack.amount * amount, true)
+            if (config.hideChat) {
+                event.blockedReason = "dicer_drop_tracker"
             }
+            return
         }
     }
 

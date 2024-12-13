@@ -145,7 +145,7 @@ object CropMoneyDisplay {
                 }
 
                 val mushroomPrice = (redPrice + brownPrice) / 2
-                val perSecond = GardenCropSpeed.getRecentBPS() * it.multiplier * mushroomPrice
+                val perSecond = GardenCropSpeed.getRecentBPS() * it.multiplier * mushroomPrice * GardenAPI.mushroomCowPetLevel
                 extraMushroomCowPerkCoins = perSecond * 60 * 60
             }
 
