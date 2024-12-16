@@ -4,6 +4,8 @@ import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.enums.OutsideSbFeature
+import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
+import at.hannibal2.skyhanni.data.CropCollection.getTotalCropCollection
 import at.hannibal2.skyhanni.data.HypixelData
 import at.hannibal2.skyhanni.data.ProfileStorageData
 import at.hannibal2.skyhanni.data.jsonobjects.other.EliteLeaderboardJson
@@ -15,6 +17,7 @@ import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.LorenzTickEvent
 import at.hannibal2.skyhanni.events.LorenzWorldChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
+import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.features.garden.farming.GardenCropSpeed.getSpeed
@@ -62,6 +65,7 @@ object FarmingWeightDisplay {
     @SubscribeEvent
     fun onWorldChange(event: LorenzWorldChangeEvent) {
         // We want to try to connect to the api again after a world switch.
+        updateCollection = true
         resetData()
     }
 
@@ -80,6 +84,9 @@ object FarmingWeightDisplay {
         if (!isEnabled()) return
         if (!event.isMod(5)) return
         update()
+        val uuid = LorenzUtils.getPlayerUuid()
+        val url = "https://api.elitebot.dev/weight/$uuid"
+        val apiResponse = APIUtils.getJSONResponse(url)
 
         SkyHanniMod.coroutineScope.launch {
             getCropWeights()
@@ -120,6 +127,7 @@ object FarmingWeightDisplay {
     private var isLoadingWeight = false
     private var isLoadingLeaderboard = false
     private var rankGoal = -1
+    private var updateCollection = false
 
     private val nextPlayers = mutableListOf<UpcomingLeaderboardPlayer>()
     private val nextPlayer get() = nextPlayers.firstOrNull()
@@ -491,6 +499,21 @@ object FarmingWeightDisplay {
             if (selectedProfileEntry != null) {
                 profileId = selectedProfileEntry.profileId
                 weight = selectedProfileEntry.totalWeight
+                if (updateCollection) {
+                    for (crop in selectedProfileEntry.cropWeight) {
+                        val cropType = CropType.getByName(crop.key) ?: continue
+                        val pestPenalty = selectedProfileEntry.uncountedCrops[crop.key] ?: 0
+                        val weight = crop.value ?: 0.0
+                        val weightCollection = cropWeight[cropType] ?: backupCropWeights[cropType] ?: 0.0
+                        val totalCollection = pestPenalty + weightCollection * weight
+                        cropType.addCollectionCounter(
+                            CropCollectionType.UNKNOWN,
+                            totalCollection.toLong() - cropType.getTotalCropCollection()
+                        )
+                    }
+                    updateCollection = false
+                }
+
 
                 localCounter.clear()
                 weightNeedsRecalculating = true

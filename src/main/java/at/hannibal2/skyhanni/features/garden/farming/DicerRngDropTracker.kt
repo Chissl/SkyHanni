@@ -12,6 +12,7 @@ import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
+import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.CollectionUtils.addOrPut
 import at.hannibal2.skyhanni.utils.CollectionUtils.addSearchString
 import at.hannibal2.skyhanni.utils.CollectionUtils.sortedDesc
@@ -64,7 +65,7 @@ object DicerRngDropTracker {
      */
     private val dicerDrop by patternGroup.pattern(
         "drop",
-        "§.§l(?<drop>[\\w\\s]+)Drop! §r§eDicer dropped §r§.(?<amount>\\w+)x §r§.(?<item>[\\w\\s]+)",
+        "§.§l(?<drop>[\\w\\s]+) DROP! §r§eDicer dropped §r§.(?<amount>\\w+)x §r§.(?<item>[\\w\\s]+)§r§e!",
     )
 
     enum class DropRarity(val colorCode: Char, val displayName: String) {
@@ -89,6 +90,8 @@ object DicerRngDropTracker {
             val itemType = group("item")
             val amount = group("amount").toLong()
             val drop = group("drop")
+
+            //ChatUtils.debug("$itemType, $amount, $drop")
 
             val internalName = NEUInternalName.fromItemNameOrNull(itemType) ?: return@matchMatcher
             val primitiveStack = NEUItems.getPrimitiveMultiplier(internalName)
