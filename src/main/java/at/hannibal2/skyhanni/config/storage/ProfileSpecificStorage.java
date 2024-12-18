@@ -543,6 +543,9 @@ public class ProfileSpecificStorage {
 
         @Expose
         public VinylType activeVinyl = null;
+
+        @Expose
+        public int equipmentPestCooldown = 0;
     }
 
     @Expose
