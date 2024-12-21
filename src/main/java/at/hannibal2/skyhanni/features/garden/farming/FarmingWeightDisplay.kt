@@ -84,9 +84,6 @@ object FarmingWeightDisplay {
         if (!isEnabled()) return
         if (!event.isMod(5)) return
         update()
-        val uuid = LorenzUtils.getPlayerUuid()
-        val url = "https://api.elitebot.dev/weight/$uuid"
-        val apiResponse = APIUtils.getJSONResponse(url)
 
         SkyHanniMod.coroutineScope.launch {
             getCropWeights()
