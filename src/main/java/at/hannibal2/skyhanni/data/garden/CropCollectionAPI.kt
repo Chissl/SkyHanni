@@ -77,7 +77,10 @@ object CropCollectionAPI {
         collectionType: CropCollectionType,
         counter: Long
     ) {
-        cropCollectionCounter?.get(this)?.set(collectionType, counter) ?: {
+        val crop = cropCollectionCounter?.get(this)
+        if (crop != null) {
+            crop[collectionType] = counter
+        } else {
             val innerMap = mutableMapOf<CropCollectionType, Long>()
             innerMap[collectionType] = counter
             cropCollectionCounter?.set(this, innerMap)
