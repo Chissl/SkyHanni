@@ -5,6 +5,7 @@ import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
+import at.hannibal2.skyhanni.config.features.garden.pests.PestProfitTrackerConfig
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.ItemAddManager
 import at.hannibal2.skyhanni.data.jsonobjects.repo.GardenJson
@@ -23,6 +24,7 @@ import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.CollectionUtils.addOrPut
 import at.hannibal2.skyhanni.utils.CollectionUtils.addSearchString
 import at.hannibal2.skyhanni.utils.ItemUtils.itemNameWithoutColor
+import at.hannibal2.skyhanni.utils.ItemPriceUtils.getPriceOrNull
 import at.hannibal2.skyhanni.utils.LorenzUtils
 import at.hannibal2.skyhanni.utils.NEUInternalName
 import at.hannibal2.skyhanni.utils.NEUInternalName.Companion.toInternalName
@@ -51,7 +53,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object PestProfitTracker {
-    val config get() = SkyHanniMod.feature.garden.pests.pestProfitTacker
+    val config: PestProfitTrackerConfig get() = SkyHanniMod.feature.garden.pests.pestProfitTacker
 
     private val patternGroup = RepoPattern.group("garden.pests.tracker")
 
@@ -161,7 +163,7 @@ object PestProfitTracker {
             val cropType = CropType.getByNameOrNull(rawName) ?: return
 
             cropType.addCollectionCounter(CropCollectionType.PEST_BASE, primitiveStack.amount * amount.toLong(), true)
-            tryAddItem(pest, internalName, amount)
+            tracker.addItem(pest, internalName, amount)
 
             // Field Mice drop 6 separate items, but we only want to count the kill once
             if (pest == PestType.FIELD_MOUSE && internalName == DUNG_ITEM) addKill(pest)
@@ -185,8 +187,8 @@ object PestProfitTracker {
             val cropType = CropType.getByNameOrNull(rawName) ?: return
 
             cropType.addCollectionCounter(CropCollectionType.PEST_RNG, primitiveStack.amount.toLong() * amount.toLong(), true)
-            tryAddItem(pest, internalName, amount)
-            // pests always have guaranteed loot, therefore there's no need to add kill here
+            tracker.addItem(pest, internalName, amount)
+            // Pests always have guaranteed loot, therefore there's no need to add kill here
         }
     }
 
@@ -201,13 +203,8 @@ object PestProfitTracker {
         adjustmentMap = event.getConstant<GardenJson>("Garden").pestRareDrops
     }
 
-    private fun Int.fixAmount(internalName: NEUInternalName, pestType: PestType): Int {
-        return adjustmentMap[pestType]?.get(internalName) ?: this
-    }
-
-    private fun tryAddItem(type: PestType, internalName: NEUInternalName, amount: Int) {
-        tracker.addItem(type, internalName, amount)
-    }
+    private fun Int.fixAmount(internalName: NEUInternalName, pestType: PestType) =
+        adjustmentMap.takeIf { it.isNotEmpty() }?.get(pestType)?.get(internalName) ?: this
 
     private fun addKill(type: PestType) {
         tracker.modify {
@@ -220,7 +217,7 @@ object PestProfitTracker {
         addSearchString("§e§lPest Profit Tracker")
         tracker.addBucketSelector(this, bucketData, "Pest Type")
 
-        val profit = tracker.drawItems(bucketData, { true }, this)
+        var profit = tracker.drawItems(bucketData, { true }, this)
 
         val selectedBucket = bucketData.selectedBucket
         val pestCount = selectedBucket?.let { bucketData.pestKills[it] } ?: bucketData.getTotalPestCount()
@@ -246,16 +243,27 @@ object PestProfitTracker {
         if (selectedBucket == null || selectedBucket.spray != null) {
             val applicableSprays = SprayType.getByPestTypeOrAll(selectedBucket)
             val applicableSpraysUsed = bucketData.spraysUsed.filterKeys { it in applicableSprays }
-            val spraysUsedFormat = "§7Sprays used: §a${applicableSpraysUsed.values.sum().addSeparators()}"
 
+            var sprayCosts = 0.0
+            val hoverTips = buildList {
+                applicableSpraysUsed.forEach { (spray, count) ->
+                    val sprayString = spray.toInternalName().getPriceOrNull()?.let { price ->
+                        val sprayCost = price * count
+                        sprayCosts += sprayCost
+                        "§7${spray.displayName}: §a${count.shortFormat()} §7(§c-${sprayCost.shortFormat()}§7)"
+                    } ?: add("§7${spray.displayName}: §a${count.addSeparators()}")
+                    add(sprayString)
+                }
+                add("")
+                add("§7Total spray cost: §6${sprayCosts.addSeparators()} coins")
+            }
+            profit -= sprayCosts
+
+            val sumSpraysUsed = applicableSpraysUsed.values.sum()
             add(
                 Renderable.hoverTips(
-                    spraysUsedFormat,
-                    buildList {
-                        applicableSpraysUsed.forEach { (spray, count) ->
-                            add("§7${spray.displayName}: §a${count.addSeparators()}")
-                        }
-                    }
+                    "§aSprays used: §a$sumSpraysUsed §7(§c-${sprayCosts.shortFormat()}§7)",
+                    hoverTips
                 ).toSearchable()
             )
         }
@@ -302,7 +310,7 @@ object PestProfitTracker {
 
     fun isEnabled() = GardenAPI.inGarden() && config.enabled
 
-    @SubscribeEvent
+    @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
         // Move any items that are in pestProfitTracker.items as the object as a map themselves,
         // migrate them to the new format of PestType -> Drop Count. All entries will be mapped to
