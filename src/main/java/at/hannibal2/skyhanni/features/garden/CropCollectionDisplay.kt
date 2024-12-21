@@ -73,7 +73,7 @@ object CropCollectionDisplay {
             }
         )
 
-        lineMap[CropCollectionDisplayText.TOTAL] = Renderable.string("Total: $total")
+        lineMap[CropCollectionDisplayText.TOTAL] = Renderable.string("Total: ${total.addSeparators()}")
 
         lineMap[CropCollectionDisplayText.BREAKDOWN] = Renderable.string("Breakdown: ")
 
