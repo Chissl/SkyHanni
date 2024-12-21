@@ -16,6 +16,7 @@ import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.features.garden.GardenAPI.addCropIcon
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.CollectionUtils.addString
+import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
@@ -80,25 +81,25 @@ object CropCollectionDisplay {
             crop.getCollectionCounter(CropCollectionType.BREAKING_CROPS) +
             crop.getCollectionCounter(CropCollectionType.DICER
             )
-        lineMap[CropCollectionDisplayText.FARMING] = Renderable.string(" Farming: $farming")
+        lineMap[CropCollectionDisplayText.FARMING] = Renderable.string(" Farming: ${farming.addSeparators()}")
 
         lineMap[CropCollectionDisplayText.BREAKING_CROPS] =
-            Renderable.string("  Breaking Crops: ${crop.getCollectionCounter(CropCollectionType.BREAKING_CROPS)}")
+            Renderable.string("  Breaking Crops: ${crop.getCollectionCounter(CropCollectionType.BREAKING_CROPS).addSeparators()}")
 
         if (crop == CropType.MUSHROOM) lineMap[CropCollectionDisplayText.MOOSHROOM_COW] =
-            Renderable.string("  Mooshroom Cow: ${crop.getCollectionCounter(CropCollectionType.MOOSHROOM_COW)}")
+            Renderable.string("  Mooshroom Cow: ${crop.getCollectionCounter(CropCollectionType.MOOSHROOM_COW).addSeparators()}")
 
         lineMap[CropCollectionDisplayText.DICER] =
-            Renderable.string("  Dicer Drops: ${crop.getCollectionCounter(CropCollectionType.DICER)}")
+            Renderable.string("  Dicer Drops: ${crop.getCollectionCounter(CropCollectionType.DICER).addSeparators()}")
 
         val pests = crop.getCollectionCounter(CropCollectionType.PEST_BASE) + crop.getCollectionCounter(CropCollectionType.PEST_RNG)
-        lineMap[CropCollectionDisplayText.PESTS] = Renderable.string(" Pests: $pests")
+        lineMap[CropCollectionDisplayText.PESTS] = Renderable.string(" Pests: ${pests.addSeparators()}")
 
         lineMap[CropCollectionDisplayText.PEST_BASE] =
-            Renderable.string("  Pest Base Drops: ${crop.getCollectionCounter(CropCollectionType.PEST_BASE)}")
+            Renderable.string("  Pest Base Drops: ${crop.getCollectionCounter(CropCollectionType.PEST_BASE).addSeparators()}")
 
         lineMap[CropCollectionDisplayText.PEST_RNG] =
-            Renderable.string("  Pest RNG: ${crop.getCollectionCounter(CropCollectionType.PEST_RNG)}")
+            Renderable.string("  Pest RNG: ${crop.getCollectionCounter(CropCollectionType.PEST_RNG).addSeparators()}")
 
         return formatDisplay(lineMap)
     }
