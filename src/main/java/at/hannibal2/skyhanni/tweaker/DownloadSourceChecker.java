@@ -36,11 +36,11 @@ public class DownloadSourceChecker {
     };
 
     public static void init() {
-        if (!OSUtils.INSTANCE.isWindows()) return;
+        /*if (!OSUtils.INSTANCE.isWindows()) return;
         URI host = getDangerousHost();
         if (host != null) {
             openMenu(host);
-        }
+        }*/
     }
 
     private static void openMenu(URI host) {
