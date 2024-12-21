@@ -1,10 +1,9 @@
 package at.hannibal2.skyhanni.features.garden.pests
 
-import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
-import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.config.features.garden.pests.PestProfitTrackerConfig
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.ItemAddManager
@@ -19,6 +18,7 @@ import at.hannibal2.skyhanni.events.RepositoryReloadEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
+import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.CollectionUtils.addOrPut
@@ -162,7 +162,7 @@ object PestProfitTracker {
             val rawName = primitiveStack.internalName.itemNameWithoutColor
             val cropType = CropType.getByNameOrNull(rawName) ?: return
 
-            cropType.addCollectionCounter(CropCollectionType.PEST_BASE, primitiveStack.amount * amount.toLong(), true)
+            cropType.addCollectionCounter(CropCollectionType.PEST_BASE, primitiveStack.amount * amount.toLong())
             tracker.addItem(pest, internalName, amount)
 
             // Field Mice drop 6 separate items, but we only want to count the kill once
@@ -186,7 +186,7 @@ object PestProfitTracker {
             val rawName = primitiveStack.internalName.itemNameWithoutColor
             val cropType = CropType.getByNameOrNull(rawName) ?: return
 
-            cropType.addCollectionCounter(CropCollectionType.PEST_RNG, primitiveStack.amount.toLong() * amount.toLong(), true)
+            cropType.addCollectionCounter(CropCollectionType.PEST_RNG, primitiveStack.amount.toLong() * amount.toLong())
             tracker.addItem(pest, internalName, amount)
             // Pests always have guaranteed loot, therefore there's no need to add kill here
         }

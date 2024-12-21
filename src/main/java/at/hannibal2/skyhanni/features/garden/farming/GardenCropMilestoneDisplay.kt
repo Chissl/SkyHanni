@@ -5,26 +5,21 @@ import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig.MilestoneTextEntry
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig.TimeFormatEntry
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.MushroomPetPerkConfig.MushroomTextEntry
-import at.hannibal2.skyhanni.data.CropCollection
-import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
-import at.hannibal2.skyhanni.data.GardenCropMilestones
-import at.hannibal2.skyhanni.data.GardenCropMilestones.getMilestoneCounter
-import at.hannibal2.skyhanni.data.GardenCropMilestones.isMaxed
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestones
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.isMaxed
 import at.hannibal2.skyhanni.data.ProfileStorageData
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
-import at.hannibal2.skyhanni.events.OwnInventoryItemUpdateEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropMilestoneUpdateEvent
-import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.FarmingFortuneDisplay
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.features.garden.GardenAPI.addCropIcon
-import at.hannibal2.skyhanni.features.garden.GardenAPI.getCropType
 import at.hannibal2.skyhanni.features.garden.farming.GardenCropSpeed.setSpeed
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
-import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.CollectionUtils.addString
 import at.hannibal2.skyhanni.utils.ConditionalUtils
 import at.hannibal2.skyhanni.utils.ConfigUtils
@@ -100,7 +95,7 @@ object GardenCropMilestoneDisplay {
         }
     }
 
-    //Todo use different event for needsinventory
+    // TODO use different event for needsinventory
     @HandleEvent
     fun onCropMilestoneUpdate(event: CropMilestoneUpdateEvent) {
         needsInventory = false
@@ -112,7 +107,7 @@ object GardenCropMilestoneDisplay {
         progressDisplay = emptyList()
         mushroomCowPerkDisplay = emptyList()
         GardenBestCropTime.display = null
-        val currentCrop = if (config.showWithoutTool) CropCollection.lastGainedCrop else GardenAPI.getCurrentlyFarmedCrop()
+        val currentCrop = if (config.showWithoutTool) CropCollectionAPI.lastGainedCrop else GardenAPI.getCurrentlyFarmedCrop()
         currentCrop?.let {
             progressDisplay = drawProgressDisplay(it)
         }

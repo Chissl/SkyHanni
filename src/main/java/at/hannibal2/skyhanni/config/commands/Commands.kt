@@ -6,7 +6,7 @@ import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigFileType
 import at.hannibal2.skyhanni.config.ConfigGuiManager
 import at.hannibal2.skyhanni.data.ChatManager
-import at.hannibal2.skyhanni.data.GardenCropMilestonesCommunityFix
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestonesCommunityFix
 import at.hannibal2.skyhanni.data.PartyAPI
 import at.hannibal2.skyhanni.data.SackAPI
 import at.hannibal2.skyhanni.data.ScoreboardData

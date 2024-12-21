@@ -1,8 +1,8 @@
-package at.hannibal2.skyhanni.data
+package at.hannibal2.skyhanni.data.garden
 
-import at.hannibal2.skyhanni.data.GardenCropMilestones.addMilestoneCounter
-import at.hannibal2.skyhanni.events.CropCollectionUpdateEvent
 import at.hannibal2.skyhanni.events.InventoryFullyOpenedEvent
+import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
+import at.hannibal2.skyhanni.events.garden.farming.CropCollectionUpdateEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
@@ -20,7 +20,7 @@ import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 @SkyHanniModule
-object CropCollection {
+object CropCollectionAPI {
 
     private val patternGroup = RepoPattern.group("data.garden.collection")
 
@@ -63,6 +63,10 @@ object CropCollection {
 
     var lastGainedCrop: CropType? = null
 
+    var lastGainedCollectionTime = SimpleTimeMark.farPast()
+
+    var needCollectionUpdate = true
+
     fun CropType.getTotalCropCollection() =
         cropCollectionCounter?.get(this)?.values?.sum() ?: 0L
 
@@ -81,18 +85,15 @@ object CropCollection {
         CropCollectionUpdateEvent.post()
     }
 
-    //Todo make compatible with crop milestone fixes
-    fun CropType.addCollectionCounter(type: CropCollectionType, amount: Long, addMilestoneCounter: Boolean = false) {
-        //ChatUtils.debug("Add Collection: Crop: $this Type: ${type.displayName} Amount: $amount " +
-        //    "Type Total: ${this.getCollectionCounter(type)} Collection Total: ${this.getTotalCropCollection()}")
+    // TODO make compatible with crop milestone fixes
+    fun CropType.addCollectionCounter(type: CropCollectionType, amount: Long) {
         if (amount == 0L) return
         if (type != CropCollectionType.UNKNOWN && amount > 1) lastGainedCrop = this
 
         this.setCollectionCounter(type, amount + this.getCollectionCounter(type))
 
-        if (addMilestoneCounter) {
-            this.addMilestoneCounter(amount)
-        }
+        lastGainedCollectionTime = SimpleTimeMark.now()
+        CropCollectionAddEvent(this, type, amount).post()
     }
 
     @SubscribeEvent
@@ -109,8 +110,9 @@ object CropCollection {
                     val amount = group("amount").formatLong()
                     val change = amount - oldAmount
 
-                    crop.addCollectionCounter(CropCollectionType.UNKNOWN, change, false)
+                    crop.addCollectionCounter(CropCollectionType.UNKNOWN, change)
                     storage?.lastCollectionFix?.set(crop, SimpleTimeMark.now())
+                    needCollectionUpdate = false
                 }
                 for (line in stack.getLore()) {
                     coopCounterPattern.matchMatcher(line) {
@@ -132,6 +134,7 @@ object CropCollection {
                         if (amountLong > oldAmount ||
                             amountString.length != oldAmountString.length || amountString[0] != oldAmountString[0]) {
                             crop.setCollectionCounter(CropCollectionType.UNKNOWN, amountLong)
+                            needCollectionUpdate = true
                         }
                     }
                 }

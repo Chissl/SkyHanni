@@ -549,6 +549,12 @@ public class ProfileSpecificStorage {
         }
 
         @Expose
+        public Map<CropType, Integer> farmingWeightUncountedCrops = new HashMap<>();
+
+        @Expose
+        public Double farmingWeightBonusWeight = 0.0;
+
+        @Expose
         public Map<String, LorenzVec> npcVisitorLocations = new HashMap<>();
 
         @Expose

@@ -1,14 +1,17 @@
-package at.hannibal2.skyhanni.data
+package at.hannibal2.skyhanni.data.garden
 
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
-import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
+import at.hannibal2.skyhanni.data.HypixelData
+import at.hannibal2.skyhanni.data.ProfileStorageData
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.data.jsonobjects.repo.GardenJson
 import at.hannibal2.skyhanni.data.model.TabWidget
 import at.hannibal2.skyhanni.events.InventoryFullyOpenedEvent
 import at.hannibal2.skyhanni.events.LorenzChatEvent
 import at.hannibal2.skyhanni.events.RepositoryReloadEvent
 import at.hannibal2.skyhanni.events.WidgetUpdateEvent
+import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropMilestoneUpdateEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
@@ -98,6 +101,7 @@ object GardenCropMilestones {
 
     @SubscribeEvent
     fun onChat(event: LorenzChatEvent) {
+        if (!GardenAPI.inGarden()) return
         levelUpPattern.matchMatcher(event.message) {
             val cropName = group("crop")
             val crop = CropType.getByNameOrNull(cropName) ?: return
@@ -119,6 +123,17 @@ object GardenCropMilestones {
 
             checkTabDifference(cropName, tier, percentage)
         }
+    }
+
+    @HandleEvent
+    fun onCollectionAdd(event: CropCollectionAddEvent) {
+        val cropType = event.crop
+        val collectionType = event.cropCollectionType
+        val amount = event.amount
+
+        if (collectionType == CropCollectionType.UNKNOWN) return
+
+        cropType.addMilestoneCounter(amount)
     }
 
     fun onOverflowLevelUp(crop: CropType, oldLevel: Int, newLevel: Int) {
@@ -177,7 +192,6 @@ object GardenCropMilestones {
     fun CropType.addMilestoneCounter(counter: Long) {
         if (counter == 0L) return
         this.setMilestoneCounter(this.getMilestoneCounter() + counter)
-        //ChatUtils.debug("Crop Milestone: Crop: $this Added: $counter Total ${this.getMilestoneCounter()}")
     }
 
     fun CropType.isMaxed(useOverflow: Boolean): Boolean {
@@ -271,8 +285,6 @@ object GardenCropMilestones {
             }
         } else if (diff <= minDiff) {
             ChatUtils.debug("Fixed wrong ${crop.cropName} milestone data from $source: ${diff.addSeparators()}")
-            //forceUpdateMilestone(crop, diff)
-            //GardenCropMilestoneDisplay.update()
         }
     }
 
@@ -285,8 +297,8 @@ object GardenCropMilestones {
             return
         }
 
-        val baseCrops = GardenCropMilestones.getCropsForTier(tier, crop)
-        val next = GardenCropMilestones.getCropsForTier(tier + 1, crop)
+        val baseCrops = getCropsForTier(tier, crop)
+        val next = getCropsForTier(tier + 1, crop)
         val progressCrops = next - baseCrops
 
         val progress = progressCrops * (percentage / 100)
@@ -310,14 +322,14 @@ object GardenCropMilestones {
         val lastCollectionFix = storage?.lastCollectionFix?.get(crop) ?: SimpleTimeMark.farPast()
 
         if (lastMilestoneFix > lastCollectionFix && !(HypixelData.coop)) {
-            crop.addCollectionCounter(CropCollectionType.UNKNOWN, amount, false)
+            crop.addCollectionCounter(CropCollectionType.UNKNOWN, amount)
         }
     }
 
     private val tabListCropProgress = mutableMapOf<CropType, Long>()
 
     private val loadedCrops = mutableListOf<CropType>()
-    //Todo check path
+    // TODO check path
     @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
         event.move(70, "#profile.garden.cropCounter", "#profile.garden.cropMilestoneCounter")

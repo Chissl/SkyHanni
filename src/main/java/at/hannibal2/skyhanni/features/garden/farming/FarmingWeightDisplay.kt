@@ -4,19 +4,21 @@ import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.enums.OutsideSbFeature
-import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
-import at.hannibal2.skyhanni.data.CropCollection.getTotalCropCollection
-import at.hannibal2.skyhanni.data.HypixelData
+import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.ProfileStorageData
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getTotalCropCollection
+import at.hannibal2.skyhanni.data.garden.FarmingWeight
+import at.hannibal2.skyhanni.data.garden.FarmingWeight.getFactor
+import at.hannibal2.skyhanni.data.garden.FarmingWeight.isLoadingWeight
 import at.hannibal2.skyhanni.data.jsonobjects.other.EliteLeaderboardJson
-import at.hannibal2.skyhanni.data.jsonobjects.other.ElitePlayerWeightJson
-import at.hannibal2.skyhanni.data.jsonobjects.other.EliteWeightsJson
 import at.hannibal2.skyhanni.data.jsonobjects.other.UpcomingLeaderboardPlayer
 import at.hannibal2.skyhanni.events.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
+import at.hannibal2.skyhanni.events.IslandChangeEvent
 import at.hannibal2.skyhanni.events.LorenzTickEvent
 import at.hannibal2.skyhanni.events.LorenzWorldChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
+import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
@@ -27,6 +29,7 @@ import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.APIUtils
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.LorenzUtils
+import at.hannibal2.skyhanni.utils.LorenzUtils.isAnyOf
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
 import at.hannibal2.skyhanni.utils.OSUtils
@@ -59,24 +62,39 @@ object FarmingWeightDisplay {
     @HandleEvent
     fun onGardenToolChange(event: GardenToolChangeEvent) {
         // Reset speed
-        weightPerSecond = -1.0
+        //weightPerSecond = -1.0
     }
 
-    @SubscribeEvent
-    fun onWorldChange(event: LorenzWorldChangeEvent) {
-        // We want to try to connect to the api again after a world switch.
-        updateCollection = true
-        resetData()
+    @HandleEvent
+    fun onIslandChange(event: IslandChangeEvent) {
+        if (event.newIsland.isAnyOf(IslandType.GARDEN) || config.showOutsideGarden) {
+            resetData()
+            update()
+        }
     }
 
     @HandleEvent
     fun onProfileJoin(event: ProfileJoinEvent) {
         display = emptyList()
-        profileId = ""
         weight = -1.0
 
         nextPlayers.clear()
         rankGoal = -1
+    }
+
+    @HandleEvent
+    fun onCollectionGain(event: CropCollectionAddEvent) {
+        if (!isEnabled() || event.cropCollectionType == CropCollectionType.UNKNOWN) return
+        if (event.crop.isAnyOf(CropType.SUGAR_CANE, CropType.MUSHROOM, CropType.CACTUS)) {
+            weightNeedsRecalculating = true
+        }
+
+        var multiplier = 1
+        if (GardenAPI.cropInHand?.isAnyOf(CropType.CACTUS, CropType.SUGAR_CANE) == true && event.crop == CropType.MUSHROOM) multiplier = 2
+
+        weight += event.amount / (event.crop.getFactor() * multiplier)
+
+        update()
     }
 
     @SubscribeEvent
@@ -84,10 +102,6 @@ object FarmingWeightDisplay {
         if (!isEnabled()) return
         if (!event.isMod(5)) return
         update()
-
-        SkyHanniMod.coroutineScope.launch {
-            getCropWeights()
-        }
     }
 
     @HandleEvent
@@ -113,18 +127,15 @@ object FarmingWeightDisplay {
     private val localCounter = mutableMapOf<CropType, Long>()
 
     private var display = emptyList<Renderable>()
-    private var profileId = ""
     private var lastLeaderboardUpdate = SimpleTimeMark.farPast()
     private var apiError = false
     private var leaderboardPosition = -1
     private var weight = -1.0
-    private var localWeight = 0.0
     private var weightPerSecond = -1.0
-    private var weightNeedsRecalculating = false
-    private var isLoadingWeight = false
+    private var weightNeedsRecalculating = true
+    private var lastWeightCalculation = SimpleTimeMark.farPast()
     private var isLoadingLeaderboard = false
     private var rankGoal = -1
-    private var updateCollection = false
 
     private val nextPlayers = mutableListOf<UpcomingLeaderboardPlayer>()
     private val nextPlayer get() = nextPlayers.firstOrNull()
@@ -165,22 +176,15 @@ object FarmingWeightDisplay {
 
     private fun update() {
         if (!isEnabled()) return
-        if (apiError) {
+        if (apiError || FarmingWeight.apiError()) {
             display = errorMessage
             return
         }
 
         if (weight == -1.0) {
-            if (!isLoadingWeight) {
-                val localProfile = HypixelData.profileName
-
-                isLoadingWeight = true
+            if (isLoadingWeight()) {
                 if (display.isEmpty()) {
                     display = Renderable.singeltonString("§6Farming Weight§7: §eLoading..")
-                }
-                SkyHanniMod.coroutineScope.launch {
-                    loadWeight(localProfile)
-                    isLoadingWeight = false
                 }
             }
             return
@@ -225,16 +229,16 @@ object FarmingWeightDisplay {
     }
 
     private fun getWeight(): String {
-        if (weightNeedsRecalculating) {
-            val values = calculateCollectionWeight().values
+        if (weightNeedsRecalculating && lastWeightCalculation < SimpleTimeMark.now() - 30.seconds) {
+            val values = calculateWeightPerCrop().values
             if (values.isNotEmpty()) {
-                localWeight = values.sum()
+                weight = values.sum()
+                weight += GardenAPI.storage?.farmingWeightBonusWeight ?: 0.0
                 weightNeedsRecalculating = false
             }
         }
 
-        val totalWeight = (localWeight + weight)
-        return "§e" + totalWeight.roundTo(2).addSeparators()
+        return "§e" + weight.roundTo(2).addSeparators()
     }
 
     private fun getRankGoal(): Int {
@@ -274,8 +278,7 @@ object FarmingWeightDisplay {
         var nextName =
             if (showRankGoal) "#$rankGoal" else nextPlayer.name
 
-        val totalWeight = (localWeight + weight)
-        var weightUntilOvertake = nextPlayer.weight - totalWeight
+        var weightUntilOvertake = nextPlayer.weight - weight
 
         if (weightUntilOvertake < 0) {
             if (weightPerSecond > 0) {
@@ -297,7 +300,7 @@ object FarmingWeightDisplay {
             // Display waiting message if nextPlayers list is empty
             // Update values to next player
             nextName = nextPlayer.name
-            weightUntilOvertake = nextPlayer.weight - totalWeight
+            weightUntilOvertake = nextPlayer.weight - weight
         }
 
         if (nextPlayer.weight == 0.0) {
@@ -317,7 +320,7 @@ object FarmingWeightDisplay {
                     "Error calculating Farming ETA duration",
                     "weightPerSecond" to weightPerSecond,
                     "weightUntilOvertake" to weightUntilOvertake,
-                    "totalWeight" to totalWeight,
+                    "totalWeight" to weight,
                     "nextPlayer.weight" to nextPlayer.weight,
                 )
                 return null
@@ -353,6 +356,7 @@ object FarmingWeightDisplay {
         rankGoal = -1
 
         localCounter.clear()
+
     }
 
     private fun farmingChatMessage(message: String) {
@@ -372,19 +376,7 @@ object FarmingWeightDisplay {
 
     private fun isEtaEnabled() = config.overtakeETA
 
-    fun addCrop(crop: CropType, addedCounter: Int) {
-        // Prevent div-by-0 errors
-        if (addedCounter == 0) return
-
-        val before = getExactWeight()
-        localCounter[crop] = crop.getLocalCounter() + addedCounter
-        val after = getExactWeight()
-
-        updateWeightPerSecond(crop, before, after, addedCounter)
-
-        weightNeedsRecalculating = true
-    }
-
+    // TODO calculate this accurately
     private fun updateWeightPerSecond(crop: CropType, before: Double, after: Double, diff: Int) {
         val speed = crop.getSpeed() ?: return
         val weightDiff = (after - before) * 1000
@@ -392,7 +384,7 @@ object FarmingWeightDisplay {
     }
 
     private fun getExactWeight(): Double {
-        val values = calculateCollectionWeight().values
+        val values = calculateWeightPerCrop().values
         return if (values.isNotEmpty()) {
             values.sum()
         } else 0.0
@@ -447,7 +439,7 @@ object FarmingWeightDisplay {
         val goalRank = getRankGoal() + 1 // API returns upcoming players as if you were at this rank already
         val atRank = if (isEtaEnabled() && goalRank != 10001) "&atRank=$goalRank" else ""
 
-        val url = "https://api.elitebot.dev/leaderboard/rank/farmingweight/$uuid/$profileId$includeUpcoming$atRank"
+        val url = "https://api.elitebot.dev/leaderboard/rank/farmingweight/$uuid/${FarmingWeight.profileId()}$includeUpcoming$atRank"
         val apiResponse = APIUtils.getJSONResponse(url)
 
         try {
@@ -475,70 +467,17 @@ object FarmingWeightDisplay {
         return eliteWeightApiGson.fromJson<EliteLeaderboardJson>(jsonObject)
     }
 
-    private fun loadWeight(localProfile: String) {
-        val uuid = LorenzUtils.getPlayerUuid()
-        val url = "https://api.elitebot.dev/weight/$uuid"
-        val apiResponse = APIUtils.getJSONResponse(url)
-
-        var error: Throwable? = null
-
-        try {
-
-            val apiData = eliteWeightApiGson.fromJson<ElitePlayerWeightJson>(apiResponse)
-
-            val selectedProfileId = apiData.selectedProfileId
-            var selectedProfileEntry = apiData.profiles.find { it.profileId == selectedProfileId }
-
-            if (selectedProfileEntry == null || (selectedProfileEntry.profileName.lowercase() != localProfile && localProfile != "")) {
-                selectedProfileEntry = apiData.profiles.find { it.profileName.lowercase() == localProfile }
-            }
-
-            if (selectedProfileEntry != null) {
-                profileId = selectedProfileEntry.profileId
-                weight = selectedProfileEntry.totalWeight
-                if (updateCollection) {
-                    for (crop in selectedProfileEntry.cropWeight) {
-                        val cropType = CropType.getByName(crop.key) ?: continue
-                        val pestPenalty = selectedProfileEntry.uncountedCrops[crop.key] ?: 0
-                        val weight = crop.value ?: 0.0
-                        val weightCollection = cropWeight[cropType] ?: backupCropWeights[cropType] ?: 0.0
-                        val totalCollection = pestPenalty + weightCollection * weight
-                        cropType.addCollectionCounter(
-                            CropCollectionType.UNKNOWN,
-                            totalCollection.toLong() - cropType.getTotalCropCollection()
-                        )
-                    }
-                    updateCollection = false
-                }
-
-
-                localCounter.clear()
-                weightNeedsRecalculating = true
-                return
-            }
-
-        } catch (e: Exception) {
-            error = e
-        }
-        apiError = true
-
-        ErrorManager.logErrorWithData(
-            error ?: IllegalStateException("Error loading user farming weight"),
-            "Error loading user farming weight\n" +
-                "§eLoading the farming weight data from elitebot.dev failed!\n" +
-                "§eYou can re-enter the garden to try to fix the problem.\n" +
-                "§cIf this message repeats, please report it on Discord",
-            "url" to url,
-            "apiResponse" to apiResponse,
-            "localProfile" to localProfile,
-        )
+    private fun CropType.calculateWeight(amount: Long): Double {
+        return amount / this.getFactor()
     }
 
-    private fun calculateCollectionWeight(): MutableMap<CropType, Double> {
+    private fun calculateWeightPerCrop(): MutableMap<CropType, Double> {
         val weightPerCrop = mutableMapOf<CropType, Double>()
         var totalWeight = 0.0
         for (crop in CropType.entries) {
-            val weight = crop.getLocalCounter() / crop.getFactor()
+            var weight =
+                (crop.getTotalCropCollection() - (GardenAPI.storage?.farmingWeightUncountedCrops?.get(crop) ?: 0)) / crop.getFactor()
+            if (weight < 0) weight = 0.0
             weightPerCrop[crop] = weight
             totalWeight += weight
         }
@@ -555,15 +494,11 @@ object FarmingWeightDisplay {
         val normalRatio = (totalWeight - cactusWeight - sugarCaneWeight) / totalWeight
 
         val mushroomFactor = CropType.MUSHROOM.getFactor()
-        val mushroomCollection = CropType.MUSHROOM.getLocalCounter()
+        val mushroomCollection = CropType.MUSHROOM.getTotalCropCollection()
         return doubleBreakRatio * (mushroomCollection / (2 * mushroomFactor)) + normalRatio * (mushroomCollection / mushroomFactor)
     }
 
     private fun CropType.getLocalCounter() = localCounter[this] ?: 0L
-
-    private fun CropType.getFactor(): Double {
-        return cropWeight[this] ?: backupCropWeights[this] ?: error("Crop $this not in backupFactors!")
-    }
 
     fun lookUpCommand(it: Array<String>) {
         val name = if (it.size == 1) it[0] else LorenzUtils.getPlayerName()
@@ -579,47 +514,5 @@ object FarmingWeightDisplay {
 
         OSUtils.openBrowser("https://elitebot.dev/@$name/")
         ChatUtils.chat("Opening Farming Profile of player §b$name")
-    }
-
-    private val cropWeight = mutableMapOf<CropType, Double>()
-    private var attemptingCropWeightFetch = false
-    private var hasFetchedCropWeights = false
-
-    private fun getCropWeights() {
-        if (attemptingCropWeightFetch || hasFetchedCropWeights) return
-        attemptingCropWeightFetch = true
-        val url = "https://api.elitebot.dev/weights/all"
-        val apiResponse = APIUtils.getJSONResponse(url)
-
-        try {
-            val apiData = eliteWeightApiGson.fromJson<EliteWeightsJson>(apiResponse)
-            apiData.crops
-            for (crop in apiData.crops) {
-                val cropType = CropType.getByNameOrNull(crop.key) ?: continue
-                cropWeight[cropType] = crop.value
-            }
-            hasFetchedCropWeights = true
-        } catch (e: Exception) {
-            ErrorManager.logErrorWithData(
-                e, "Error getting crop weights from elitebot.dev",
-                "apiResponse" to apiResponse,
-            )
-        }
-    }
-
-    // still needed when first joining garden and if they cant make https requests
-    private val backupCropWeights by lazy {
-        mapOf(
-            CropType.WHEAT to 100_000.0,
-            CropType.CARROT to 302_061.86,
-            CropType.POTATO to 300_000.0,
-            CropType.SUGAR_CANE to 200_000.0,
-            CropType.NETHER_WART to 250_000.0,
-            CropType.PUMPKIN to 98_284.71,
-            CropType.MELON to 485_308.47,
-            CropType.MUSHROOM to 90_178.06,
-            CropType.COCOA_BEANS to 267_174.04,
-            CropType.CACTUS to 177_254.45,
-        )
     }
 }

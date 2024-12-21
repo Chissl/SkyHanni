@@ -3,7 +3,7 @@ package at.hannibal2.skyhanni.features.garden.farming
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
-import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
@@ -12,13 +12,13 @@ import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
-import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.CollectionUtils.addOrPut
 import at.hannibal2.skyhanni.utils.CollectionUtils.addSearchString
 import at.hannibal2.skyhanni.utils.CollectionUtils.sortedDesc
 import at.hannibal2.skyhanni.utils.ConditionalUtils
 import at.hannibal2.skyhanni.utils.ItemUtils.itemNameWithoutColor
 import at.hannibal2.skyhanni.utils.ItemUtils.name
+import at.hannibal2.skyhanni.utils.LorenzUtils.isAnyOf
 import at.hannibal2.skyhanni.utils.NEUInternalName
 import at.hannibal2.skyhanni.utils.NEUItems
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
@@ -83,15 +83,13 @@ object DicerRngDropTracker {
     @SubscribeEvent
     fun onChat(event: LorenzChatEvent) {
         if (!GardenAPI.inGarden()) return
-        if (!config.hideChat && !config.display && !GardenAPI.config.cropCollections.collectionDisplay) return
+        if (cropInHand?.isAnyOf(CropType.MELON, CropType.PUMPKIN) != true) return
 
         val message = event.message
         dicerDrop.matchMatcher(message) {
             val itemType = group("item")
             val amount = group("amount").toLong()
             val drop = group("drop")
-
-            //ChatUtils.debug("$itemType, $amount, $drop")
 
             val internalName = NEUInternalName.fromItemNameOrNull(itemType) ?: return@matchMatcher
             val primitiveStack = NEUItems.getPrimitiveMultiplier(internalName)
@@ -101,7 +99,7 @@ object DicerRngDropTracker {
             val dropType = DropRarity.getByName(drop) ?: return@matchMatcher
 
             addDrop(cropType, dropType)
-            cropType.addCollectionCounter(CropCollectionType.DICER, primitiveStack.amount * amount, true)
+            cropType.addCollectionCounter(CropCollectionType.DICER, primitiveStack.amount * amount)
             if (config.hideChat) {
                 event.blockedReason = "dicer_drop_tracker"
             }

@@ -2,7 +2,7 @@ package at.hannibal2.skyhanni.features.garden.farming
 
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.data.ClickType
-import at.hannibal2.skyhanni.data.CropCollection.addCollectionCounter
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.events.CropClickEvent
 import at.hannibal2.skyhanni.events.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.OwnInventoryItemUpdateEvent
@@ -12,7 +12,6 @@ import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.features.garden.GardenAPI.getCropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI.readCounter
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
-import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.SkyBlockItemModifierUtils.getItemUuid
 import net.minecraft.item.ItemStack
 import kotlin.math.floor
@@ -30,7 +29,8 @@ object GardenCropBreakTracker {
 
     @HandleEvent
     fun onToolChange(event: GardenToolChangeEvent) {
-        heldItem = event.toolItem ?: return
+        heldItem = event.toolItem
+        if (event.toolItem == null || event.toolInHand == null) return
         val counter = readCounter(event.toolItem)
 
         itemHasCounter = (counter != -1L)
@@ -46,20 +46,19 @@ object GardenCropBreakTracker {
         if (event.crop != cropBrokenType) cropBrokenType = event.crop
 
         blocksBroken?.set(event.crop, blocksBroken?.get(event.crop)?.plus(1) ?: 1)
-        //Todo get by pet level
+        // TODO via pet api
         if (GardenAPI.mushroomCowPet) {
             CropType.MUSHROOM.addCollectionCounter(
-                CropCollectionType.MOOSHROOM_COW, weightedRandomRound(GardenAPI.mushroomCowPetLevel/100.0).toLong(), true
+                CropCollectionType.MOOSHROOM_COW, weightedRandomRound(GardenAPI.mushroomCowPetLevel/100.0).toLong()
                 )
         }
 
-        if (itemHasCounter) return
+        if (itemHasCounter || heldItem == null) return
 
         val fortune = storage?.latestTrueFarmingFortune?.get(event.crop) ?: return
         event.crop.addCollectionCounter(
             CropCollectionType.BREAKING_CROPS,
-            ((weightedRandomRound(fortune%100) + floor(fortune/100) + 1) * 5.0).toLong(),
-            true
+            ((weightedRandomRound(fortune%100) + floor(fortune/100) + 1) * 5.0).toLong()
         )
     }
 
@@ -77,7 +76,7 @@ object GardenCropBreakTracker {
         val old = counterData?.get(uuid) ?: return
         val addedCounter = counter - old
 
-        crop.addCollectionCounter(CropCollectionType.BREAKING_CROPS, addedCounter, true)
+        crop.addCollectionCounter(CropCollectionType.BREAKING_CROPS, addedCounter)
         counterData?.set(uuid, counter)
     }
 

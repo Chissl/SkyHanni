@@ -1,4 +1,4 @@
-package at.hannibal2.skyhanni.data
+package at.hannibal2.skyhanni.data.garden
 
 import at.hannibal2.skyhanni.events.InventoryFullyOpenedEvent
 import at.hannibal2.skyhanni.events.LorenzChatEvent
