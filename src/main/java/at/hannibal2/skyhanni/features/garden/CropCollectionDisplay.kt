@@ -15,7 +15,7 @@ import at.hannibal2.skyhanni.events.CropCollectionUpdateEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.IslandChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
-import at.hannibal2.skyhanni.features.garden.GardenAPI.addCropIconRenderable
+import at.hannibal2.skyhanni.features.garden.GardenAPI.addCropIcon
 import at.hannibal2.skyhanni.features.garden.farming.CropMoneyDisplay
 import at.hannibal2.skyhanni.features.garden.farming.GardenBestCropTime
 import at.hannibal2.skyhanni.features.garden.farming.GardenCropMilestoneDisplay
@@ -42,7 +42,7 @@ object CropCollectionDisplay {
         }
     }
 
-    @SubscribeEvent
+    @HandleEvent
     fun onConfigLoad(event: ConfigLoadEvent) {
         update()
     }
@@ -75,7 +75,7 @@ object CropCollectionDisplay {
         lineMap[CropCollectionDisplayText.CROP] = Renderable.horizontalContainer(
             buildList {
                 addString("Crop: ")
-                addCropIconRenderable(crop)
+                addCropIcon(crop)
                 addString(crop.cropName)
             }
         )

@@ -318,7 +318,7 @@ object GardenCropMilestones {
 
     private val loadedCrops = mutableListOf<CropType>()
     //Todo check path
-    @SubscribeEvent
+    @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
         event.move(70, "#profile.garden.cropCounter", "#profile.garden.cropMilestoneCounter")
     }
