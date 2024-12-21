@@ -60,7 +60,6 @@ import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 @SkyHanniModule
 object ItemDisplayOverlayFeatures {
@@ -79,10 +78,11 @@ object ItemDisplayOverlayFeatures {
     /**
      * REGEX-TEST: §7Vacuum Bag: §21 Pest
      * REGEX-TEST: §7Vacuum Bag: §2444 Pests
+     * REGEX-TEST: §7Vacuum Bag: §21,652 Pests
      */
     private val gardenVacuumPattern by patternGroup.pattern(
         "vacuum",
-        "§7Vacuum Bag: §2(?<amount>\\d*) Pests?",
+        "§7Vacuum Bag: §2(?<amount>[\\d.,]*) Pests?",
     )
     private val harvestPattern by patternGroup.pattern(
         "harvest",
@@ -359,7 +359,7 @@ object ItemDisplayOverlayFeatures {
         return text
     }
 
-    @SubscribeEvent
+    @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
         event.transform(11, "inventory.itemNumberAsStackSize") { element ->
             ConfigUtils.migrateIntArrayListToEnumArrayList(element, ItemNumberEntry::class.java)

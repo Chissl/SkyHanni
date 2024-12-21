@@ -109,7 +109,7 @@ object DicerRngDropTracker {
         }
     }
 
-    @SubscribeEvent
+    @HandleEvent
     fun onConfigLoad(event: ConfigLoadEvent) {
         ConditionalUtils.onToggle(config.compact) {
             tracker.update()
@@ -172,7 +172,7 @@ object DicerRngDropTracker {
 
     fun isEnabled() = GardenAPI.inGarden() && config.display
 
-    @SubscribeEvent
+    @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
         event.move(3, "garden.dicerCounterDisplay", "garden.dicerCounters.display")
         event.move(3, "garden.dicerCounterHideChat", "garden.dicerCounters.hideChat")
