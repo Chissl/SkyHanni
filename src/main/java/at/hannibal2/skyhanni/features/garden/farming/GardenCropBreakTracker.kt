@@ -62,6 +62,7 @@ object GardenCropBreakTracker {
         )
     }
 
+    // TODO account for late updates after swapping held item
     @HandleEvent
     fun onOwnInventoryItemUpdate(event: OwnInventoryItemUpdateEvent) {
         if (!GardenAPI.inGarden() || !itemHasCounter || event.itemStack.getItemUuid() != heldItem?.getItemUuid()) return

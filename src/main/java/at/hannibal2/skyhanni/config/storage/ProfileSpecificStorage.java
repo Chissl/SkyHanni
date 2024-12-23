@@ -374,6 +374,7 @@ public class ProfileSpecificStorage {
         @Expose
         public Map<CropType, SimpleTimeMark> lastCollectionFix = new HashMap<>();
 
+        // TODO save by session
         @Expose
         public Map<CropType, Map<CropCollectionType, Long>> cropCollectionCounter = new HashMap<>();
 

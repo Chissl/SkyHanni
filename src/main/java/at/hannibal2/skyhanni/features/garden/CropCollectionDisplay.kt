@@ -64,42 +64,43 @@ object CropCollectionDisplay {
     private fun drawCollectionDisplay(crop: CropType): List<Renderable> {
         val total = crop.getTotalCropCollection()
         val lineMap = mutableMapOf<CropCollectionDisplayText, Renderable>()
-        lineMap[CropCollectionDisplayText.TITLE] = Renderable.string("§6Crop Collection")
+        //lineMap[CropCollectionDisplayText.TITLE] = Renderable.string("")
         lineMap[CropCollectionDisplayText.CROP] = Renderable.horizontalContainer(
             buildList {
-                addString("Crop: ")
                 addCropIcon(crop)
+                addString("§7")
                 addString(crop.cropName)
+                addString(" §6Collection")
             }
         )
 
-        lineMap[CropCollectionDisplayText.TOTAL] = Renderable.string("Total: ${total.addSeparators()}")
+        lineMap[CropCollectionDisplayText.TOTAL] = Renderable.string("§7Total: §e${total.addSeparators()}")
 
-        lineMap[CropCollectionDisplayText.BREAKDOWN] = Renderable.string("Breakdown: ")
+        lineMap[CropCollectionDisplayText.BREAKDOWN] = Renderable.string("§6Breakdown: ")
 
         val farming = crop.getCollectionCounter(CropCollectionType.MOOSHROOM_COW) +
             crop.getCollectionCounter(CropCollectionType.BREAKING_CROPS) +
             crop.getCollectionCounter(CropCollectionType.DICER
             )
-        lineMap[CropCollectionDisplayText.FARMING] = Renderable.string(" Farming: ${farming.addSeparators()}")
+        lineMap[CropCollectionDisplayText.FARMING] = Renderable.string(" §7Farming: §e${farming.addSeparators()}")
 
         lineMap[CropCollectionDisplayText.BREAKING_CROPS] =
-            Renderable.string("  Breaking Crops: ${crop.getCollectionCounter(CropCollectionType.BREAKING_CROPS).addSeparators()}")
+            Renderable.string("  §7Breaking Crops: §e${crop.getCollectionCounter(CropCollectionType.BREAKING_CROPS).addSeparators()}")
 
         if (crop == CropType.MUSHROOM) lineMap[CropCollectionDisplayText.MOOSHROOM_COW] =
-            Renderable.string("  Mooshroom Cow: ${crop.getCollectionCounter(CropCollectionType.MOOSHROOM_COW).addSeparators()}")
+            Renderable.string("  §7Mooshroom Cow: §e${crop.getCollectionCounter(CropCollectionType.MOOSHROOM_COW).addSeparators()}")
 
         lineMap[CropCollectionDisplayText.DICER] =
-            Renderable.string("  Dicer Drops: ${crop.getCollectionCounter(CropCollectionType.DICER).addSeparators()}")
+            Renderable.string("  §7Dicer Drops: §e${crop.getCollectionCounter(CropCollectionType.DICER).addSeparators()}")
 
         val pests = crop.getCollectionCounter(CropCollectionType.PEST_BASE) + crop.getCollectionCounter(CropCollectionType.PEST_RNG)
-        lineMap[CropCollectionDisplayText.PESTS] = Renderable.string(" Pests: ${pests.addSeparators()}")
+        lineMap[CropCollectionDisplayText.PESTS] = Renderable.string(" §2Pests: §e${pests.addSeparators()}")
 
         lineMap[CropCollectionDisplayText.PEST_BASE] =
-            Renderable.string("  Pest Base Drops: ${crop.getCollectionCounter(CropCollectionType.PEST_BASE).addSeparators()}")
+            Renderable.string("  §2Pest Base Drops: §e${crop.getCollectionCounter(CropCollectionType.PEST_BASE).addSeparators()}")
 
         lineMap[CropCollectionDisplayText.PEST_RNG] =
-            Renderable.string("  Pest RNG: ${crop.getCollectionCounter(CropCollectionType.PEST_RNG).addSeparators()}")
+            Renderable.string("  §2Pest RNG: §e${crop.getCollectionCounter(CropCollectionType.PEST_RNG).addSeparators()}")
 
         return formatDisplay(lineMap)
     }
@@ -118,7 +119,6 @@ object CropCollectionDisplay {
         val newList = mutableListOf<Renderable>()
 
         newList.addAll(config.statDisplayList.mapNotNull { lineMap[it] })
-        newList.addString("Test Display!")
         return newList
     }
 
