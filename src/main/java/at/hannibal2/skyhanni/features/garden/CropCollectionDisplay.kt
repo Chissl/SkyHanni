@@ -53,8 +53,8 @@ object CropCollectionDisplay {
 
     private fun update() {
         collectionDisplay = emptyList()
-        val currentCrop = CropCollectionAPI.lastGainedCrop
-        currentCrop?.let {
+        val currentCrop = CropCollectionAPI.lastGainedCrop ?: return
+        currentCrop.let {
             collectionDisplay = drawCollectionDisplay(it)
         }
     }
@@ -64,7 +64,7 @@ object CropCollectionDisplay {
     private fun drawCollectionDisplay(crop: CropType): List<Renderable> {
         val total = crop.getTotalCropCollection()
         val lineMap = mutableMapOf<CropCollectionDisplayText, Renderable>()
-        //lineMap[CropCollectionDisplayText.TITLE] = Renderable.string("")
+        lineMap[CropCollectionDisplayText.TITLE] = Renderable.string("")
         lineMap[CropCollectionDisplayText.CROP] = Renderable.horizontalContainer(
             buildList {
                 addCropIcon(crop)

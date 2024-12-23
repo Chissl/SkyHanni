@@ -379,6 +379,9 @@ public class ProfileSpecificStorage {
         public Map<CropType, Map<CropCollectionType, Long>> cropCollectionCounter = new HashMap<>();
 
         @Expose
+        public CropType lastGainedCrop = null;
+
+        @Expose
         public Map<CropType, Long> cropMilestoneCounter = new HashMap<>();
 
         @Expose

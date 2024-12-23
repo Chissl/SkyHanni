@@ -61,7 +61,13 @@ object CropCollectionAPI {
     private val cropCollectionCounter:
         MutableMap<CropType, MutableMap<CropCollectionType, Long>>? get() = GardenAPI.storage?.cropCollectionCounter
 
-    var lastGainedCrop: CropType? = null
+    var lastGainedCrop: CropType?
+        get() = GardenAPI.storage?.lastGainedCrop
+        set(value) {
+            value?.let {
+                GardenAPI.storage?.lastGainedCrop = it
+            }
+        }
 
     var lastGainedCollectionTime = SimpleTimeMark.farPast()
 
