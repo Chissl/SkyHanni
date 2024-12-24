@@ -25,8 +25,8 @@ import at.hannibal2.skyhanni.utils.HypixelCommands
 import at.hannibal2.skyhanni.utils.LorenzLogger
 import at.hannibal2.skyhanni.utils.LorenzUtils
 import at.hannibal2.skyhanni.utils.LorenzUtils.inAnyIsland
-import at.hannibal2.skyhanni.utils.RegexUtils.allMatches
 import at.hannibal2.skyhanni.utils.LorenzUtils.isAnyOf
+import at.hannibal2.skyhanni.utils.RegexUtils.allMatches
 import at.hannibal2.skyhanni.utils.RegexUtils.firstMatcher
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
 import at.hannibal2.skyhanni.utils.RegexUtils.matches
@@ -152,7 +152,7 @@ object HypixelData {
      */
     private val profileJoinPattern by patternGroup.pattern(
         "profile.join",
-        "&aYou are playing on profile: &e(?<profileName>\\w+)(&b \\((?<coop>Co-op)\\))?"
+        "&aYou are playing on profile: &e(?<profileName>\\w+)(?:&b \\((?<coop>Co-op)\\))?"
     )
 
     /**
@@ -161,7 +161,7 @@ object HypixelData {
      */
     private val profileSwitchPattern by patternGroup.pattern(
         "profile.switch",
-        "&aYour profile was changed to: &e(?<profileName>\\w+)(&b \\((?<coop>Co-op)\\))?"
+        "&aYour profile was changed to: &e(?<profileName>\\w+)(?:&b \\((?<coop>Co-op)\\))?"
     )
 
 

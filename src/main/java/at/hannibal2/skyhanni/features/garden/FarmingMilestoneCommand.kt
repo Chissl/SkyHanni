@@ -1,8 +1,8 @@
 package at.hannibal2.skyhanni.features.garden
 
+import at.hannibal2.skyhanni.data.ProfileStorageData
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
-import at.hannibal2.skyhanni.data.ProfileStorageData
 import at.hannibal2.skyhanni.features.garden.farming.GardenCropSpeed.getSpeed
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators

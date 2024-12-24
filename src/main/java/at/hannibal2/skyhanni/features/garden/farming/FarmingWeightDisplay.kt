@@ -16,7 +16,6 @@ import at.hannibal2.skyhanni.events.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.IslandChangeEvent
 import at.hannibal2.skyhanni.events.LorenzTickEvent
-import at.hannibal2.skyhanni.events.LorenzWorldChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
@@ -62,7 +61,7 @@ object FarmingWeightDisplay {
     @HandleEvent
     fun onGardenToolChange(event: GardenToolChangeEvent) {
         // Reset speed
-        //weightPerSecond = -1.0
+        // weightPerSecond = -1.0
     }
 
     @HandleEvent

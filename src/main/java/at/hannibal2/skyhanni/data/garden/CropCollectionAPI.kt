@@ -25,14 +25,6 @@ object CropCollectionAPI {
     private val patternGroup = RepoPattern.group("data.garden.collection")
 
     /**
-     * REGEX-TEST: §7Total collected: §e261,390
-     */
-    private val totalCounterPattern by patternGroup.pattern(
-        "counter.total",
-        "§7Total Collected: §e(?<amount>.*)",
-    )
-
-    /**
      * REGEX-TEST: §b[MVP§5+§b] Chissl§7: §e24.7B
      */
     private val coopCounterPattern by patternGroup.pattern(
@@ -141,7 +133,8 @@ object CropCollectionAPI {
                         val amountString = amountLong.toString()
                         val oldAmountString = oldAmount.toString()
                         if (amountLong > oldAmount ||
-                            amountString.length != oldAmountString.length || amountString[0] != oldAmountString[0]) {
+                            amountString.length != oldAmountString.length || amountString[0] != oldAmountString[0]
+                        ) {
                             crop.setCollectionCounter(CropCollectionType.UNKNOWN, amountLong)
                             needCollectionUpdate = true
                         }

@@ -65,6 +65,11 @@ object GardenCropMilestones {
         " (?<crop>Wheat|Carrot|Potato|Pumpkin|Sugar Cane|Melon|Cactus|Cocoa Beans|Mushroom|Nether Wart) (?<tier>\\d+): §r§a(?<percentage>.*)%",
     )
 
+
+    // TODO find actual regex string
+    /**
+     * REGEX-TEST:   §r§b§lGARDEN MILESTONE §3Melon §8.*➜§346
+     */
     private val levelUpPattern by patternGroup.pattern(
         "levelup",
         " {2}§r§b§lGARDEN MILESTONE §3(?<crop>.*) §8.*➜§3(?<tier>.*)",
@@ -313,7 +318,7 @@ object GardenCropMilestones {
         tabListCropProgress[crop] = newValue
     }
 
-    //Todo only trigger if solo or config setting
+    // Todo only trigger if solo or config setting
     private fun forceUpdateMilestone(crop: CropType, amount: Long) {
         if (amount == 0L) return
         crop.addMilestoneCounter(amount)

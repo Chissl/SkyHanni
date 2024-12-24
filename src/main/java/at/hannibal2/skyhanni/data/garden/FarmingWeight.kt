@@ -10,14 +10,10 @@ import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.needCollectionUpdate
 import at.hannibal2.skyhanni.data.jsonobjects.other.ElitePlayerWeightJson
 import at.hannibal2.skyhanni.data.jsonobjects.other.EliteWeightsJson
 import at.hannibal2.skyhanni.events.IslandChangeEvent
-import at.hannibal2.skyhanni.events.LorenzWorldChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
-import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
-import at.hannibal2.skyhanni.events.garden.farming.CropCollectionUpdateEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
-import at.hannibal2.skyhanni.features.garden.farming.FarmingWeightDisplay
 import at.hannibal2.skyhanni.features.garden.pests.PestType
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
@@ -26,14 +22,11 @@ import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.CollectionUtils.sumAllValues
 import at.hannibal2.skyhanni.utils.LorenzUtils
 import at.hannibal2.skyhanni.utils.LorenzUtils.isAnyOf
-import at.hannibal2.skyhanni.utils.LorenzUtils.isInIsland
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.json.BaseGsonBuilder
 import at.hannibal2.skyhanni.utils.json.SkyHanniTypeAdapters
 import at.hannibal2.skyhanni.utils.json.fromJson
-import com.google.common.eventbus.Subscribe
 import kotlinx.coroutines.launch
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.minutes
 
@@ -72,7 +65,7 @@ object FarmingWeight {
 
     fun apiError() = apiError
 
-    fun update(){
+    fun update() {
         getCropWeights()
         if (isLoadingWeight.compareAndSet(false, true)) {
             val localProfile = HypixelData.profileName
@@ -106,7 +99,7 @@ object FarmingWeight {
             if (selectedProfileEntry != null) {
                 profileId = selectedProfileEntry.profileId
                 val lastUpdated = selectedProfileEntry.lastUpdated
-                if (lastUpdated >= CropCollectionAPI.lastGainedCollectionTime.toMillis()/1000)
+                if (lastUpdated >= CropCollectionAPI.lastGainedCollectionTime.toMillis() / 1000)
                     for (crop in selectedProfileEntry.crops) {
                         val cropType = CropType.getByName(crop.key)
                         ChatUtils.debug("Updating from elite: Crop: $cropType Amount: ${crop.value - cropType.getTotalCropCollection()}")
@@ -117,11 +110,11 @@ object FarmingWeight {
                         needCollectionUpdate = false
                     }
 
-                    GardenAPI.storage?.farmingWeightUncountedCrops =
-                        selectedProfileEntry.uncountedCrops.mapKeys { entry -> CropType.getByName(entry.key) }
-                    GardenAPI.storage?.farmingWeightBonusWeight = selectedProfileEntry.bonusWeight.sumAllValues()
-                    ChatUtils.debug("Updated Crop Collection from Elite")
-                    lastUpdate = SimpleTimeMark.now()
+                GardenAPI.storage?.farmingWeightUncountedCrops =
+                    selectedProfileEntry.uncountedCrops.mapKeys { entry -> CropType.getByName(entry.key) }
+                GardenAPI.storage?.farmingWeightBonusWeight = selectedProfileEntry.bonusWeight.sumAllValues()
+                ChatUtils.debug("Updated Crop Collection from Elite")
+                lastUpdate = SimpleTimeMark.now()
                 return
             }
 

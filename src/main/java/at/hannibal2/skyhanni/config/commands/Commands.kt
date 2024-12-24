@@ -6,13 +6,13 @@ import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigFileType
 import at.hannibal2.skyhanni.config.ConfigGuiManager
 import at.hannibal2.skyhanni.data.ChatManager
-import at.hannibal2.skyhanni.data.garden.GardenCropMilestonesCommunityFix
 import at.hannibal2.skyhanni.data.PartyAPI
 import at.hannibal2.skyhanni.data.SackAPI
 import at.hannibal2.skyhanni.data.ScoreboardData
 import at.hannibal2.skyhanni.data.TitleManager
 import at.hannibal2.skyhanni.data.TrackerManager
 import at.hannibal2.skyhanni.data.bazaar.HypixelBazaarFetcher
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestonesCommunityFix
 import at.hannibal2.skyhanni.features.bingo.card.BingoCardDisplay
 import at.hannibal2.skyhanni.features.bingo.card.nextstephelper.BingoNextStepHelper
 import at.hannibal2.skyhanni.features.chat.ColorFormattingHelper

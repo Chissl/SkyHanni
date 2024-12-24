@@ -3,14 +3,14 @@ package at.hannibal2.skyhanni.features.misc.discordrpc
 // SkyblockAddons code, adapted for SkyHanni with some additions and fixes
 
 import at.hannibal2.skyhanni.data.ActionBarStatsData
-import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
-import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getTierForCropCount
-import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.isMaxed
-import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.progressToNextLevel
 import at.hannibal2.skyhanni.data.HypixelData
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.PetAPI
 import at.hannibal2.skyhanni.data.ScoreboardData
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getTierForCropCount
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.isMaxed
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.progressToNextLevel
 import at.hannibal2.skyhanni.features.dungeon.DungeonAPI
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.features.garden.GardenAPI.getCropType

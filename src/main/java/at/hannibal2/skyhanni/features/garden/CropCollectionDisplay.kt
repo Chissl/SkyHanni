@@ -2,22 +2,22 @@ package at.hannibal2.skyhanni.features.garden
 
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText
+import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getCollectionCounter
-import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getTotalCropCollection
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones
-import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
-import at.hannibal2.skyhanni.events.garden.farming.CropCollectionUpdateEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.IslandChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
+import at.hannibal2.skyhanni.events.garden.farming.CropCollectionUpdateEvent
 import at.hannibal2.skyhanni.features.garden.GardenAPI.addCropIcon
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.CollectionUtils.addString
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
+import at.hannibal2.skyhanni.utils.renderables.Renderable
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 @SkyHanniModule
@@ -80,8 +80,8 @@ object CropCollectionDisplay {
 
         val farming = crop.getCollectionCounter(CropCollectionType.MOOSHROOM_COW) +
             crop.getCollectionCounter(CropCollectionType.BREAKING_CROPS) +
-            crop.getCollectionCounter(CropCollectionType.DICER
-            )
+            crop.getCollectionCounter(CropCollectionType.DICER)
+
         lineMap[CropCollectionDisplayText.FARMING] = Renderable.string(" §7Farming: §e${farming.addSeparators()}")
 
         lineMap[CropCollectionDisplayText.BREAKING_CROPS] =

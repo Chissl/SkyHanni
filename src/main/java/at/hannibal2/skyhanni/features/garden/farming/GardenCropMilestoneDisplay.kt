@@ -5,11 +5,11 @@ import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig.MilestoneTextEntry
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig.TimeFormatEntry
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.MushroomPetPerkConfig.MushroomTextEntry
+import at.hannibal2.skyhanni.data.ProfileStorageData
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.isMaxed
-import at.hannibal2.skyhanni.data.ProfileStorageData
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent

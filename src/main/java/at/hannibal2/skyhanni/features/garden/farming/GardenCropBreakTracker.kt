@@ -49,8 +49,8 @@ object GardenCropBreakTracker {
         // TODO via pet api
         if (GardenAPI.mushroomCowPet) {
             CropType.MUSHROOM.addCollectionCounter(
-                CropCollectionType.MOOSHROOM_COW, weightedRandomRound(GardenAPI.mushroomCowPetLevel/100.0).toLong()
-                )
+                CropCollectionType.MOOSHROOM_COW, weightedRandomRound(GardenAPI.mushroomCowPetLevel / 100.0).toLong()
+            )
         }
 
         if (itemHasCounter || heldItem == null) return
@@ -58,7 +58,7 @@ object GardenCropBreakTracker {
         val fortune = storage?.latestTrueFarmingFortune?.get(event.crop) ?: return
         event.crop.addCollectionCounter(
             CropCollectionType.BREAKING_CROPS,
-            ((weightedRandomRound(fortune%100) + floor(fortune/100) + 1) * 5.0).toLong()
+            ((weightedRandomRound(fortune % 100) + floor(fortune / 100) + 1) * 5.0).toLong()
         )
     }
 
@@ -82,7 +82,7 @@ object GardenCropBreakTracker {
     }
 
     private fun weightedRandomRound(num: Double): Double {
-        val randomNumber = Random.nextInt(1,100)
+        val randomNumber = Random.nextInt(1, 100)
         return if (num >= randomNumber) 1.0 else 0.0
     }
 
