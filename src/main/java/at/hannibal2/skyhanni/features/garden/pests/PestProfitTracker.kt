@@ -181,13 +181,13 @@ object PestProfitTracker {
                 val fixedString = message.replace(itemGroup, "§a${it}x $itemGroup")
                 chatComponent = ChatComponentText(fixedString)
             }
+            tracker.addItem(pest, internalName, amount)
 
             val primitiveStack = NEUItems.getPrimitiveMultiplier(internalName)
             val rawName = primitiveStack.internalName.itemNameWithoutColor
             val cropType = CropType.getByNameOrNull(rawName) ?: return
 
             cropType.addCollectionCounter(CropCollectionType.PEST_RNG, primitiveStack.amount.toLong() * amount.toLong())
-            tracker.addItem(pest, internalName, amount)
             // Pests always have guaranteed loot, therefore there's no need to add kill here
         }
     }
