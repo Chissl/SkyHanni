@@ -78,7 +78,7 @@ object LorenzUtils {
             val never = SkyHanniMod.feature.dev.debug.neverFunnyTime
             val result = (!never && (always || itsTime))
             if (previousApril != result) {
-                ModifyVisualWords.textCache.clear()
+                ModifyVisualWords.update()
             }
             previousApril = result
             return result
@@ -263,12 +263,8 @@ object LorenzUtils {
     fun GuiEditSign.isRancherSign(): Boolean {
         if (this !is AccessorGuiEditSign) return false
 
-        val tileSign = (this as AccessorGuiEditSign).tileSign
-        return (
-            tileSign.signText[1].unformattedText.removeColor() == "^^^^^^" &&
-                tileSign.signText[2].unformattedText.removeColor() == "Set your" &&
-                tileSign.signText[3].unformattedText.removeColor() == "speed cap!"
-            )
+        val signText = (this as AccessorGuiEditSign).tileSign.signText.map { it.unformattedText.removeColor() }
+        return signText[1] == "^^^^^^" && signText[2] == "Set your" && signText[3] == "speed cap!"
     }
 
     fun IslandType.isInIsland() = inSkyBlock && skyBlockIsland == this
@@ -306,8 +302,7 @@ object LorenzUtils {
     }
 
     inline fun <reified T : Enum<T>> enumValueOf(name: String) =
-        enumValueOfOrNull<T>(name)
-            ?: error("Unknown enum constant for ${enumValues<T>().first().name.javaClass.simpleName}: '$name'")
+        enumValueOfOrNull<T>(name) ?: error("Unknown enum constant for ${enumValues<T>().first().name.javaClass.simpleName}: '$name'")
 
     inline fun <reified T : Enum<T>> enumJoinToPattern(noinline transform: (T) -> CharSequence = { it.name }) =
         enumValues<T>().joinToString("|", transform = transform)
@@ -321,8 +316,7 @@ object LorenzUtils {
         FMLCommonHandler.instance().handleExit(-1)
     }
 
-    fun inMiningIsland() = IslandType.GOLD_MINES.isInIsland() ||
-        IslandType.DEEP_CAVERNS.isInIsland() || MiningAPI.inAdvancedMiningIsland()
+    fun inMiningIsland() = IslandType.GOLD_MINES.isInIsland() || IslandType.DEEP_CAVERNS.isInIsland() || MiningAPI.inAdvancedMiningIsland()
 
     fun isBetaVersion() = UpdateManager.isCurrentlyBeta()
 
