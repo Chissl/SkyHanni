@@ -27,6 +27,7 @@ import at.hannibal2.skyhanni.features.garden.CropType;
 import at.hannibal2.skyhanni.features.garden.GardenPlotAPI;
 import at.hannibal2.skyhanni.features.garden.farming.ArmorDropTracker;
 import at.hannibal2.skyhanni.features.garden.farming.DicerRngDropTracker;
+import at.hannibal2.skyhanni.features.garden.farming.GardenUptimeDisplay;
 import at.hannibal2.skyhanni.features.garden.farming.lane.FarmingLane;
 import at.hannibal2.skyhanni.features.garden.fortuneguide.FarmingItems;
 import at.hannibal2.skyhanni.features.garden.pests.PestProfitTracker;
@@ -569,6 +570,10 @@ public class ProfileSpecificStorage {
 
         @Expose
         public VinylType activeVinyl = null;
+
+
+        @Expose
+        public GardenUptimeDisplay.TimeData uptimeTracker = new GardenUptimeDisplay.TimeData();
     }
 
     @Expose
