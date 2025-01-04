@@ -66,6 +66,7 @@ public class CropCollectionsConfig {
         public static final List<CropCollectionDisplayText> defaultDisplayList = Arrays.asList(
             TITLE,
             TOTAL,
+            ALL_TIME,
             SESSION,
             BREAKDOWN,
             FARMING,
