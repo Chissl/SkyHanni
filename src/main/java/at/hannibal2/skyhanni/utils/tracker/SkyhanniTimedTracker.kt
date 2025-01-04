@@ -38,10 +38,10 @@ class SkyhanniTimedTracker<Data : TrackerData>(
         DisplayMode.YEAR,
     ) + extraDisplayModes.keys
 
-    private var date = LocalDate.now()
-    private var week = date.format(weekFormatter).weekToLocalDate()
-    private var month = date.format(monthFormatter).monthToLocalDate()
-    private var year = date.format(yearFormatter).yearToLocalDate()
+    var date = LocalDate.now()
+    var week = date.format(weekFormatter).weekToLocalDate()
+    var month = date.format(monthFormatter).monthToLocalDate()
+    var year = date.format(yearFormatter).yearToLocalDate()
 
     private fun getNextDisplay(): DisplayMode {
         return availableTrackers[(availableTrackers.indexOf(displayMode) + 1) % availableTrackers.size]

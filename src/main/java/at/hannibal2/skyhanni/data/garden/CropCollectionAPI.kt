@@ -18,7 +18,7 @@ import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.StringUtils.cleanPlayerName
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-
+// Todo: since we're using tracker, we don't need crop collection type
 @SkyHanniModule
 object CropCollectionAPI {
 

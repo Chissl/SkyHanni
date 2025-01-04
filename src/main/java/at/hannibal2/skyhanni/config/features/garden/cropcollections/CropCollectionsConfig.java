@@ -7,26 +7,12 @@ import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigLink;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption;
-import io.github.notenoughupdates.moulconfig.observer.Property;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.BREAKDOWN;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.BREAKING_CROPS;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.COLLECTION_PER_HOUR;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.CROP;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.DICER;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.FARMING;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.MOOSHROOM_COW;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.PESTS;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.PEST_BASE;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.PEST_RNG;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.SESSION;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.TITLE;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.TOTAL;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.UNKNOWN;
+import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.defaultDisplayList;
 
 public class CropCollectionsConfig {
     @Expose
@@ -40,6 +26,15 @@ public class CropCollectionsConfig {
     public boolean collectionDisplay = true;
 
     @Expose
+    @ConfigOption(
+        name = "Reset Session on game start",
+        desc = "Resets session display mode when game starts."
+    )
+    @ConfigEditorBoolean
+    @FeatureToggle
+    public boolean resetSession = false;
+
+    @Expose
     @ConfigLink(owner = CropCollectionsConfig.class, field = "collectionDisplay")
     public Position collectionDisplayPos = new Position(-400, -200, false, true);
 
@@ -49,26 +44,11 @@ public class CropCollectionsConfig {
         desc = "Drag text to change what displays in the summary card."
     )
     @ConfigEditorDraggableList
-    public List<CropCollectionDisplayText> statDisplayList = new ArrayList<>(Arrays.asList(
-        TITLE,
-        CROP,
-        TOTAL,
-        SESSION,
-        BREAKDOWN,
-        FARMING,
-        BREAKING_CROPS,
-        MOOSHROOM_COW,
-        DICER,
-        PESTS,
-        PEST_BASE,
-        PEST_RNG,
-        UNKNOWN,
-        COLLECTION_PER_HOUR
-    ));
+    public List<CropCollectionDisplayText> statDisplayList = new ArrayList<>(defaultDisplayList);
 
     public enum CropCollectionDisplayText {
         TITLE("Crop Collection"),
-        CROP("Crop"),
+        ALL_TIME("All time"),
         TOTAL("Total"),
         SESSION("Session"),
         BREAKDOWN("Breakdown"),
@@ -82,6 +62,22 @@ public class CropCollectionsConfig {
         UNKNOWN(" Unknown"),
         COLLECTION_PER_HOUR("Collection per hour")
         ;
+
+        public static final List<CropCollectionDisplayText> defaultDisplayList = Arrays.asList(
+            TITLE,
+            TOTAL,
+            SESSION,
+            BREAKDOWN,
+            FARMING,
+            BREAKING_CROPS,
+            MOOSHROOM_COW,
+            DICER,
+            PESTS,
+            PEST_BASE,
+            PEST_RNG,
+            UNKNOWN,
+            COLLECTION_PER_HOUR
+        );
 
         private final String display;
 

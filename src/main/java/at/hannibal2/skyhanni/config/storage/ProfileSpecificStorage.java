@@ -22,6 +22,7 @@ import at.hannibal2.skyhanni.features.fishing.tracker.FishingProfitTracker;
 import at.hannibal2.skyhanni.features.fishing.tracker.SeaCreatureTracker;
 import at.hannibal2.skyhanni.features.fishing.trophy.TrophyRarity;
 import at.hannibal2.skyhanni.features.garden.CropAccessory;
+import at.hannibal2.skyhanni.features.garden.CropCollectionDisplay;
 import at.hannibal2.skyhanni.features.garden.CropCollectionType;
 import at.hannibal2.skyhanni.features.garden.CropType;
 import at.hannibal2.skyhanni.features.garden.GardenPlotAPI;
@@ -571,9 +572,11 @@ public class ProfileSpecificStorage {
         @Expose
         public VinylType activeVinyl = null;
 
-
         @Expose
         public GardenUptimeDisplay.TimeData uptimeTracker = new GardenUptimeDisplay.TimeData();
+
+        @Expose
+        public CropCollectionDisplay.TimeData cropCollectionTracker = new CropCollectionDisplay.TimeData();
     }
 
     @Expose
