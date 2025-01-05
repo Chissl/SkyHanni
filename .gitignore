@@ -18,5 +18,4 @@ gradle.properties
 .DS_STORE
 
 .devauth/*
-!.devauth/config.toml
 .kotlin
