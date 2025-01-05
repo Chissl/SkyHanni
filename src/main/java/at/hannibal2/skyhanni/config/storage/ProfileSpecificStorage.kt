@@ -523,6 +523,9 @@ class ProfileSpecificStorage {
         var pestProfitTracker: PestProfitTracker.BucketData = PestProfitTracker.BucketData()
 
         @Expose
+        var equipmentPestCooldown: Int = 0
+
+        @Expose
         var activeVinyl: VinylType? = null
 
         @Expose
