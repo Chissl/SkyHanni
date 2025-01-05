@@ -6,7 +6,7 @@ import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.enums.OutsideSbFeature
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.ProfileStorageData
-import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getTotalCropCollection
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getCollection
 import at.hannibal2.skyhanni.data.garden.FarmingWeight
 import at.hannibal2.skyhanni.data.garden.FarmingWeight.getFactor
 import at.hannibal2.skyhanni.data.garden.FarmingWeight.isLoadingWeight
@@ -475,7 +475,7 @@ object FarmingWeightDisplay {
         var totalWeight = 0.0
         for (crop in CropType.entries) {
             var weight =
-                (crop.getTotalCropCollection() - (GardenAPI.storage?.farmingWeightUncountedCrops?.get(crop) ?: 0)) / crop.getFactor()
+                (crop.getCollection() - (GardenAPI.storage?.farmingWeightUncountedCrops?.get(crop) ?: 0)) / crop.getFactor()
             if (weight < 0) weight = 0.0
             weightPerCrop[crop] = weight
             totalWeight += weight
@@ -493,7 +493,7 @@ object FarmingWeightDisplay {
         val normalRatio = (totalWeight - cactusWeight - sugarCaneWeight) / totalWeight
 
         val mushroomFactor = CropType.MUSHROOM.getFactor()
-        val mushroomCollection = CropType.MUSHROOM.getTotalCropCollection()
+        val mushroomCollection = CropType.MUSHROOM.getCollection()
         return doubleBreakRatio * (mushroomCollection / (2 * mushroomFactor)) + normalRatio * (mushroomCollection / mushroomFactor)
     }
 

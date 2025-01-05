@@ -18,7 +18,6 @@ import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.StringUtils.cleanPlayerName
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-// Todo: since we're using tracker, we don't need crop collection type
 @SkyHanniModule
 object CropCollectionAPI {
 
@@ -51,7 +50,7 @@ object CropCollectionAPI {
     private val storage get() = GardenAPI.storage
 
     private val cropCollectionCounter:
-        MutableMap<CropType, MutableMap<CropCollectionType, Long>>? get() = GardenAPI.storage?.cropCollectionCounter
+        MutableMap<CropType, Long>? get() = GardenAPI.storage?.cropCollectionCounter
 
     var lastGainedCrop: CropType?
         get() = GardenAPI.storage?.lastGainedCrop
@@ -65,24 +64,11 @@ object CropCollectionAPI {
 
     var needCollectionUpdate = true
 
-    fun CropType.getTotalCropCollection() =
-        cropCollectionCounter?.get(this)?.values?.sum() ?: 0L
+    fun CropType.getCollection() =
+        cropCollectionCounter?.get(this) ?: 0L
 
-    fun CropType.getCollectionCounter(collectionType: CropCollectionType) =
-        cropCollectionCounter?.get(this)?.get(collectionType) ?: 0L
-
-    private fun CropType.setCollectionCounter(
-        collectionType: CropCollectionType,
-        counter: Long
-    ) {
-        val crop = cropCollectionCounter?.get(this)
-        if (crop != null) {
-            crop[collectionType] = counter
-        } else {
-            val innerMap = mutableMapOf<CropCollectionType, Long>()
-            innerMap[collectionType] = counter
-            cropCollectionCounter?.set(this, innerMap)
-        }
+    fun CropType.setCollectionCounter(counter: Long) {
+        cropCollectionCounter?.set(this, counter)
         CropCollectionUpdateEvent.post()
     }
 
@@ -91,7 +77,7 @@ object CropCollectionAPI {
         if (amount == 0L) return
         if (type != CropCollectionType.UNKNOWN && amount > 1) lastGainedCrop = this
 
-        this.setCollectionCounter(type, amount + this.getCollectionCounter(type))
+        this.setCollectionCounter(amount + this.getCollection())
 
         lastGainedCollectionTime = SimpleTimeMark.now()
         CropCollectionAddEvent(this, type, amount).post()
@@ -105,7 +91,7 @@ object CropCollectionAPI {
                 val name = collectionNamePattern.matchGroup(stack.displayName, "name") ?: continue
                 if (name == "Seeds") continue
                 val crop = CropType.getByNameOrNull(name) ?: continue
-                val oldAmount = crop.getTotalCropCollection()
+                val oldAmount = crop.getCollection()
 
                 soloCounterPattern.firstMatcher(stack.getLore()) {
                     val amount = group("amount").formatLong()
@@ -135,7 +121,7 @@ object CropCollectionAPI {
                         if (amountLong > oldAmount ||
                             amountString.length != oldAmountString.length || amountString[0] != oldAmountString[0]
                         ) {
-                            crop.setCollectionCounter(CropCollectionType.UNKNOWN, amountLong)
+                            crop.setCollectionCounter(amountLong)
                             needCollectionUpdate = true
                         }
                     }

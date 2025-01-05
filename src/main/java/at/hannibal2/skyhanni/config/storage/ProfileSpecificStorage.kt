@@ -23,14 +23,16 @@ import at.hannibal2.skyhanni.features.fishing.tracker.FishingProfitTracker
 import at.hannibal2.skyhanni.features.fishing.tracker.SeaCreatureTracker
 import at.hannibal2.skyhanni.features.fishing.trophy.TrophyRarity
 import at.hannibal2.skyhanni.features.garden.CropAccessory
+import at.hannibal2.skyhanni.features.garden.CropCollectionDisplay
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenPlotAPI.PlotData
-import at.hannibal2.skyhanni.features.garden.farming.ArmorDropTracker
-import at.hannibal2.skyhanni.features.garden.farming.DicerRngDropTracker
 import at.hannibal2.skyhanni.features.garden.farming.lane.FarmingLane
 import at.hannibal2.skyhanni.features.garden.fortuneguide.FarmingItems
-import at.hannibal2.skyhanni.features.garden.pests.PestProfitTracker
 import at.hannibal2.skyhanni.features.garden.pests.VinylType
+import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
+import at.hannibal2.skyhanni.features.garden.tracker.DicerRngDropTracker
+import at.hannibal2.skyhanni.features.garden.tracker.GardenUptimeTracker
+import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker
 import at.hannibal2.skyhanni.features.garden.visitor.VisitorReward
 import at.hannibal2.skyhanni.features.inventory.chocolatefactory.ChocolateFactoryStrayTracker
 import at.hannibal2.skyhanni.features.inventory.experimentationtable.ExperimentsProfitTracker
@@ -54,7 +56,8 @@ import at.hannibal2.skyhanni.utils.SimpleTimeMark.Companion.farPast
 import com.google.gson.annotations.Expose
 import net.minecraft.item.ItemStack
 import java.time.LocalDate
-import java.util.*
+import java.util.EnumMap
+import java.util.Objects
 import kotlin.time.Duration
 
 class ProfileSpecificStorage {
@@ -325,7 +328,25 @@ class ProfileSpecificStorage {
         var experience: Long? = null
 
         @Expose
-        var cropCounter: MutableMap<CropType, Long> = EnumMap(CropType::class.java)
+        var lastMilestoneFix: SimpleTimeMark = farPast()
+
+        @Expose
+        var lastCollectionFix: MutableMap<CropType, SimpleTimeMark> = EnumMap(CropType::class.java)
+
+        @Expose
+        var cropCollectionCounter: MutableMap<CropType, Long> = EnumMap(CropType::class.java)
+
+        @Expose
+        var lastGainedCrop: CropType? = null
+
+        @Expose
+        var cropMilestoneCounter: MutableMap<CropType, Long> = EnumMap(CropType::class.java)
+
+        @Expose
+        var counterData: MutableMap<String, Long> = HashMap()
+
+        @Expose
+        var blocksBroken: MutableMap<CropType, Long> = EnumMap(CropType::class.java)
 
         @Expose
         var cropUpgrades: MutableMap<CropType, Int> = EnumMap(CropType::class.java)
@@ -481,6 +502,12 @@ class ProfileSpecificStorage {
         @Expose
         var farmingWeight: FarmingWeightConfig = FarmingWeightConfig()
 
+        @Expose
+        var farmingWeightUncountedCrops: Map<CropType, Int> = EnumMap(CropType::class.java)
+
+        @Expose
+        var farmingWeightBonusWeight: Double = 0.0
+
         class FarmingWeightConfig {
             @Expose
             var lastFarmingWeightLeaderboard: Int = -1
@@ -493,10 +520,16 @@ class ProfileSpecificStorage {
         var customGoalMilestone: MutableMap<CropType, Int> = EnumMap(CropType::class.java)
 
         @Expose
-        var pestProfitTracker: PestProfitTracker.Data = PestProfitTracker.Data()
+        var pestProfitTracker: PestProfitTracker.BucketData = PestProfitTracker.BucketData()
 
         @Expose
         var activeVinyl: VinylType? = null
+
+        @Expose
+        var uptimeTracker: GardenUptimeTracker.TimeData = GardenUptimeTracker.TimeData()
+
+        @Expose
+        var cropCollectionTracker: CropCollectionDisplay.TimeData = CropCollectionDisplay.TimeData()
     }
 
     @Expose
@@ -821,7 +854,7 @@ class ProfileSpecificStorage {
                 rabbitTheFishFinds,
                 initialLeaderboardPosition,
                 finalLeaderboardPosition,
-                summarized
+                summarized,
             )
         }
 

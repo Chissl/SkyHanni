@@ -76,7 +76,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
             } else {
                 getNextDisplay()
             }
-            storedTrackers[name] = displayMode
+            storedTrackers[name] = getDisplayMode()
             update()
         }
     )

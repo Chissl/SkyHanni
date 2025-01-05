@@ -4,14 +4,12 @@ import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.data.HypixelData
 import at.hannibal2.skyhanni.data.IslandType
-import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
-import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getTotalCropCollection
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.needCollectionUpdate
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.setCollectionCounter
 import at.hannibal2.skyhanni.data.jsonobjects.other.ElitePlayerWeightJson
 import at.hannibal2.skyhanni.data.jsonobjects.other.EliteWeightsJson
 import at.hannibal2.skyhanni.events.IslandChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
-import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.features.garden.pests.PestType
@@ -102,11 +100,7 @@ object FarmingWeight {
                 if (lastUpdated >= CropCollectionAPI.lastGainedCollectionTime.toMillis() / 1000)
                     for (crop in selectedProfileEntry.crops) {
                         val cropType = CropType.getByName(crop.key)
-                        ChatUtils.debug("Updating from elite: Crop: $cropType Amount: ${crop.value - cropType.getTotalCropCollection()}")
-                        cropType.addCollectionCounter(
-                            CropCollectionType.UNKNOWN,
-                            crop.value - cropType.getTotalCropCollection()
-                        )
+                        cropType.setCollectionCounter(crop.value)
                         needCollectionUpdate = false
                     }
 

@@ -1,4 +1,4 @@
-package at.hannibal2.skyhanni.features.garden.farming
+package at.hannibal2.skyhanni.features.garden.tracker
 
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.features.garden.GardenUptimeConfig.GardenUptimeDisplayText
@@ -35,7 +35,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
-object GardenUptimeDisplay {
+object GardenUptimeTracker {
     private val config get() = GardenAPI.config.gardenUptime
 
     private val tracker = SkyhanniTimedTracker<Data>(

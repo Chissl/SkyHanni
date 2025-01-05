@@ -1,4 +1,4 @@
-package at.hannibal2.skyhanni.features.garden.pests
+package at.hannibal2.skyhanni.features.garden.tracker
 
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
@@ -19,6 +19,9 @@ import at.hannibal2.skyhanni.events.RepositoryReloadEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
+import at.hannibal2.skyhanni.features.garden.pests.PestAPI
+import at.hannibal2.skyhanni.features.garden.pests.PestType
+import at.hannibal2.skyhanni.features.garden.pests.SprayType
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.CollectionUtils.addOrPut
