@@ -7,6 +7,8 @@ import at.hannibal2.skyhanni.data.HypixelData
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.PetAPI
 import at.hannibal2.skyhanni.data.ScoreboardData
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getCollection
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getTierForCropCount
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.isMaxed
@@ -52,6 +54,12 @@ private fun getVisitingName(): String {
 }
 
 var beenAfkFor = SimpleTimeMark.now()
+
+private fun getCropCollection(): String {
+    val crop = CropCollectionAPI.lastGainedCrop ?: return "Not farming!"
+    val collection = crop.getCollection()
+    return "$crop Collection: ${collection.addSeparators()}"
+}
 
 private fun getCropMilestoneDisplay(): String {
     val crop = InventoryUtils.getItemInHand()?.getCropType()
@@ -267,6 +275,8 @@ enum class DiscordStatus(private val displayMessageSupplier: (() -> String?)) {
     CROP_MILESTONES({ getCropMilestoneDisplay() }),
 
     PETS({ getPetDisplay() }),
+
+    CROP_COLLECTION({ getCropCollection() }),
 
     // Dynamic-only
     STACKING(

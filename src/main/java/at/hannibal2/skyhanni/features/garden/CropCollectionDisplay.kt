@@ -188,7 +188,7 @@ object CropCollectionDisplay {
             if (uptime != 0) {
                 val collectionPerHour = total / uptime.seconds.inPartialHours
                 lineMap[CropCollectionDisplayText.SESSION] =
-                    Renderable.string("§7Per hour: ${collectionPerHour.toLong().addSeparators()}").toSearchable()
+                    Renderable.string("§7Per hour: §e${collectionPerHour.toLong().addSeparators()}").toSearchable()
             }
         }
 
