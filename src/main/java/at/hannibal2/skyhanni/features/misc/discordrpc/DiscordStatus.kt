@@ -9,6 +9,7 @@ import at.hannibal2.skyhanni.data.PetAPI
 import at.hannibal2.skyhanni.data.ScoreboardData
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getCollection
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestones
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getTierForCropCount
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.isMaxed
@@ -56,7 +57,7 @@ private fun getVisitingName(): String {
 var beenAfkFor = SimpleTimeMark.now()
 
 private fun getCropCollection(): String {
-    val crop = CropCollectionAPI.lastGainedCrop ?: return "Not farming!"
+    val crop = GardenAPI.storage?.lastGainedCrop ?: return "Not Farming!"
     val collection = crop.getCollection()
     return "$crop Collection: ${collection.addSeparators()}"
 }
