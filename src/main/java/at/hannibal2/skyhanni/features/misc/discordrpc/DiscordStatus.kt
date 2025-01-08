@@ -7,9 +7,7 @@ import at.hannibal2.skyhanni.data.HypixelData
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.PetAPI
 import at.hannibal2.skyhanni.data.ScoreboardData
-import at.hannibal2.skyhanni.data.garden.CropCollectionAPI
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getCollection
-import at.hannibal2.skyhanni.data.garden.GardenCropMilestones
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getTierForCropCount
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.isMaxed
