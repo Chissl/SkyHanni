@@ -2,6 +2,7 @@ package at.hannibal2.skyhanni.data
 
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
+import at.hannibal2.skyhanni.api.hypixelapi.HypixelLocationAPI
 import at.hannibal2.skyhanni.config.ConfigManager.Companion.gson
 import at.hannibal2.skyhanni.data.model.TabWidget
 import at.hannibal2.skyhanni.events.DebugDataCollectEvent
@@ -223,6 +224,7 @@ object HypixelData {
 
         TabWidget.SERVER.matchMatcherFirstLine {
             serverId = group("serverid")
+            HypixelLocationAPI.checkServerId(serverId)
             lastSuccessfulServerIdFetchTime = SimpleTimeMark.now()
             lastSuccessfulServerIdFetchType = "tab list"
             failedServerIdFetchCounter = 0
@@ -232,6 +234,7 @@ object HypixelData {
         serverIdScoreboardPattern.firstMatcher(ScoreboardData.sidebarLinesFormatted) {
             val serverType = if (group("servertype") == "M") "mega" else "mini"
             serverId = "$serverType${group("serverid")}"
+            HypixelLocationAPI.checkServerId(serverId)
             lastSuccessfulServerIdFetchTime = SimpleTimeMark.now()
             lastSuccessfulServerIdFetchType = "scoreboard"
             failedServerIdFetchCounter = 0
@@ -469,6 +472,7 @@ object HypixelData {
 
         if (inSkyBlock == skyBlock) return
         skyBlock = inSkyBlock
+        HypixelLocationAPI.checkSkyblock(skyBlock)
     }
 
     private fun sendLocraw() {
@@ -533,6 +537,7 @@ object HypixelData {
         }
 
         hypixelLive = hypixel && !hypixelAlpha
+        HypixelLocationAPI.checkHypixel(hypixelLive)
     }
 
     private fun checkSidebar() {
@@ -580,6 +585,7 @@ object HypixelData {
             val oldIsland = skyBlockIsland
             skyBlockIsland = newIsland
             IslandChangeEvent(newIsland, oldIsland).post()
+            HypixelLocationAPI.checkIsland(skyBlockIsland)
 
             if (newIsland == IslandType.UNKNOWN) {
                 ChatUtils.debug("Unknown island detected: '$foundIsland'")
