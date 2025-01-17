@@ -28,7 +28,6 @@ import at.hannibal2.skyhanni.utils.tracker.SkyhanniTimedTracker
 import at.hannibal2.skyhanni.utils.tracker.TimedTrackerData
 import at.hannibal2.skyhanni.utils.tracker.TrackerData
 import com.google.gson.annotations.Expose
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import java.util.EnumMap
 import kotlin.time.Duration.Companion.seconds
 
@@ -195,7 +194,7 @@ object CropCollectionDisplay {
         return formatDisplay(lineMap)
     }
 
-    @SubscribeEvent
+    @HandleEvent
     fun onRenderOverlay(event: GuiRenderEvent) {
         if (!isEnabled()) return
         if (GardenAPI.hideExtraGuis()) return

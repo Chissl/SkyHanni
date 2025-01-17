@@ -3,9 +3,9 @@ package at.hannibal2.skyhanni.features.garden.tracker
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.data.ClickType
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
-import at.hannibal2.skyhanni.events.CropClickEvent
 import at.hannibal2.skyhanni.events.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.OwnInventoryItemUpdateEvent
+import at.hannibal2.skyhanni.events.garden.farming.CropClickEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
@@ -31,10 +31,7 @@ object GardenCropBreakTracker {
     fun onToolChange(event: GardenToolChangeEvent) {
         heldItem = event.toolItem
         if (event.toolItem == null || event.toolInHand == null) return
-        val counter = readCounter(event.toolItem)
-
-        itemHasCounter = (counter != -1L)
-        if (!itemHasCounter) return
+        val counter = readCounter(event.toolItem) ?: return
 
         val uuid = event.toolItem.getItemUuid() ?: return
         counterData?.set(uuid, counter)
@@ -68,7 +65,7 @@ object GardenCropBreakTracker {
         if (!GardenAPI.inGarden() || !itemHasCounter || event.itemStack.getItemUuid() != heldItem?.getItemUuid()) return
         val item = event.itemStack
         val uuid = item.getItemUuid() ?: return
-        val counter = readCounter(item)
+        val counter = readCounter(item) ?: return
         val isHoe = GardenAPI.readHoeCounter(item) != null
 
         val crop = if (isHoe || cropBrokenType == null) event.itemStack.getCropType() else cropBrokenType
