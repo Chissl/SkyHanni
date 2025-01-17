@@ -49,7 +49,7 @@ import kotlin.time.Duration.Companion.seconds
 @SkyHanniModule
 object FarmingWeightDisplay {
 
-    @SubscribeEvent
+    @HandleEvent
     fun onRenderOverlay(event: GuiRenderEvent) {
         if (GardenAPI.hideExtraGuis()) return
         val shouldShow = apiError || (config.ignoreLow || weight >= 200)

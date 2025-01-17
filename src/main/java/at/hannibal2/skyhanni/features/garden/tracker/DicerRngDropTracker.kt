@@ -158,7 +158,7 @@ object DicerRngDropTracker {
         }
     }
 
-    @SubscribeEvent
+    @HandleEvent
     fun onRenderOverlay(event: GuiRenderEvent) {
         if (!isEnabled()) return
         if (cropInHand == null) return

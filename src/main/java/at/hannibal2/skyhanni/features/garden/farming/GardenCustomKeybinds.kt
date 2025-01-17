@@ -37,7 +37,13 @@ object GardenCustomKeybinds {
     @JvmStatic
     fun isKeyDown(keyBinding: KeyBinding, cir: CallbackInfoReturnable<Boolean>) {
         if (!isActive()) return
-        val override = map[keyBinding] ?: return
+        val override = map[keyBinding] ?: run {
+            if (map.containsValue(keyBinding.keyCode)) {
+                cir.returnValue = false
+            }
+            return
+        }
+
         cir.returnValue = override.isKeyHeld()
     }
 
@@ -61,7 +67,7 @@ object GardenCustomKeybinds {
         lastWindowOpenTime = SimpleTimeMark.now()
     }
 
-    @SubscribeEvent
+    @HandleEvent
     fun onSecondPassed(event: SecondPassedEvent) {
         if (!isEnabled()) return
         if (!isDuplicate || lastDuplicateKeybindsWarnTime.passedSince() < 30.seconds) return
