@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.defaultCollectionDisplayList;
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropBreakdownText.defaultBreakdownList;
 
 public class CropCollectionsConfig {
     @Expose
@@ -28,12 +27,12 @@ public class CropCollectionsConfig {
 
     @Expose
     @ConfigOption(
-        name = "Reset Session on game start",
-        desc = "Resets session display mode when game starts."
+        name = "Save Session on game start",
+        desc = "Don't reset session display mode when the game starts."
     )
     @ConfigEditorBoolean
     @FeatureToggle
-    public boolean resetSession = false;
+    public boolean saveSession = false;
 
     @Expose
     @ConfigLink(owner = CropCollectionsConfig.class, field = "collectionDisplay")
@@ -49,64 +48,37 @@ public class CropCollectionsConfig {
 
     @Expose
     @ConfigOption(
-        name = "Collection Breakdown List",
+        name = "Crop Collection Display List",
         desc = "Drag text to change what displays in the summary card."
     )
     @ConfigEditorDraggableList
-    public List<CropBreakdownText> collectionBreakdownList = new ArrayList<>(defaultBreakdownList);
+    public List<CropCollectionDisplayText> collectionBreakdownList = new ArrayList<>(defaultCollectionDisplayList);
 
     public enum CropCollectionDisplayText {
-        TITLE("Crop Collection"),
-        ALL_TIME("All time"),
-        TOTAL("Total"),
-        PER_HOUR("Per hour"),
-        BREAKDOWN("Breakdown"),
+        TITLE("Melon Crop Collection"),
+        ALL_TIME("All time: 27,898,115"),
+        SESSION("Today: 18,211,121"),
+        PER_HOUR("Per hour: 5,677,121"),
+        BREAKDOWN("Collection Breakdown:"),
+        FARMING("From Farming: 8,111,881"),
+        BREAKING_CROPS("- Breaking Crops: 4,111,987"),
+        MOOSHROOM_COW("- Mooshroom Cow: 123,812"),
+        DICER("- Dicer Drops: 178,991"),
+        PESTS("From Pests: 3,455,192"),
+        PEST_RNG("- Pest Crop RNG: 211,192"),
+        PEST_BASE("- Pest Base Drops: 129,128"),
         ;
 
         public static final List<CropCollectionDisplayText> defaultCollectionDisplayList = Arrays.asList(
             TITLE,
             ALL_TIME,
-            TOTAL,
-            PER_HOUR,
-            BREAKDOWN
+            SESSION,
+            PER_HOUR
         );
 
         private final String display;
 
         CropCollectionDisplayText(String display) {
-            this.display = display;
-        }
-
-        @Override
-        public String toString() {
-            return display;
-        }
-    }
-
-    public enum CropBreakdownText {
-        BREAKDOWN("Collection Breakdown"),
-        FARMING("Farming"),
-        BREAKING_CROPS("- Breaking Crops"),
-        MOOSHROOM_COW("- Mooshroom Cow"),
-        DICER("- Dicer Drops"),
-        PESTS("Pests"),
-        PEST_RNG("- Pest Rng"),
-        PEST_BASE("- Pest Base Drops"),
-        ;
-
-        public static final List<CropBreakdownText> defaultBreakdownList = Arrays.asList(
-            BREAKDOWN,
-            FARMING,
-            BREAKING_CROPS,
-            MOOSHROOM_COW,
-            DICER,
-            PESTS,
-            PEST_BASE,
-            PEST_RNG
-        );
-        private final String display;
-
-        CropBreakdownText(String display) {
             this.display = display;
         }
 

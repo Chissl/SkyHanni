@@ -1,7 +1,6 @@
 package at.hannibal2.skyhanni.features.garden
 
 import at.hannibal2.skyhanni.api.event.HandleEvent
-import at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropBreakdownText
 import at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI
@@ -22,6 +21,7 @@ import at.hannibal2.skyhanni.utils.CollectionUtils.sumAllValues
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.inPartialHours
 import at.hannibal2.skyhanni.utils.renderables.Renderable
+import at.hannibal2.skyhanni.utils.renderables.RenderableUtils.addButton
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
@@ -43,9 +43,10 @@ object CropCollectionDisplay {
         { drawDisplay(it) }
     )
 
+    //reset session on game start
     class TimeData : TimedTrackerData<Data>({ Data() }) {
         init {
-            if (config.resetSession) {
+            if (!config.saveSession) {
                 getOrPutEntry(SkyHanniTracker.DisplayMode.SESSION).reset()
             }
         }
@@ -115,10 +116,18 @@ object CropCollectionDisplay {
         tracker.changeDate(event.oldDate, event.newDate)
     }
 
+    private var cropDisplayMode: CropType? = null
+
+    private fun selectNextCrop() {
+        cropDisplayMode = if (cropDisplayMode == null) CropType.entries.first()
+        else cropDisplayMode?.let { sb ->
+            CropType.entries.filter { it.ordinal > sb.ordinal }.minByOrNull { it.ordinal }
+        }
+    }
 
     // Todo add bucketed tracker
     private fun drawDisplay(data: Data): List<Searchable> {
-        val crop: CropType = CropCollectionAPI.lastGainedCrop ?: return emptyList()
+        val crop: CropType = cropDisplayMode ?: CropCollectionAPI.lastGainedCrop ?: return emptyList()
         val allTime = crop.getCollection()
         val cropData = data.cropCollection.getOrPut(crop) { CropCollection() }
         val lineMap = mutableMapOf<CropCollectionDisplayText, Searchable>()
@@ -142,8 +151,8 @@ object CropCollectionDisplay {
         lineMap[CropCollectionDisplayText.ALL_TIME] = Renderable.string("§7All-Time: §e${allTime.addSeparators()}").toSearchable()
 
         val total: Long = cropData.getTotal()
-        lineMap[CropCollectionDisplayText.TOTAL] =
-            Renderable.hoverTips("§7${tracker.dateString()}: §e${total.addSeparators()}", drawBreakdown(crop, cropData)).toSearchable()
+        lineMap[CropCollectionDisplayText.SESSION] =
+            Renderable.hoverTips("§7${tracker.dateString()}: §e${total.addSeparators()}", buildCropBreakdown(cropData)).toSearchable()
 
         val uptimeData = storage?.uptimeTracker?.getEntry(displayMode, date)
 
@@ -157,39 +166,57 @@ object CropCollectionDisplay {
             }
         }
 
-        return formatDisplay(lineMap)
-    }
-
-    private fun drawBreakdown(crop: CropType, cropData: CropCollection): List<String> {
-        val lineMap = mutableMapOf<CropBreakdownText, String>()
-
-        lineMap[CropBreakdownText.BREAKDOWN] = "§6§lCollection Breakdown"
+        lineMap[CropCollectionDisplayText.BREAKDOWN] = Renderable.string("§6§lCollection Breakdown").toSearchable()
 
         val farming = cropData.getCollection(CropCollectionType.MOOSHROOM_COW) +
             cropData.getCollection(CropCollectionType.BREAKING_CROPS) +
             cropData.getCollection(CropCollectionType.DICER)
 
-        lineMap[CropBreakdownText.FARMING] = ("§7Farming: §e${farming.addSeparators()}")
+        lineMap[CropCollectionDisplayText.FARMING] = Renderable.string("§7Farming: §e${farming.addSeparators()}").toSearchable()
 
-        lineMap[CropBreakdownText.BREAKING_CROPS] =
-                "§7- Breaking Crops: §e${cropData.getCollection(CropCollectionType.BREAKING_CROPS).addSeparators()}"
+        lineMap[CropCollectionDisplayText.BREAKING_CROPS] =
+            Renderable.string("§7- Breaking Crops: §e${cropData.getCollection(CropCollectionType.BREAKING_CROPS).addSeparators()}").toSearchable()
 
-        if (crop == CropType.MUSHROOM) lineMap[CropBreakdownText.MOOSHROOM_COW] =
-                "§7- Mooshroom Cow: §e${cropData.getCollection(CropCollectionType.MOOSHROOM_COW).addSeparators()}"
+        if (crop == CropType.MUSHROOM) lineMap[CropCollectionDisplayText.MOOSHROOM_COW] =
+            Renderable.string("§7- Mooshroom Cow: §e${cropData.getCollection(CropCollectionType.MOOSHROOM_COW).addSeparators()}").toSearchable()
 
-        lineMap[CropBreakdownText.DICER] =
-                "§7- Dicer Drops: §e${cropData.getCollection(CropCollectionType.DICER).addSeparators()}"
+        lineMap[CropCollectionDisplayText.DICER] =
+                Renderable.string("§7- Dicer Drops: §e${cropData.getCollection(CropCollectionType.DICER).addSeparators()}").toSearchable()
 
         val pests = cropData.getCollection(CropCollectionType.PEST_BASE) + cropData.getCollection(CropCollectionType.PEST_RNG)
-        lineMap[CropBreakdownText.PESTS] = "§2Pests: §e${pests.addSeparators()}"
+        lineMap[CropCollectionDisplayText.PESTS] = Renderable.string("§2Pests: §e${pests.addSeparators()}").toSearchable()
 
-        lineMap[CropBreakdownText.PEST_BASE] =
-                "§7- Pest Base Drops: §e${cropData.getCollection(CropCollectionType.PEST_BASE).addSeparators()}"
+        lineMap[CropCollectionDisplayText.PEST_BASE] =
+                Renderable.string("§7- Pest Base Drops: §e${cropData.getCollection(CropCollectionType.PEST_BASE).addSeparators()}").toSearchable()
 
-        lineMap[CropBreakdownText.PEST_RNG] =
-                "§7- Pest Crop RNG: §e${cropData.getCollection(CropCollectionType.PEST_RNG).addSeparators()}"
+        lineMap[CropCollectionDisplayText.PEST_RNG] =
+                    Renderable.string("§7- Pest Crop RNG: §e${cropData.getCollection(CropCollectionType.PEST_RNG).addSeparators()}").toSearchable()
 
-        return formatBreakdown(lineMap)
+        return formatDisplay(lineMap)
+    }
+
+    private fun buildCropBreakdown(cropData: CropCollection) = buildList {
+
+            add("§6§lCollection Breakdown")
+
+            val farming = cropData.getCollection(CropCollectionType.MOOSHROOM_COW) +
+                cropData.getCollection(CropCollectionType.BREAKING_CROPS) +
+                cropData.getCollection(CropCollectionType.DICER)
+
+            add("§7Farming: §e${farming.addSeparators()}")
+
+            add("§7- Breaking Crops: §e${cropData.getCollection(CropCollectionType.BREAKING_CROPS).addSeparators()}")
+
+            add("§7- Mooshroom Cow: §e${cropData.getCollection(CropCollectionType.MOOSHROOM_COW).addSeparators()}")
+
+            add("§7- Dicer Drops: §e${cropData.getCollection(CropCollectionType.DICER).addSeparators()}")
+
+            val pests = cropData.getCollection(CropCollectionType.PEST_BASE) + cropData.getCollection(CropCollectionType.PEST_RNG)
+            add("§2Pests: §e${pests.addSeparators()}")
+
+            add("§7- Pest Base Drops: §e${cropData.getCollection(CropCollectionType.PEST_BASE).addSeparators()}")
+
+            add("§7- Pest Crop RNG: §e${cropData.getCollection(CropCollectionType.PEST_RNG).addSeparators()}")
     }
 
     @HandleEvent
@@ -202,17 +229,18 @@ object CropCollectionDisplay {
 
     private fun formatDisplay(lineMap: MutableMap<CropCollectionDisplayText, Searchable>): List<Searchable> {
         val newList = mutableListOf<Searchable>()
-
+        if (tracker.isInventoryOpen()) {
+            newList.add(
+                Renderable.clickAndHover("§7[§a${cropDisplayMode ?: "Default"}§7]",
+                    listOf("Click for next crop"),
+                    onClick = { selectNextCrop() }
+                ).toSearchable()
+            )
+        }
         newList.addAll(config.statDisplayList.mapNotNull {lineMap[it]})
         return newList
     }
 
-    private fun formatBreakdown(lineMap: MutableMap<CropBreakdownText, String>): List<String> {
-        val newList = mutableListOf<String>()
-
-        newList.addAll(config.collectionBreakdownList.mapNotNull { lineMap[it] })
-        return newList
-    }
-
     private fun isEnabled() = config.collectionDisplay && GardenAPI.inGarden()
+
 }
