@@ -233,7 +233,10 @@ object CropCollectionDisplay {
             newList.add(
                 Renderable.clickAndHover("§7[§a${cropDisplayMode ?: "Default"}§7]",
                     listOf("Click for next crop"),
-                    onClick = { selectNextCrop() }
+                    onClick = {
+                        selectNextCrop()
+                        tracker.update()
+                    }
                 ).toSearchable()
             )
         }
