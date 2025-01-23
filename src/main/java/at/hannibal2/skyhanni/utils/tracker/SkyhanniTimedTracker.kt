@@ -113,37 +113,29 @@ class SkyhanniTimedTracker<Data : TrackerData>(
     }
 
 
-    fun buildDate() = Renderable.verticalContainer(
-        buildList {
-            val displayText: String = when (displayMode) {
-                DisplayMode.DAY -> {
-                    val dateString = if (date == LocalDate.now()) "Today" else date.toString()
-                    "§7Date: §a$dateString"
-                }
-                DisplayMode.WEEK -> {
-                    val dateString =
-                        if (week.format(weekFormatter) == LocalDate.now().format(weekFormatter))
-                            "This Week" else week.format(weekTextFormatter)
-                    "§7Week: §a$dateString"
-                }
-
-                DisplayMode.MONTH -> {
-                    val dateString = if (month.format(monthFormatter) == LocalDate.now().format(monthFormatter))
-                        "This Month" else month.format(monthFormatter)
-                    "§7Month: §a$dateString"
-                }
-
-                DisplayMode.YEAR -> {
-                    val dateString = if (year.year == LocalDate.now().year)
-                        "This Year" else year.format(yearFormatter)
-                    "§7Year: §a$dateString"
-                }
-
-                else -> {
-                    "§7Mode: §a${displayMode?.displayName ?: "none"}"
-                }
+    fun dateString(): String = (
+        when (displayMode) {
+            DisplayMode.DAY -> {
+                if (date == LocalDate.now()) "Today" else date.toString()
             }
-            addString(displayText)
+            DisplayMode.WEEK -> {
+                if (week.format(weekFormatter) == LocalDate.now().format(weekFormatter))
+                    "This Week" else week.format(weekTextFormatter)
+            }
+
+            DisplayMode.MONTH -> {
+                if (month.format(monthFormatter) == LocalDate.now().format(monthFormatter))
+                    "This Month" else month.format(monthFormatter)
+            }
+
+            DisplayMode.YEAR -> {
+                if (year.year == LocalDate.now().year)
+                    "This Year" else year.format(yearFormatter)
+            }
+
+            else -> {
+                displayMode?.displayName ?: "Session: "
+            }
         }
     )
 

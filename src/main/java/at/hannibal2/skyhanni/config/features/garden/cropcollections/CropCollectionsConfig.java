@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.defaultDisplayList;
+import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.defaultCollectionDisplayList;
+import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropBreakdownText.defaultBreakdownList;
 
 public class CropCollectionsConfig {
     @Expose
@@ -44,30 +45,56 @@ public class CropCollectionsConfig {
         desc = "Drag text to change what displays in the summary card."
     )
     @ConfigEditorDraggableList
-    public List<CropCollectionDisplayText> statDisplayList = new ArrayList<>(defaultDisplayList);
+    public List<CropCollectionDisplayText> statDisplayList = new ArrayList<>(defaultCollectionDisplayList);
+
+    @Expose
+    @ConfigOption(
+        name = "Collection Breakdown List",
+        desc = "Drag text to change what displays in the summary card."
+    )
+    @ConfigEditorDraggableList
+    public List<CropBreakdownText> collectionBreakdownList = new ArrayList<>(defaultBreakdownList);
 
     public enum CropCollectionDisplayText {
         TITLE("Crop Collection"),
         ALL_TIME("All time"),
         TOTAL("Total"),
-        SESSION("Session"),
+        PER_HOUR("Per hour"),
         BREAKDOWN("Breakdown"),
-        FARMING(" Farming"),
-        BREAKING_CROPS("  Breaking Crops"),
-        MOOSHROOM_COW("  Mooshroom Cow"),
-        DICER("  Dicer Drops"),
-        PESTS(" Pests"),
-        PEST_RNG("  Pest Rng"),
-        PEST_BASE("  Pest Base Drops"),
-        UNKNOWN(" Unknown"),
-        COLLECTION_PER_HOUR("Collection per hour")
         ;
 
-        public static final List<CropCollectionDisplayText> defaultDisplayList = Arrays.asList(
+        public static final List<CropCollectionDisplayText> defaultCollectionDisplayList = Arrays.asList(
             TITLE,
-            TOTAL,
             ALL_TIME,
-            SESSION,
+            TOTAL,
+            PER_HOUR,
+            BREAKDOWN
+        );
+
+        private final String display;
+
+        CropCollectionDisplayText(String display) {
+            this.display = display;
+        }
+
+        @Override
+        public String toString() {
+            return display;
+        }
+    }
+
+    public enum CropBreakdownText {
+        BREAKDOWN("Collection Breakdown"),
+        FARMING("Farming"),
+        BREAKING_CROPS("- Breaking Crops"),
+        MOOSHROOM_COW("- Mooshroom Cow"),
+        DICER("- Dicer Drops"),
+        PESTS("Pests"),
+        PEST_RNG("- Pest Rng"),
+        PEST_BASE("- Pest Base Drops"),
+        ;
+
+        public static final List<CropBreakdownText> defaultBreakdownList = Arrays.asList(
             BREAKDOWN,
             FARMING,
             BREAKING_CROPS,
@@ -75,14 +102,11 @@ public class CropCollectionsConfig {
             DICER,
             PESTS,
             PEST_BASE,
-            PEST_RNG,
-            UNKNOWN,
-            COLLECTION_PER_HOUR
+            PEST_RNG
         );
-
         private final String display;
 
-        CropCollectionDisplayText(String display) {
+        CropBreakdownText(String display) {
             this.display = display;
         }
 

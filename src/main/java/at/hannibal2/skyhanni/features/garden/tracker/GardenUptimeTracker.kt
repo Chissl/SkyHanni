@@ -17,20 +17,27 @@ import at.hannibal2.skyhanni.events.garden.visitor.VisitorOpenEvent
 import at.hannibal2.skyhanni.events.garden.visitor.VisitorRefusedEvent
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
+import at.hannibal2.skyhanni.utils.CollectionUtils.addString
 import at.hannibal2.skyhanni.utils.ConditionalUtils.afterChange
 import at.hannibal2.skyhanni.utils.ConditionalUtils.onToggle
 import at.hannibal2.skyhanni.utils.LorenzUtils.isAnyOf
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
+import at.hannibal2.skyhanni.utils.TimeUtils.monthFormatter
+import at.hannibal2.skyhanni.utils.TimeUtils.weekFormatter
+import at.hannibal2.skyhanni.utils.TimeUtils.weekTextFormatter
+import at.hannibal2.skyhanni.utils.TimeUtils.yearFormatter
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
+import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker.DisplayMode
 import at.hannibal2.skyhanni.utils.tracker.SkyhanniTimedTracker
 import at.hannibal2.skyhanni.utils.tracker.TimedTrackerData
 import at.hannibal2.skyhanni.utils.tracker.TrackerData
 import com.google.gson.annotations.Expose
 import net.minecraft.entity.player.EntityPlayer
+import java.time.LocalDate
 import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
@@ -187,7 +194,7 @@ object GardenUptimeTracker {
         val lineMap = mutableMapOf<GardenUptimeDisplayText, Searchable>()
         lineMap[GardenUptimeDisplayText.TITLE] = Renderable.string("§6Garden Uptime").toSearchable()
 
-        lineMap[GardenUptimeDisplayText.DATE] = tracker.buildDate().toSearchable()
+        lineMap[GardenUptimeDisplayText.DATE] = buildDate().toSearchable()
 
         var uptime = data.cropBreakTime
         if (config.includeVisitors.get()) uptime += data.visitorTime
@@ -245,6 +252,32 @@ object GardenUptimeTracker {
         }
         return true
     }
+
+    private fun buildDate() = Renderable.verticalContainer(
+        buildList {
+            val displayText: String = when (tracker.displayMode) {
+                DisplayMode.DAY -> {
+                    "§7Date: §a${tracker.dateString()}"
+                }
+                DisplayMode.WEEK -> {
+                    "§7Week: §a${tracker.dateString()}"
+                }
+
+                DisplayMode.MONTH -> {
+                    "§7Month: §a${tracker.dateString()}"
+                }
+
+                DisplayMode.YEAR -> {
+                    "§7Year: §a${tracker.dateString()}"
+                }
+
+                else -> {
+                    "§7Mode: §a${tracker.displayMode?.displayName ?: "none"}"
+                }
+            }
+            addString(displayText)
+        }
+    )
 
     private fun isEnabled() = GardenAPI.inGarden() && config.showDisplay
 
