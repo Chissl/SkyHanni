@@ -11,8 +11,10 @@ import at.hannibal2.skyhanni.events.DateChangeEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.IslandChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
+import at.hannibal2.skyhanni.events.garden.DisplayCropChange
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionUpdateEvent
+import at.hannibal2.skyhanni.events.utils.TimedTrackerUpdateEvent
 import at.hannibal2.skyhanni.features.garden.GardenAPI.addCropIcon
 import at.hannibal2.skyhanni.features.garden.GardenAPI.storage
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
@@ -115,6 +117,19 @@ object CropCollectionDisplay {
         tracker.changeDate(event.oldDate, event.newDate)
     }
 
+    @HandleEvent
+    fun onLinkedTrackerChange(event: TimedTrackerUpdateEvent) {
+        if (!isEnabled() || event.trackerName != "Garden Uptime Tracker") return
+        tracker.updateTracker(event.displayMode, event.day, event.week, event.month, event.year)
+        tracker.update()
+    }
+
+    @HandleEvent
+    fun onDisplayCropChange(event: DisplayCropChange) {
+        cropDisplayMode = event.crop
+        tracker.update()
+    }
+
     private var cropDisplayMode: CropType? = null
 
     private fun selectNextCrop() {
@@ -141,9 +156,7 @@ object CropCollectionDisplay {
         lineMap[CropCollectionDisplayText.TITLE] = Renderable.horizontalContainer(
             buildList {
                 addCropIcon(crop)
-                addString("§7")
-                addString(crop.cropName)
-                addString(" §6Collection")
+                addString("§6 ${crop.cropName} Collection")
             }
         ).toSearchable()
 
@@ -191,7 +204,7 @@ object CropCollectionDisplay {
             ).toSearchable()
 
         val pests = cropData.getCollection(CropCollectionType.PEST_BASE) + cropData.getCollection(CropCollectionType.PEST_RNG)
-        lineMap[CropCollectionDisplayText.PESTS] = Renderable.string("§2Pests: §e${pests.addSeparators()}").toSearchable()
+        lineMap[CropCollectionDisplayText.PESTS] = Renderable.string("§7Pests: §e${pests.addSeparators()}").toSearchable()
 
         lineMap[CropCollectionDisplayText.PEST_BASE] =
             Renderable.string(
@@ -248,6 +261,7 @@ object CropCollectionDisplay {
                     onClick = {
                         selectNextCrop()
                         tracker.update()
+                        DisplayCropChange(cropDisplayMode).post()
                     }
                 ).toSearchable()
             )

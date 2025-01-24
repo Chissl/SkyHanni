@@ -13,6 +13,7 @@ import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.isMaxed
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
+import at.hannibal2.skyhanni.events.garden.DisplayCropChange
 import at.hannibal2.skyhanni.events.garden.farming.CropMilestoneUpdateEvent
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.FarmingFortuneDisplay
@@ -23,6 +24,7 @@ import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.CollectionUtils.addString
 import at.hannibal2.skyhanni.utils.ConditionalUtils
 import at.hannibal2.skyhanni.utils.ConfigUtils
+import at.hannibal2.skyhanni.utils.InventoryUtils
 import at.hannibal2.skyhanni.utils.LorenzUtils
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
@@ -54,6 +56,8 @@ object GardenCropMilestoneDisplay {
     private var lastMushWarnedLevel = -1
     private var previousMushNext = 0
 
+    private var currentCrop: CropType? = null
+
     @HandleEvent
     fun onConfigLoad(event: ConfigLoadEvent) {
         ConditionalUtils.onToggle(
@@ -66,7 +70,7 @@ object GardenCropMilestoneDisplay {
     }
 
     @HandleEvent
-    fun onRenderOverlay(event: GuiRenderEvent.GuiOverlayRenderEvent) {
+    fun onRenderOverlay(event: GuiRenderEvent) {
         if (!isEnabled()) return
         if (GardenAPI.hideExtraGuis()) return
 
@@ -102,17 +106,24 @@ object GardenCropMilestoneDisplay {
         update()
     }
 
+    @HandleEvent
+    fun onDisplayCropChange(event: DisplayCropChange) {
+        currentCrop = event.crop
+        update()
+    }
+
     fun update() {
         progressDisplay = emptyList()
         mushroomCowPerkDisplay = emptyList()
         GardenBestCropTime.display = null
-        val currentCrop = if (config.showWithoutTool) CropCollectionAPI.lastGainedCrop else GardenAPI.getCurrentlyFarmedCrop()
-        currentCrop?.let {
+        val displayCrop =
+            currentCrop ?: if (config.showWithoutTool) CropCollectionAPI.lastGainedCrop else GardenAPI.getCurrentlyFarmedCrop()
+        displayCrop?.let {
             progressDisplay = drawProgressDisplay(it)
         }
 
-        if (config.next.bestDisplay && config.next.bestAlwaysOn || currentCrop != null) {
-            GardenBestCropTime.display = GardenBestCropTime.drawBestDisplay(currentCrop)
+        if (config.next.bestDisplay && config.next.bestAlwaysOn || displayCrop != null) {
+            GardenBestCropTime.display = GardenBestCropTime.drawBestDisplay(displayCrop)
         }
     }
 
@@ -238,6 +249,20 @@ object GardenCropMilestoneDisplay {
 
     private fun formatDisplay(lineMap: MutableMap<MilestoneTextEntry, Renderable>): List<Renderable> {
         val newList = mutableListOf<Renderable>()
+        if (InventoryUtils.inInventory() || InventoryUtils.inContainer()) {
+            newList.add(
+                Renderable.clickAndHover(
+                    "§7[§a${currentCrop ?: "Default"}§7]",
+                    listOf("Click for next crop"),
+                    onClick = {
+                        selectNextCrop()
+                        update()
+                        DisplayCropChange(currentCrop).post()
+                    }
+                )
+            )
+        }
+
         newList.addAll(config.text.mapNotNull { lineMap[it] })
 
         if (needsInventory) {
@@ -304,6 +329,13 @@ object GardenCropMilestoneDisplay {
 
         previousMushNext = nextTier
         mushroomCowPerkDisplay = config.mushroomPetPerk.text.mapNotNull { lineMap[it] }
+    }
+
+    private fun selectNextCrop() {
+        currentCrop = if (currentCrop == null) CropType.entries.first()
+        else currentCrop?.let { sb ->
+            CropType.entries.filter { it.ordinal > sb.ordinal }.minByOrNull { it.ordinal }
+        }
     }
 
     private fun isEnabled() = GardenAPI.inGarden() && config.progress

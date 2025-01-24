@@ -2,6 +2,7 @@ package at.hannibal2.skyhanni.utils.tracker
 
 import at.hannibal2.skyhanni.config.storage.ProfileSpecificStorage
 import at.hannibal2.skyhanni.data.ProfileStorageData
+import at.hannibal2.skyhanni.events.utils.TimedTrackerUpdateEvent
 import at.hannibal2.skyhanni.utils.KeyboardManager
 import at.hannibal2.skyhanni.utils.RenderUtils
 import at.hannibal2.skyhanni.utils.TimeUtils.monthFormatter
@@ -77,6 +78,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
             }
             storedTrackers[name] = getDisplayMode()
             update()
+            TimedTrackerUpdateEvent(name, getDisplayMode(), date, week, month, year).post()
         }
     )
 
@@ -109,6 +111,14 @@ class SkyhanniTimedTracker<Data : TrackerData>(
             year = newDate.format(yearFormatter).yearToLocalDate()
             update()
         }
+    }
+
+    fun updateTracker(display: DisplayMode, day: LocalDate, week: LocalDate, month: LocalDate, year: LocalDate) {
+        displayMode = display
+        date = day
+        this.week = week
+        this.month = month
+        this.year = year
     }
 
 
@@ -149,7 +159,12 @@ class SkyhanniTimedTracker<Data : TrackerData>(
                     ),
                 )
             }
+        } else {
+            add(
+                Renderable.placeholder(10)
+            )
         }
+
         add(searchBox)
         if (isEmpty()) return@buildList
         if (inventoryOpen) {
@@ -214,6 +229,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
                             DisplayMode.YEAR -> year = it
                             else -> date = it
                         }
+                        TimedTrackerUpdateEvent(name, getDisplayMode(), date, week, month, year).post()
                         update()
                     },
                 )
@@ -228,6 +244,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
                             DisplayMode.YEAR -> year = it
                             else -> date = it
                         }
+                        TimedTrackerUpdateEvent(name, getDisplayMode(), date, week, month, year).post()
                         update()
                     },
                 )
@@ -249,6 +266,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
                             DisplayMode.YEAR -> year = LocalDate.now().format(yearFormatter).yearToLocalDate()
                             else -> date = LocalDate.now()
                         }
+                        TimedTrackerUpdateEvent(name, getDisplayMode(), date, week, month, year).post()
                         update()
                     },
                 )

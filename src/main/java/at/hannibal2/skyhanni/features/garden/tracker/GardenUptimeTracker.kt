@@ -15,6 +15,7 @@ import at.hannibal2.skyhanni.events.garden.pests.PestKillEvent
 import at.hannibal2.skyhanni.events.garden.visitor.VisitorAcceptedEvent
 import at.hannibal2.skyhanni.events.garden.visitor.VisitorOpenEvent
 import at.hannibal2.skyhanni.events.garden.visitor.VisitorRefusedEvent
+import at.hannibal2.skyhanni.events.utils.TimedTrackerUpdateEvent
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.CollectionUtils.addString
@@ -162,6 +163,13 @@ object GardenUptimeTracker {
     @HandleEvent
     fun onDateChange(event: DateChangeEvent) {
         tracker.changeDate(event.oldDate, event.newDate)
+    }
+
+    @HandleEvent
+    fun onLinkedTrackerChange(event: TimedTrackerUpdateEvent) {
+        if (!isEnabled() || event.trackerName != "Crop Collection Tracker") return
+        tracker.updateTracker(event.displayMode, event.day, event.week, event.month, event.year)
+        tracker.update()
     }
 
     @HandleEvent
