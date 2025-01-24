@@ -32,6 +32,7 @@ import at.hannibal2.skyhanni.utils.LorenzUtils.isAnyOf
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
 import at.hannibal2.skyhanni.utils.OSUtils
+import at.hannibal2.skyhanni.utils.RenderDisplayHelper
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.StringUtils
@@ -49,13 +50,24 @@ import kotlin.time.Duration.Companion.seconds
 @SkyHanniModule
 object FarmingWeightDisplay {
 
-    @HandleEvent
-    fun onRenderOverlay(event: GuiRenderEvent) {
-        if (GardenAPI.hideExtraGuis()) return
-        val shouldShow = apiError || (config.ignoreLow || weight >= 200)
-        if (isEnabled() && shouldShow) {
-            config.pos.renderRenderables(display, posLabel = "Farming Weight Display")
-        }
+    init {
+        RenderDisplayHelper(
+            outsideInventory = true,
+            inOwnInventory = true,
+            condition = { shouldShowDisplay() },
+            onRender = {
+                val shouldShow = apiError || (config.ignoreLow || weight >= 200)
+                if (isEnabled() && shouldShow) {
+                    config.pos.renderRenderables(display, posLabel = "Farming Weight Display")
+                }
+            },
+        )
+    }
+
+    private fun shouldShowDisplay(): Boolean {
+        if (GardenAPI.hideExtraGuis()) return false
+
+        return true
     }
 
     @HandleEvent
@@ -64,6 +76,8 @@ object FarmingWeightDisplay {
         // weightPerSecond = -1.0
     }
 
+
+    // This causes a bit of lag, don't run when not necessary
     @HandleEvent
     fun onIslandChange(event: IslandChangeEvent) {
         if (event.newIsland.isAnyOf(IslandType.GARDEN) || config.showOutsideGarden) {

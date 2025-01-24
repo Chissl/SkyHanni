@@ -6,14 +6,14 @@ import at.hannibal2.skyhanni.data.ScoreboardData
 import at.hannibal2.skyhanni.events.DebugDataCollectEvent
 import at.hannibal2.skyhanni.events.InventoryFullyOpenedEvent
 import at.hannibal2.skyhanni.events.ItemInHandChangeEvent
-import at.hannibal2.skyhanni.events.LorenzChatEvent
 import at.hannibal2.skyhanni.events.LorenzTickEvent
-import at.hannibal2.skyhanni.events.LorenzWorldChangeEvent
 import at.hannibal2.skyhanni.events.ScoreboardUpdateEvent
 import at.hannibal2.skyhanni.events.TabListUpdateEvent
+import at.hannibal2.skyhanni.events.chat.SkyHanniChatEvent
 import at.hannibal2.skyhanni.events.garden.pests.PestKillEvent
 import at.hannibal2.skyhanni.events.garden.pests.PestSpawnEvent
 import at.hannibal2.skyhanni.events.garden.pests.PestUpdateEvent
+import at.hannibal2.skyhanni.events.minecraft.WorldChangeEvent
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.features.garden.GardenPlotAPI
 import at.hannibal2.skyhanni.features.garden.GardenPlotAPI.isBarn
@@ -134,18 +134,16 @@ object PestAPI {
     )
 
     /**
-     * REGEX-TEST: §eMouse Trap #1§r
-     * REGEX-TEST: §eMouse Trap #2§r
-     * REGEX-TEST: §eMouse Trap #3§r
-     * REGEX-TEST: §aPest Trap #3§r
+     * REGEX-TEST: §a§lPEST TRAP #3§r
+     * REGEX-TEST: §9§lMOUSE TRAP #2§r
      */
     private val pestTrapPattern by patternGroup.pattern(
         "entity.pesttrap",
-        "(?:§.)+(?:Pest|Mouse) Trap(?: #\\d+)?(?:§.)+"
+        "(?:§.)+§l(?:PEST|MOUSE) TRAP(?: #\\d+)?(?:§.)+",
     )
 
-    var gardenJoinTime = SimpleTimeMark.farPast()
-    var firstScoreboardCheck = false
+    private var gardenJoinTime = SimpleTimeMark.farPast()
+    private var firstScoreboardCheck = false
 
     private fun fixPests(loop: Int = 2) {
         DelayedRun.runDelayed(2.seconds) {
@@ -253,8 +251,8 @@ object PestAPI {
         checkScoreboardLines(event.added)
     }
 
-    @SubscribeEvent
-    fun onChat(event: LorenzChatEvent) {
+    @HandleEvent
+    fun onChat(event: SkyHanniChatEvent) {
         if (!GardenAPI.inGarden()) return
         pestDeathChatPattern.matchMatcher(event.message) {
             val pest = PestType.getByNameOrNull(group("pest")) ?: return
@@ -282,8 +280,8 @@ object PestAPI {
         }
     }
 
-    @SubscribeEvent
-    fun onWorldChange(event: LorenzWorldChangeEvent) {
+    @HandleEvent
+    fun onWorldChange(event: WorldChangeEvent) {
         lastPestKillTime = SimpleTimeMark.farPast()
         lastTimeVacuumHold = SimpleTimeMark.farPast()
         gardenJoinTime = SimpleTimeMark.now()
@@ -319,11 +317,7 @@ object PestAPI {
     }
 
     private fun removeNearestPest() {
-        val plot = getNearestInfestedPlot() ?: run {
-            if (isNearPestTrap()) return
-            else ErrorManager.skyHanniError("Can not remove nearest pest: No infested plots detected.")
-        }
-
+        val plot = getNearestInfestedPlot() ?: return updatePests()
         if (!plot.isPestCountInaccurate) plot.pests--
         scoreboardPests--
         updatePests()

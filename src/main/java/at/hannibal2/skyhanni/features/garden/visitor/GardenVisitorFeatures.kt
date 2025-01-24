@@ -8,11 +8,11 @@ import at.hannibal2.skyhanni.data.SackAPI.getAmountInSacks
 import at.hannibal2.skyhanni.data.SackAPI.getAmountInSacksOrNull
 import at.hannibal2.skyhanni.events.DebugDataCollectEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
-import at.hannibal2.skyhanni.events.LorenzChatEvent
 import at.hannibal2.skyhanni.events.LorenzTickEvent
 import at.hannibal2.skyhanni.events.OwnInventoryItemUpdateEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.events.SackDataUpdateEvent
+import at.hannibal2.skyhanni.events.chat.SkyHanniChatEvent
 import at.hannibal2.skyhanni.events.garden.visitor.VisitorAcceptEvent
 import at.hannibal2.skyhanni.events.garden.visitor.VisitorAcceptedEvent
 import at.hannibal2.skyhanni.events.garden.visitor.VisitorArrivalEvent
@@ -23,8 +23,8 @@ import at.hannibal2.skyhanni.features.garden.CropType.Companion.getByNameOrNull
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.features.garden.farming.GardenCropSpeed.getSpeed
 import at.hannibal2.skyhanni.features.garden.visitor.VisitorAPI.blockReason
-import at.hannibal2.skyhanni.features.inventory.bazaar.BazaarApi
-import at.hannibal2.skyhanni.features.inventory.bazaar.BazaarApi.isBazaarItem
+import at.hannibal2.skyhanni.features.inventory.bazaar.BazaarAPI
+import at.hannibal2.skyhanni.features.inventory.bazaar.BazaarAPI.isBazaarItem
 import at.hannibal2.skyhanni.mixins.hooks.RenderLivingEntityHelper
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
@@ -68,6 +68,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonPrimitive
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiEditSign
+import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityArmorStand
 import net.minecraft.item.ItemStack
@@ -225,7 +226,7 @@ object GardenVisitorFeatures {
                             LorenzUtils.setTextIntoSign("$amount")
                         } else {
                             if (internalName.isBazaarItem()) {
-                                BazaarApi.searchForBazaarItem(name, amount)
+                                BazaarAPI.searchForBazaarItem(name, amount)
                             } else if (internalName.isAuctionHouseItem()) {
                                 HypixelCommands.auctionSearch(name.removeColor())
                             } else {
@@ -382,10 +383,14 @@ object GardenVisitorFeatures {
         val location = event.location
         event.parent.drawString(location.up(2.23), text)
         if (config.rewardWarning.showOverName) {
-            visitor.hasReward()?.let { reward ->
+            val initialOffset = 2.73
+            val heightOffset = 0.25
+            var counter = 0
+            visitor.getRewardWarningAwards().forEach { reward ->
                 val name = reward.displayName
-
-                event.parent.drawString(location.up(2.73), "§c!$name§c!")
+                val offset = initialOffset + (counter * heightOffset)
+                event.parent.drawString(location.up(offset), "§c§l! $name §c§l!")
+                counter++
             }
         }
     }
@@ -435,11 +440,9 @@ object GardenVisitorFeatures {
         if (foundRewards.isNotEmpty()) {
             val wasEmpty = visitor.allRewards.isEmpty()
             visitor.allRewards = foundRewards
-            if (wasEmpty) {
-                visitor.hasReward()?.let { reward ->
-                    if (config.rewardWarning.notifyInChat) {
-                        ChatUtils.chat("Found Visitor Reward ${reward.displayName}§e!")
-                    }
+            if (wasEmpty && config.rewardWarning.notifyInChat) {
+                visitor.getRewardWarningAwards().forEach { reward ->
+                    ChatUtils.chat("Found Visitor Reward ${reward.displayName}§e!")
                 }
             }
         }
@@ -550,8 +553,8 @@ object GardenVisitorFeatures {
         }
     }
 
-    @SubscribeEvent
-    fun onChat(event: LorenzChatEvent) {
+    @HandleEvent
+    fun onChat(event: SkyHanniChatEvent) {
         if (config.hypixelArrivedMessage && visitorArrivePattern.matcher(event.message).matches()) {
             event.blockedReason = "new_visitor_arrived"
         }
@@ -649,7 +652,7 @@ object GardenVisitorFeatures {
 
         if (config.shoppingList.onlyWhenClose && !GardenAPI.onBarnPlot) return
 
-        if (!hideExtraGuis()) {
+        if (!hideExtraGuis() && shouldShowShoppingList()) {
             config.shoppingList.pos.renderStringsAndItems(display, posLabel = "Visitor Shopping List")
         }
     }
@@ -660,9 +663,19 @@ object GardenVisitorFeatures {
     fun onRenderOverlay(event: GuiRenderEvent) {
         if (!config.shoppingList.display) return
 
-        if (showGui()) {
+        if (showGui() && shouldShowShoppingList()) {
             config.shoppingList.pos.renderStringsAndItems(display, posLabel = "Visitor Shopping List")
         }
+    }
+
+    private fun shouldShowShoppingList(): Boolean {
+        if (VisitorAPI.inInventory) return true
+        if (BazaarAPI.inBazaarInventory) return true
+        val currentScreen = Minecraft.getMinecraft().currentScreen ?: return true
+        val isInOwnInventory = currentScreen is GuiInventory
+        if (isInOwnInventory) return true
+
+        return false
     }
 
     private fun showGui(): Boolean {

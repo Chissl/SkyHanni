@@ -12,7 +12,7 @@ import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.InventoryCloseEvent
 import at.hannibal2.skyhanni.events.InventoryFullyOpenedEvent
 import at.hannibal2.skyhanni.events.SecondPassedEvent
-import at.hannibal2.skyhanni.features.inventory.bazaar.BazaarApi
+import at.hannibal2.skyhanni.features.inventory.bazaar.BazaarAPI
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.CollectionUtils.addAsSingletonList
@@ -101,9 +101,8 @@ object CityProjectFeatures {
         inInventory = false
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnSkyblock = true)
     fun onInventoryFullyOpened(event: InventoryFullyOpenedEvent) {
-        if (!LorenzUtils.inSkyBlock) return
 
         inInventory = false
         if (!inCityProject(event)) return
@@ -173,7 +172,7 @@ object CityProjectFeatures {
                         if (Minecraft.getMinecraft().currentScreen is GuiEditSign) {
                             LorenzUtils.setTextIntoSign("$amount")
                         } else {
-                            BazaarApi.searchForBazaarItem(name, amount)
+                            BazaarAPI.searchForBazaarItem(name, amount)
                         }
                     },
                 ) { inInventory && !NEUItems.neuHasFocus() },
@@ -208,18 +207,16 @@ object CityProjectFeatures {
         }
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnSkyblock = true)
     fun onBackgroundDraw(event: GuiRenderEvent.ChestGuiOverlayRenderEvent) {
-        if (!LorenzUtils.inSkyBlock) return
         if (!config.showMaterials) return
         if (!inInventory) return
 
         config.pos.renderStringsAndItems(display, posLabel = "City Project Materials")
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnSkyblock = true)
     fun onBackgroundDrawn(event: GuiContainerEvent.BackgroundDrawnEvent) {
-        if (!LorenzUtils.inSkyBlock) return
         if (!config.showReady) return
         if (!inInventory) return
 

@@ -6,10 +6,10 @@ import at.hannibal2.skyhanni.data.ClickType
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.events.ItemClickEvent
 import at.hannibal2.skyhanni.events.LorenzTickEvent
-import at.hannibal2.skyhanni.events.LorenzWorldChangeEvent
 import at.hannibal2.skyhanni.events.ReceiveParticleEvent
 import at.hannibal2.skyhanni.events.garden.pests.PestUpdateEvent
 import at.hannibal2.skyhanni.events.minecraft.RenderWorldEvent
+import at.hannibal2.skyhanni.events.minecraft.WorldChangeEvent
 import at.hannibal2.skyhanni.events.minecraft.packet.PacketReceivedEvent
 import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
@@ -24,7 +24,6 @@ import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import net.minecraft.client.Minecraft
 import net.minecraft.network.play.server.S0EPacketSpawnObject
 import net.minecraft.util.EnumParticleTypes
-import net.minecraftforge.fml.common.eventhandler.EventPriority
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import java.awt.Color
 import kotlin.math.absoluteValue
@@ -59,8 +58,8 @@ object PestParticleWaypoint {
         }
     }
 
-    @SubscribeEvent
-    fun onWorldChange(event: LorenzWorldChangeEvent) {
+    @HandleEvent
+    fun onWorldChange(event: WorldChangeEvent) {
         reset()
     }
 
@@ -76,7 +75,7 @@ object PestParticleWaypoint {
         isPointingToPest = false
     }
 
-    @SubscribeEvent(priority = EventPriority.LOW, receiveCanceled = true)
+    @HandleEvent(priority = HandleEvent.LOW, receiveCancelled = true, onlyOnIsland = IslandType.GARDEN)
     fun onReceiveParticle(event: ReceiveParticleEvent) {
         if (!isEnabled()) return
         if (event.type != EnumParticleTypes.REDSTONE || event.speed != 1f) return
@@ -128,7 +127,7 @@ object PestParticleWaypoint {
         if (event.packet.type == fireworkId) event.cancel()
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onRenderWorld(event: RenderWorldEvent) {
         if (!isEnabled()) return
         if (locations.isEmpty()) return
@@ -169,7 +168,7 @@ object PestParticleWaypoint {
         reset()
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onPestUpdate(event: PestUpdateEvent) {
         if (PestAPI.scoreboardPests == 0) reset()
     }
