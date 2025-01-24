@@ -60,7 +60,6 @@ import com.google.gson.annotations.Expose
 import net.minecraft.item.ItemStack
 import java.time.LocalDate
 import java.util.EnumMap
-import java.util.Objects
 import kotlin.time.Duration
 
 class ProfileSpecificStorage {

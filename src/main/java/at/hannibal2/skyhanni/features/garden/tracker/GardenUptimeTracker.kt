@@ -23,10 +23,6 @@ import at.hannibal2.skyhanni.utils.ConditionalUtils.onToggle
 import at.hannibal2.skyhanni.utils.LorenzUtils.isAnyOf
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
-import at.hannibal2.skyhanni.utils.TimeUtils.monthFormatter
-import at.hannibal2.skyhanni.utils.TimeUtils.weekFormatter
-import at.hannibal2.skyhanni.utils.TimeUtils.weekTextFormatter
-import at.hannibal2.skyhanni.utils.TimeUtils.yearFormatter
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
@@ -37,7 +33,6 @@ import at.hannibal2.skyhanni.utils.tracker.TimedTrackerData
 import at.hannibal2.skyhanni.utils.tracker.TrackerData
 import com.google.gson.annotations.Expose
 import net.minecraft.entity.player.EntityPlayer
-import java.time.LocalDate
 import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule

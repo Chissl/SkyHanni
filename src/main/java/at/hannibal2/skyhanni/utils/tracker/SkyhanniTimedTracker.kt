@@ -2,7 +2,6 @@ package at.hannibal2.skyhanni.utils.tracker
 
 import at.hannibal2.skyhanni.config.storage.ProfileSpecificStorage
 import at.hannibal2.skyhanni.data.ProfileStorageData
-import at.hannibal2.skyhanni.utils.CollectionUtils.addString
 import at.hannibal2.skyhanni.utils.KeyboardManager
 import at.hannibal2.skyhanni.utils.RenderUtils
 import at.hannibal2.skyhanni.utils.TimeUtils.monthFormatter
@@ -137,7 +136,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
                 displayMode?.displayName ?: "Session: "
             }
         }
-    )
+        )
 
     override fun buildFinalDisplay(searchBox: Renderable) = buildList {
         if (inventoryOpen) {

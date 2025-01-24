@@ -8,9 +8,9 @@ import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.data.jsonobjects.repo.GardenJson
 import at.hannibal2.skyhanni.data.model.TabWidget
 import at.hannibal2.skyhanni.events.InventoryFullyOpenedEvent
-import at.hannibal2.skyhanni.events.LorenzChatEvent
 import at.hannibal2.skyhanni.events.RepositoryReloadEvent
 import at.hannibal2.skyhanni.events.WidgetUpdateEvent
+import at.hannibal2.skyhanni.events.chat.SkyHanniChatEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropMilestoneUpdateEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
@@ -31,7 +31,6 @@ import at.hannibal2.skyhanni.utils.SoundUtils
 import at.hannibal2.skyhanni.utils.SoundUtils.playSound
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 @SkyHanniModule
 object GardenCropMilestones {
@@ -66,9 +65,8 @@ object GardenCropMilestones {
     )
 
 
-    // TODO find actual regex string
     /**
-     * REGEX-TEST:   §r§b§lGARDEN MILESTONE §3Melon §8.*➜§346
+     * REGEX-TEST:   §r§b§lGARDEN MILESTONE §3Melon §845➜§346
      */
     private val levelUpPattern by patternGroup.pattern(
         "levelup",
@@ -104,8 +102,8 @@ object GardenCropMilestones {
         GardenCropMilestonesCommunityFix.openInventory(event.inventoryItems)
     }
 
-    @SubscribeEvent
-    fun onChat(event: LorenzChatEvent) {
+    @HandleEvent
+    fun onChat(event: SkyHanniChatEvent) {
         if (!GardenAPI.inGarden()) return
         levelUpPattern.matchMatcher(event.message) {
             val cropName = group("crop")
