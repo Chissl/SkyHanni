@@ -9,7 +9,7 @@ import at.hannibal2.skyhanni.utils.CollectionUtils.sortedDesc
 import at.hannibal2.skyhanni.utils.ItemUtils.itemName
 import at.hannibal2.skyhanni.utils.KeyboardManager
 import at.hannibal2.skyhanni.utils.LorenzUtils
-import at.hannibal2.skyhanni.utils.NEUInternalName
+import at.hannibal2.skyhanni.utils.NeuInternalName
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.shortFormat
 import at.hannibal2.skyhanni.utils.StringUtils.removeColor
@@ -29,7 +29,7 @@ class SkyHanniBucketedItemTracker<E : Enum<E>, BucketedData : BucketedItemTracke
 ) : SkyHanniTracker<BucketedData>(name, createNewSession, getStorage, *extraStorage, drawDisplay = drawDisplay) {
 
     companion object {
-        val SKYBLOCK_COIN = NEUInternalName.SKYBLOCK_COIN
+        val SKYBLOCK_COIN = NeuInternalName.SKYBLOCK_COIN
     }
 
     fun addCoins(bucket: E, coins: Int) {
@@ -44,26 +44,31 @@ class SkyHanniBucketedItemTracker<E : Enum<E>, BucketedData : BucketedItemTracke
         return selectedBucket
     }
 
-    fun addItem(event: ItemAddEvent) {
-        getSelectedBucket()?.let { bucket ->
-            modify {
-                it.addItem(bucket, event.internalName, event.amount)
-            }
-            if (event.source == ItemAddManager.Source.COMMAND) {
-                TrackerManager.commandEditTrackerSuccess = true
-                ChatUtils.chat(
-                    "Added ${event.internalName.itemName} §e${event.amount}§7x to ($bucket§7)"
-                )
-            }
-        } ?: run {
+    fun ItemAddEvent.addItemFromEvent() {
+        var bucket: E? = null
+        modify { data ->
+            bucket = data.selectedBucket
+        }
+        val selectedBucket: E = bucket ?: run {
             ChatUtils.userError(
-                "No bucket selected for §b$name§c.\nSelect one in the §b$name §cGUI, then try again."
+                "No bucket selected for §b$name§c.\nSelect one in the §b$name §cGUI, then try again.",
             )
-            event.cancel()
+            cancel()
+            return
+        }
+
+        modify {
+            it.addItem(selectedBucket, internalName, amount)
+        }
+        if (source == ItemAddManager.Source.COMMAND) {
+            TrackerManager.commandEditTrackerSuccess = true
+            ChatUtils.chat(
+                "Added ${internalName.itemName} §e$amount§7x to ($selectedBucket§7)",
+            )
         }
     }
 
-    fun addItem(bucket: E, internalName: NEUInternalName, amount: Int) {
+    fun addItem(bucket: E, internalName: NeuInternalName, amount: Int) {
         modify {
             it.addItem(bucket, internalName, amount)
         }
@@ -100,12 +105,12 @@ class SkyHanniBucketedItemTracker<E : Enum<E>, BucketedData : BucketedItemTracke
 
     fun drawItems(
         data: BucketedData,
-        filter: (NEUInternalName) -> Boolean,
+        filter: (NeuInternalName) -> Boolean,
         lists: MutableList<Searchable>,
     ): Double {
         var profit = 0.0
         val dataItems = data.getSelectedBucketItems()
-        val items = mutableMapOf<NEUInternalName, Long>()
+        val items = mutableMapOf<NeuInternalName, Long>()
         for ((internalName, itemProfit) in dataItems) {
             if (!filter(internalName)) continue
 
@@ -166,7 +171,7 @@ class SkyHanniBucketedItemTracker<E : Enum<E>, BucketedData : BucketedItemTracke
                         ChatUtils.chat(
                             "Removed $cleanName §efrom $name" +
                                 if (data.selectedBucket != null) " (${data.selectedBucket})"
-                                else ""
+                                else "",
                         )
                     } else {
                         modify {
@@ -193,7 +198,7 @@ class SkyHanniBucketedItemTracker<E : Enum<E>, BucketedData : BucketedItemTracke
         item: ItemTrackerData.TrackedItem,
         hidden: Boolean,
         newDrop: Boolean,
-        internalName: NEUInternalName,
+        internalName: NeuInternalName,
     ) = buildList {
         if (internalName == SKYBLOCK_COIN) {
             addAll(data.getCoinDescription(data.selectedBucket, item))

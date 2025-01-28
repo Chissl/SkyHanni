@@ -4,6 +4,8 @@ import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
+import at.hannibal2.skyhanni.config.commands.CommandCategory
+import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
 import at.hannibal2.skyhanni.config.features.garden.pests.PestProfitTrackerConfig
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.ItemAddManager
@@ -22,6 +24,7 @@ import at.hannibal2.skyhanni.features.garden.GardenAPI
 import at.hannibal2.skyhanni.features.garden.pests.PestApi
 import at.hannibal2.skyhanni.features.garden.pests.PestType
 import at.hannibal2.skyhanni.features.garden.pests.SprayType
+import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.CollectionUtils.addOrPut
@@ -29,8 +32,8 @@ import at.hannibal2.skyhanni.utils.CollectionUtils.addSearchString
 import at.hannibal2.skyhanni.utils.ItemPriceUtils.getPriceOrNull
 import at.hannibal2.skyhanni.utils.ItemUtils.itemNameWithoutColor
 import at.hannibal2.skyhanni.utils.LorenzUtils
-import at.hannibal2.skyhanni.utils.NEUInternalName
-import at.hannibal2.skyhanni.utils.NEUInternalName.Companion.toInternalName
+import at.hannibal2.skyhanni.utils.NeuInternalName
+import at.hannibal2.skyhanni.utils.NeuInternalName.Companion.toInternalName
 import at.hannibal2.skyhanni.utils.NEUItems
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.shortFormat
@@ -91,7 +94,7 @@ object PestProfitTracker {
         { it.garden.pestProfitTracker },
         { drawDisplay(it) },
     )
-    private var adjustmentMap: Map<PestType, Map<NEUInternalName, Int>> = mapOf()
+    private var adjustmentMap: Map<PestType, Map<NeuInternalName, Int>> = mapOf()
 
     class BucketData : BucketedItemTrackerData<PestType>() {
         override fun resetItems() {
@@ -140,7 +143,7 @@ object PestProfitTracker {
     @HandleEvent
     fun onItemAdd(event: ItemAddEvent) {
         if (!isEnabled() || event.source != ItemAddManager.Source.COMMAND) return
-        tracker.addItem(event)
+        with(tracker) { event.addItemFromEvent() }
     }
 
     @HandleEvent
@@ -157,7 +160,7 @@ object PestProfitTracker {
                 "pest_name" to group("pest"),
                 "full_message" to message,
             )
-            val internalName = NEUInternalName.fromItemNameOrNull(group("item")) ?: return
+            val internalName = NeuInternalName.fromItemNameOrNull(group("item")) ?: return
             val amount = group("amount").toInt().fixAmount(internalName, pest)
 
             val primitiveStack = NEUItems.getPrimitiveMultiplier(internalName)
@@ -175,7 +178,7 @@ object PestProfitTracker {
         }
         pestRareDropPattern.matchMatcher(message) {
             val itemGroup = group("item")
-            val internalName = NEUInternalName.fromItemNameOrNull(itemGroup) ?: return
+            val internalName = NeuInternalName.fromItemNameOrNull(itemGroup) ?: return
             val pest = PestType.getByInternalNameItemOrNull(internalName) ?: return@matchMatcher
             val amount = 1.fixAmount(internalName, pest).also {
                 if (it == 1) return@also
@@ -205,7 +208,7 @@ object PestProfitTracker {
         adjustmentMap = event.getConstant<GardenJson>("Garden").pestRareDrops
     }
 
-    private fun Int.fixAmount(internalName: NEUInternalName, pestType: PestType) =
+    private fun Int.fixAmount(internalName: NeuInternalName, pestType: PestType) =
         adjustmentMap.takeIf { it.isNotEmpty() }?.get(pestType)?.get(internalName) ?: this
 
     private fun addKill(type: PestType) {
@@ -279,7 +282,7 @@ object PestProfitTracker {
     @HandleEvent
     fun onRenderOverlay(event: GuiRenderEvent) {
         if (!isEnabled()) return
-        if (GardenAPI.isCurrentlyFarming()) return
+        if (GardenApi.isCurrentlyFarming()) return
         val allInactive = lastPestKillTimes.all {
             it.value.passedSince() > config.timeDisplayed.seconds
         }
@@ -307,8 +310,13 @@ object PestProfitTracker {
         }
     }
 
-    fun resetCommand() {
-        tracker.resetCommand()
+    @HandleEvent
+    fun onCommandRegistration(event: CommandRegistrationEvent) {
+        event.register("shresetpestprofittracker") {
+            description = "Resets the Pest Profit Tracker"
+            category = CommandCategory.USERS_RESET
+            callback { tracker.resetCommand() }
+        }
     }
 
     fun isEnabled() = GardenAPI.inGarden() && config.enabled
@@ -318,7 +326,7 @@ object PestProfitTracker {
         // Move any items that are in pestProfitTracker.items as the object as a map themselves,
         // migrate them to the new format of PestType -> Drop Count. All entries will be mapped to
         // respective PestType when possible, and the rest will be moved to UNKNOWN.
-        val pestTypeMap: MutableMap<NEUInternalName, PestType> = mutableMapOf()
+        val pestTypeMap: MutableMap<NeuInternalName, PestType> = mutableMapOf()
         val pestKillCountMap: MutableMap<PestType, Long> = mutableMapOf()
         event.move(
             69,
@@ -363,4 +371,6 @@ object PestProfitTracker {
             )
         }
     }
+
+    fun isEnabled() = GardenApi.inGarden() && config.enabled
 }

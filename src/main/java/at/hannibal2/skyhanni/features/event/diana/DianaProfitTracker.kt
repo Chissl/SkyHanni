@@ -3,19 +3,21 @@ package at.hannibal2.skyhanni.features.event.diana
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
-import at.hannibal2.skyhanni.data.ElectionAPI.getElectionYear
+import at.hannibal2.skyhanni.config.commands.CommandCategory
+import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
+import at.hannibal2.skyhanni.data.ElectionApi.getElectionYear
 import at.hannibal2.skyhanni.data.ItemAddManager
 import at.hannibal2.skyhanni.data.jsonobjects.repo.DianaDropsJson
 import at.hannibal2.skyhanni.events.ItemAddEvent
 import at.hannibal2.skyhanni.events.RepositoryReloadEvent
 import at.hannibal2.skyhanni.events.chat.SkyHanniChatEvent
-import at.hannibal2.skyhanni.features.event.diana.DianaAPI.isDianaSpade
+import at.hannibal2.skyhanni.features.event.diana.DianaApi.isDianaSpade
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.CollectionUtils.addSearchString
 import at.hannibal2.skyhanni.utils.InventoryUtils
 import at.hannibal2.skyhanni.utils.LorenzUtils
-import at.hannibal2.skyhanni.utils.NEUInternalName
+import at.hannibal2.skyhanni.utils.NeuInternalName
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.formatInt
 import at.hannibal2.skyhanni.utils.NumberUtil.shortFormat
@@ -37,7 +39,7 @@ import com.google.gson.annotations.Expose
 object DianaProfitTracker {
 
     private val config get() = SkyHanniMod.feature.event.diana.dianaProfitTracker
-    private var allowedDrops = listOf<NEUInternalName>()
+    private var allowedDrops = listOf<NeuInternalName>()
 
     private val patternGroup = RepoPattern.group("diana.chat")
     private val chatDugOutPattern by patternGroup.pattern(
@@ -110,13 +112,13 @@ object DianaProfitTracker {
 
     @HandleEvent
     fun onItemAdd(event: ItemAddEvent) {
-        if (!(DianaAPI.isDoingDiana() && config.enabled)) return
+        if (!(DianaApi.isDoingDiana() && config.enabled)) return
 
         tryAddItem(event.internalName, event.amount, event.source == ItemAddManager.Source.COMMAND)
     }
 
-    private fun tryAddItem(internalName: NEUInternalName, amount: Int, command: Boolean) {
-        if (!isAllowedItem(internalName) && internalName != NEUInternalName.SKYBLOCK_COIN) {
+    private fun tryAddItem(internalName: NeuInternalName, amount: Int, command: Boolean) {
+        if (!isAllowedItem(internalName) && internalName != NeuInternalName.SKYBLOCK_COIN) {
             ChatUtils.debug("Ignored non-diana item pickup: '$internalName'")
             return
         }
@@ -128,22 +130,22 @@ object DianaProfitTracker {
     fun onChat(event: SkyHanniChatEvent) {
         val message = event.message
         if (chatDugOutPattern.matches(message)) {
-            BurrowAPI.lastBurrowRelatedChatMessage = SimpleTimeMark.now()
+            BurrowApi.lastBurrowRelatedChatMessage = SimpleTimeMark.now()
             tracker.modify {
                 it.burrowsDug++
             }
             tryHide(event)
         }
         chatDugOutCoinsPattern.matchMatcher(message) {
-            BurrowAPI.lastBurrowRelatedChatMessage = SimpleTimeMark.now()
-            tryAddItem(NEUInternalName.SKYBLOCK_COIN, group("coins").formatInt(), command = false)
+            BurrowApi.lastBurrowRelatedChatMessage = SimpleTimeMark.now()
+            tryAddItem(NeuInternalName.SKYBLOCK_COIN, group("coins").formatInt(), command = false)
             tryHide(event)
         }
 
         if (message == "§6§lRARE DROP! §r§eYou dug out a §r§9Griffin Feather§r§e!" ||
             message == "§eFollow the arrows to find the §r§6treasure§r§e!"
         ) {
-            BurrowAPI.lastBurrowRelatedChatMessage = SimpleTimeMark.now()
+            BurrowApi.lastBurrowRelatedChatMessage = SimpleTimeMark.now()
             tryHide(event)
         }
     }
@@ -161,7 +163,7 @@ object DianaProfitTracker {
             condition = { config.enabled },
             onRender = {
                 val spadeInHand = InventoryUtils.getItemInHand()?.isDianaSpade ?: false
-                if (!DianaAPI.isDoingDiana() && !spadeInHand) return@RenderDisplayHelper
+                if (!DianaApi.isDoingDiana() && !spadeInHand) return@RenderDisplayHelper
                 if (spadeInHand) {
                     tracker.firstUpdate()
                 }
@@ -171,15 +173,20 @@ object DianaProfitTracker {
         )
     }
 
-    private fun isAllowedItem(internalName: NEUInternalName): Boolean = internalName in allowedDrops
+    private fun isAllowedItem(internalName: NeuInternalName): Boolean = internalName in allowedDrops
 
     @HandleEvent
     fun onRepoReload(event: RepositoryReloadEvent) {
         allowedDrops = event.getConstant<DianaDropsJson>("DianaDrops").dianaDrops
     }
 
-    fun resetCommand() {
-        tracker.resetCommand()
+    @HandleEvent
+    fun onCommandRegistration(event: CommandRegistrationEvent) {
+        event.register("shresetdianaprofittracker") {
+            description = "Resets the Diana Profit Tracker"
+            category = CommandCategory.USERS_RESET
+            callback { tracker.resetCommand() }
+        }
     }
 
     private val migrationMapping by lazy {

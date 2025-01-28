@@ -70,17 +70,17 @@ public class CropMilestonesConfig {
         SECOND("Second", 4),
         ;
 
-        private final String str;
+        private final String displayName;
         private final int legacyId;
 
-        TimeFormatEntry(String str, int legacyId) {
-            this.str = str;
+        TimeFormatEntry(String displayName, int legacyId) {
+            this.displayName = displayName;
             this.legacyId = legacyId;
         }
 
         // Constructor if new enum elements are added post-migration
-        TimeFormatEntry(String str) {
-            this(str, -1);
+        TimeFormatEntry(String displayName) {
+            this(displayName, -1);
         }
 
         @Override
@@ -90,7 +90,7 @@ public class CropMilestonesConfig {
 
         @Override
         public String toString() {
-            return str;
+            return displayName;
         }
     }
 
@@ -129,17 +129,17 @@ public class CropMilestonesConfig {
         PERCENTAGE("§7Percentage: §e12.34%", 6),
         ;
 
-        private final String str;
+        private final String displayName;
         private final int legacyId;
 
-        MilestoneTextEntry(String str, int legacyId) {
-            this.str = str;
+        MilestoneTextEntry(String displayName, int legacyId) {
+            this.displayName = displayName;
             this.legacyId = legacyId;
         }
 
         // Constructor if new enum elements are added post-migration
-        MilestoneTextEntry(String str) {
-            this(str, -1);
+        MilestoneTextEntry(String displayName) {
+            this(displayName, -1);
         }
 
         @Override
@@ -149,7 +149,7 @@ public class CropMilestonesConfig {
 
         @Override
         public String toString() {
-            return str;
+            return displayName;
         }
     }
 

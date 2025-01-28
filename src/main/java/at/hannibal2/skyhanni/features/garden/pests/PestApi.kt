@@ -6,22 +6,22 @@ import at.hannibal2.skyhanni.data.ScoreboardData
 import at.hannibal2.skyhanni.events.DebugDataCollectEvent
 import at.hannibal2.skyhanni.events.InventoryFullyOpenedEvent
 import at.hannibal2.skyhanni.events.ItemInHandChangeEvent
-import at.hannibal2.skyhanni.events.LorenzTickEvent
 import at.hannibal2.skyhanni.events.ScoreboardUpdateEvent
 import at.hannibal2.skyhanni.events.TabListUpdateEvent
 import at.hannibal2.skyhanni.events.chat.SkyHanniChatEvent
 import at.hannibal2.skyhanni.events.garden.pests.PestKillEvent
 import at.hannibal2.skyhanni.events.garden.pests.PestSpawnEvent
 import at.hannibal2.skyhanni.events.garden.pests.PestUpdateEvent
+import at.hannibal2.skyhanni.events.minecraft.SkyHanniTickEvent
 import at.hannibal2.skyhanni.events.minecraft.WorldChangeEvent
-import at.hannibal2.skyhanni.features.garden.GardenAPI
-import at.hannibal2.skyhanni.features.garden.GardenPlotAPI
-import at.hannibal2.skyhanni.features.garden.GardenPlotAPI.isBarn
-import at.hannibal2.skyhanni.features.garden.GardenPlotAPI.isPestCountInaccurate
-import at.hannibal2.skyhanni.features.garden.GardenPlotAPI.locked
-import at.hannibal2.skyhanni.features.garden.GardenPlotAPI.name
-import at.hannibal2.skyhanni.features.garden.GardenPlotAPI.pests
-import at.hannibal2.skyhanni.features.garden.GardenPlotAPI.uncleared
+import at.hannibal2.skyhanni.features.garden.GardenApi
+import at.hannibal2.skyhanni.features.garden.GardenPlotApi
+import at.hannibal2.skyhanni.features.garden.GardenPlotApi.isBarn
+import at.hannibal2.skyhanni.features.garden.GardenPlotApi.isPestCountInaccurate
+import at.hannibal2.skyhanni.features.garden.GardenPlotApi.locked
+import at.hannibal2.skyhanni.features.garden.GardenPlotApi.name
+import at.hannibal2.skyhanni.features.garden.GardenPlotApi.pests
+import at.hannibal2.skyhanni.features.garden.GardenPlotApi.uncleared
 import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker.DUNG_ITEM
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
@@ -32,8 +32,8 @@ import at.hannibal2.skyhanni.utils.InventoryUtils
 import at.hannibal2.skyhanni.utils.ItemUtils.getLore
 import at.hannibal2.skyhanni.utils.LocationUtils.distanceSqToPlayer
 import at.hannibal2.skyhanni.utils.LocationUtils.distanceToPlayer
-import at.hannibal2.skyhanni.utils.NEUInternalName
-import at.hannibal2.skyhanni.utils.NEUInternalName.Companion.toInternalName
+import at.hannibal2.skyhanni.utils.NeuInternalName
+import at.hannibal2.skyhanni.utils.NeuInternalName.Companion.toInternalName
 import at.hannibal2.skyhanni.utils.NumberUtil.formatInt
 import at.hannibal2.skyhanni.utils.RegexUtils.firstMatcher
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
@@ -42,15 +42,14 @@ import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.StringUtils.removeColor
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import net.minecraft.entity.item.EntityArmorStand
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import org.lwjgl.input.Keyboard
 import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object PestApi {
 
-    val config get() = GardenAPI.config.pests
-    val storage get() = GardenAPI.storage
+    val config get() = GardenApi.config.pests
+    val storage get() = GardenApi.storage
     private val SPRAYONATOR_ITEM = "SPRAYONATOR".toInternalName()
 
     var scoreboardPests: Int
@@ -188,7 +187,7 @@ object PestApi {
         PestSpawnTimer.lastSpawnTime = SimpleTimeMark.now()
         val plotNames = event.plotNames
         for (plotName in plotNames) {
-            val plot = GardenPlotAPI.getPlotByName(plotName)
+            val plot = GardenPlotApi.getPlotByName(plotName)
             if (plot == null) {
                 ChatUtils.userError("Open Plot Management Menu to load plot names and pest locations!")
                 return
@@ -206,10 +205,10 @@ object PestApi {
 
     @HandleEvent
     fun onInventoryFullyOpened(event: InventoryFullyOpenedEvent) {
-        if (!GardenAPI.inGarden()) return
+        if (!GardenApi.inGarden()) return
         if (event.inventoryName != "Configure Plots") return
 
-        for (plot in GardenPlotAPI.plots) {
+        for (plot in GardenPlotApi.plots) {
             if (plot.isBarn() || plot.locked || plot.uncleared) continue
             plot.pests = 0
             plot.isPestCountInaccurate = false
@@ -223,13 +222,13 @@ object PestApi {
 
     @HandleEvent
     fun onTabListUpdate(event: TabListUpdateEvent) {
-        if (!GardenAPI.inGarden()) return
+        if (!GardenApi.inGarden()) return
         for (line in event.tabList) {
             infectedPlotsTablistPattern.matchMatcher(line) {
                 val plotList = group("plots").removeColor().split(", ").map { it.toInt() }
                 if (plotList.sorted() == getInfestedPlots().map { it.id }.sorted()) return
 
-                for (plot in GardenPlotAPI.plots) {
+                for (plot in GardenPlotApi.plots) {
                     if (plotList.contains(plot.id)) {
                         if (!plot.isPestCountInaccurate && plot.pests == 0) {
                             plot.isPestCountInaccurate = true
@@ -246,21 +245,20 @@ object PestApi {
 
     @HandleEvent
     fun onScoreboardChange(event: ScoreboardUpdateEvent) {
-        if (!GardenAPI.inGarden()) return
+        if (!GardenApi.inGarden()) return
         if (!firstScoreboardCheck) return
         checkScoreboardLines(event.added)
     }
 
     @HandleEvent
     fun onChat(event: SkyHanniChatEvent) {
-        if (!GardenAPI.inGarden()) return
+        if (!GardenApi.inGarden()) return
         pestDeathChatPattern.matchMatcher(event.message) {
             val pest = PestType.getByNameOrNull(group("pest")) ?: return
-            val item = NEUInternalName.fromItemNameOrNull(group("item")) ?: return
+            val item = NeuInternalName.fromItemNameOrNull(group("item")) ?: return
 
             // Field Mice drop 6 separate items, but we only want to count the kill once
             if (pest == PestType.FIELD_MOUSE && item != DUNG_ITEM) return
-
             lastPestKillTime = SimpleTimeMark.now()
             removeNearestPest()
             PestKillEvent.post()
@@ -270,9 +268,9 @@ object PestApi {
         }
     }
 
-    @SubscribeEvent
-    fun onTick(event: LorenzTickEvent) {
-        if (!GardenAPI.inGarden()) return
+    @HandleEvent
+    fun onTick(event: SkyHanniTickEvent) {
+        if (!GardenApi.inGarden()) return
         if (!firstScoreboardCheck && gardenJoinTime.passedSince() > 5.seconds) {
             checkScoreboardLines(ScoreboardData.sidebarLinesFormatted)
             firstScoreboardCheck = true
@@ -290,18 +288,18 @@ object PestApi {
 
     @HandleEvent
     fun onItemInHandChange(event: ItemInHandChangeEvent) {
-        if (!GardenAPI.inGarden()) return
+        if (!GardenApi.inGarden()) return
         if (event.oldItem !in vacuumVariants) return
         lastTimeVacuumHold = SimpleTimeMark.now()
     }
 
-    private fun getPlotsWithAccuratePests() = GardenPlotAPI.plots.filter { it.pests > 0 && !it.isPestCountInaccurate }
+    private fun getPlotsWithAccuratePests() = GardenPlotApi.plots.filter { it.pests > 0 && !it.isPestCountInaccurate }
 
-    private fun getPlotsWithInaccuratePests() = GardenPlotAPI.plots.filter { it.isPestCountInaccurate }
+    private fun getPlotsWithInaccuratePests() = GardenPlotApi.plots.filter { it.isPestCountInaccurate }
 
-    fun getInfestedPlots() = GardenPlotAPI.plots.filter { it.pests > 0 || it.isPestCountInaccurate }
+    fun getInfestedPlots() = GardenPlotApi.plots.filter { it.pests > 0 || it.isPestCountInaccurate }
 
-    fun getPlotsWithoutPests() = GardenPlotAPI.plots.filter { it.pests == 0 || !it.isPestCountInaccurate }
+    fun getPlotsWithoutPests() = GardenPlotApi.plots.filter { it.pests == 0 || !it.isPestCountInaccurate }
 
     fun getNearestInfestedPlot() = getInfestedPlots().minByOrNull { it.middle.distanceSqToPlayer() }
 
@@ -325,7 +323,7 @@ object PestApi {
 
     private fun resetAllPests() {
         scoreboardPests = 0
-        GardenPlotAPI.plots.forEach {
+        GardenPlotApi.plots.forEach {
             it.pests = 0
             it.isPestCountInaccurate = false
         }
@@ -366,7 +364,7 @@ object PestApi {
             pestsInPlotScoreboardPattern.matchMatcher(line) {
                 val plotName = group("plot")
                 val pestsInPlot = group("pests").toInt()
-                val plot = GardenPlotAPI.getPlotByName(plotName) ?: return
+                val plot = GardenPlotApi.getPlotByName(plotName) ?: return
                 if (pestsInPlot != plot.pests || plot.isPestCountInaccurate) {
                     plot.pests = pestsInPlot
                     plot.isPestCountInaccurate = false
@@ -377,7 +375,7 @@ object PestApi {
             // gets if there are no pests remaining in the current plot
             noPestsInPlotScoreboardPattern.matchMatcher(line) {
                 val plotName = group("plot")
-                val plot = GardenPlotAPI.getPlotByName(plotName) ?: return
+                val plot = GardenPlotApi.getPlotByName(plotName) ?: return
                 if (plot.pests != 0 || plot.isPestCountInaccurate) {
                     plot.pests = 0
                     plot.isPestCountInaccurate = false
@@ -391,7 +389,7 @@ object PestApi {
     fun onDebug(event: DebugDataCollectEvent) {
         event.title("Garden Pests")
 
-        if (!GardenAPI.inGarden()) {
+        if (!GardenApi.inGarden()) {
             event.addIrrelevant("not in garden")
             return
         }

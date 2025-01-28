@@ -3,15 +3,15 @@ package at.hannibal2.skyhanni.features.garden.pests
 import at.hannibal2.skyhanni.features.combat.damageindicator.BossType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
-import at.hannibal2.skyhanni.utils.NEUInternalName
-import at.hannibal2.skyhanni.utils.NEUInternalName.Companion.toInternalName
+import at.hannibal2.skyhanni.utils.NeuInternalName
+import at.hannibal2.skyhanni.utils.NeuInternalName.Companion.toInternalName
 
 enum class PestType(
     val displayName: String,
     val damageIndicatorBoss: BossType,
     val spray: SprayType?,
     val vinyl: VinylType?,
-    val internalName: NEUInternalName,
+    val internalName: NeuInternalName,
     val crop: CropType?,
     val pluralName: String? = "${displayName}s",
 ) {
@@ -132,7 +132,7 @@ enum class PestType(
 
         fun getByName(name: String) = getByNameOrNull(name) ?: error("No valid pest type '$name'")
 
-        private val internalNameRareDropMap: Map<NEUInternalName, PestType?> = mapOf(
+        private val internalNameRareDropMap: Map<NeuInternalName, PestType?> = mapOf(
             // Beetle deterministic drops
             "ENCHANTED_NETHER_STALK" to BEETLE,
             "PESTERMINATOR;1" to BEETLE,
@@ -216,6 +216,6 @@ enum class PestType(
             it.key.toInternalName() to it.value
         }.toMap()
 
-        fun getByInternalNameItemOrNull(internalName: NEUInternalName): PestType? = internalNameRareDropMap[internalName]
+        fun getByInternalNameItemOrNull(internalName: NeuInternalName): PestType? = internalNameRareDropMap[internalName]
     }
 }

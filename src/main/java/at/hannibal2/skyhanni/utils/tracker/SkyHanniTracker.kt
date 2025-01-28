@@ -4,7 +4,8 @@ import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.config.core.config.Position
 import at.hannibal2.skyhanni.config.storage.ProfileSpecificStorage
 import at.hannibal2.skyhanni.data.ProfileStorageData
-import at.hannibal2.skyhanni.data.SlayerAPI
+import at.hannibal2.skyhanni.data.RenderData
+import at.hannibal2.skyhanni.data.SlayerApi
 import at.hannibal2.skyhanni.data.TrackerManager
 import at.hannibal2.skyhanni.features.misc.items.EstimatedItemValue
 import at.hannibal2.skyhanni.test.command.ErrorManager
@@ -14,7 +15,7 @@ import at.hannibal2.skyhanni.utils.CollectionUtils.addSearchableSelector
 import at.hannibal2.skyhanni.utils.ItemPriceSource
 import at.hannibal2.skyhanni.utils.ItemPriceUtils.getPrice
 import at.hannibal2.skyhanni.utils.LorenzUtils
-import at.hannibal2.skyhanni.utils.NEUInternalName
+import at.hannibal2.skyhanni.utils.NeuInternalName
 import at.hannibal2.skyhanni.utils.RenderDisplayHelper
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
@@ -52,7 +53,7 @@ open class SkyHanniTracker<Data : TrackerData>(
         val config get() = SkyHanniMod.feature.misc.tracker
         internal val storedTrackers get() = SkyHanniMod.feature.storage.trackerDisplayModes
 
-        fun getPricePer(name: NEUInternalName) = name.getPrice(config.priceSource)
+        fun getPricePer(name: NeuInternalName) = name.getPrice(config.priceSource)
     }
 
     fun isInventoryOpen() = inventoryOpen
@@ -95,9 +96,9 @@ open class SkyHanniTracker<Data : TrackerData>(
     fun renderDisplay(position: Position) {
         if (config.hideInEstimatedItemValue && EstimatedItemValue.isCurrentlyShowing()) return
 
-        val currentlyOpen = Minecraft.getMinecraft().currentScreen?.let { it is GuiInventory || it is GuiChest } ?: false
-        if (!currentlyOpen && config.hideItemTrackersOutsideInventory && this is SkyHanniItemTracker) {
-            return
+        var currentlyOpen = Minecraft.getMinecraft().currentScreen?.let { it is GuiInventory || it is GuiChest } ?: false
+        if (RenderData.outsideInventory) {
+            currentlyOpen = false
         }
         if (inventoryOpen != currentlyOpen) {
             inventoryOpen = currentlyOpen
@@ -235,8 +236,8 @@ open class SkyHanniTracker<Data : TrackerData>(
         )
     }
 
-    fun handlePossibleRareDrop(internalName: NEUInternalName, amount: Int) {
-        val (itemName, price) = SlayerAPI.getItemNameAndPrice(internalName, amount)
+    fun handlePossibleRareDrop(internalName: NeuInternalName, amount: Int) {
+        val (itemName, price) = SlayerApi.getItemNameAndPrice(internalName, amount)
         if (config.warnings.chat && price >= config.warnings.minimumChat) {
             ChatUtils.chat("§a+Tracker Drop§7: §r$itemName")
         }

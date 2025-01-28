@@ -10,7 +10,7 @@ import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.events.RepositoryReloadEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropClickEvent
 import at.hannibal2.skyhanni.features.garden.CropType
-import at.hannibal2.skyhanni.features.garden.GardenAPI
+import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.CollectionUtils.editCopy
 import at.hannibal2.skyhanni.utils.InventoryUtils
@@ -21,9 +21,9 @@ import kotlin.concurrent.fixedRateTimer
 @SkyHanniModule
 object GardenCropSpeed {
 
-    private val config get() = GardenAPI.config
-    private val cropsPerSecond: MutableMap<CropType, Int>? get() = GardenAPI.storage?.cropsPerSecond
-    private val latestBlocksPerSecond: MutableMap<CropType, Double>? get() = GardenAPI.storage?.latestBlocksPerSecond
+    private val config get() = GardenApi.config
+    private val cropsPerSecond: MutableMap<CropType, Int>? get() = GardenApi.storage?.cropsPerSecond
+    private val latestBlocksPerSecond: MutableMap<CropType, Double>? get() = GardenApi.storage?.latestBlocksPerSecond
 
     var lastBrokenCrop: CropType? = null
     var lastBrokenTime = SimpleTimeMark.now()
@@ -102,7 +102,7 @@ object GardenCropSpeed {
             } else if (blocksSpeedList.size > 1) {
                 blocksSpeedList.drop(1).average().coerceAtMost(20.0)
             } else 0.0
-            GardenAPI.getCurrentlyFarmedCrop()?.let {
+            GardenApi.getCurrentlyFarmedCrop()?.let {
                 val heldTool = InventoryUtils.getItemInHand()
                 val toolName = heldTool?.getInternalName()?.asString()
                 if (toolName?.contains("DICER") == true) {
@@ -169,7 +169,7 @@ object GardenCropSpeed {
         secondsStopped = 0
     }
 
-    fun isEnabled() = GardenAPI.inGarden()
+    fun isEnabled() = GardenApi.inGarden()
 
     fun CropType.getSpeed() = cropsPerSecond?.get(this)
 

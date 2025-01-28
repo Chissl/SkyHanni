@@ -1,9 +1,11 @@
 package at.hannibal2.skyhanni.features.mining.powdertracker
 
 import at.hannibal2.skyhanni.SkyHanniMod
-import at.hannibal2.skyhanni.api.HotmAPI
+import at.hannibal2.skyhanni.api.HotmApi
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
+import at.hannibal2.skyhanni.config.commands.CommandCategory
+import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
 import at.hannibal2.skyhanni.config.features.mining.nucleus.PowderTrackerConfig.PowderDisplayEntry
 import at.hannibal2.skyhanni.data.BossbarData
 import at.hannibal2.skyhanni.data.IslandType
@@ -216,7 +218,7 @@ object PowderTracker {
         if (lastChestPicked.passedSince() > 5.seconds) return
         tracker.modify {
             val reward = when (event.powder) {
-                HotmAPI.PowderType.GEMSTONE -> PowderChestReward.GEMSTONE_POWDER
+                HotmApi.PowderType.GEMSTONE -> PowderChestReward.GEMSTONE_POWDER
                 else -> return@modify
             }
             it.rewards.addOrPut(reward, event.amount)
@@ -461,7 +463,12 @@ object PowderTracker {
 
     private fun isEnabled() = IslandType.CRYSTAL_HOLLOWS.isInIsland() && config.enabled
 
-    fun resetCommand() {
-        tracker.resetCommand()
+    @HandleEvent
+    fun onCommandRegistration(event: CommandRegistrationEvent) {
+        event.register("shresetpowdertracker") {
+            description = "Resets the Powder Tracker"
+            category = CommandCategory.USERS_RESET
+            callback { tracker.resetCommand() }
+        }
     }
 }
