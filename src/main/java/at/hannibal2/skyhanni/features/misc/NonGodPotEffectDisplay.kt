@@ -128,11 +128,11 @@ object NonGodPotEffectDisplay {
             update()
         }
 
-        if (event.message == "§a§lYUM! §r§6Pests §r§7will now spawn §r§a2x §r§7less while you break crops for the next §r§a60m§r§7!") {
+        if (event.message == "§a§lYUM! §r§2Pests §r§7will now spawn §r§a2x §r§7less while you break crops for the next §r§a60m§r§7!") {
             effectDuration[NonGodPotEffect.PEST_REPELLENT] = Timer(1.hours)
         }
 
-        if (event.message == "§a§lYUM! §r§6Pests §r§7will now spawn §r§a4x §r§7less while you break crops for the next §r§a60m§r§7!") {
+        if (event.message == "§a§lYUM! §r§2Pests §r§7will now spawn §r§a4x §r§7less while you break crops for the next §r§a60m§r§7!") {
             effectDuration[NonGodPotEffect.PEST_REPELLENT_MAX] = Timer(1.hours)
         }
 
