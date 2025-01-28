@@ -19,7 +19,7 @@ import at.hannibal2.skyhanni.events.chat.SkyHanniChatEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenAPI
-import at.hannibal2.skyhanni.features.garden.pests.PestAPI
+import at.hannibal2.skyhanni.features.garden.pests.PestApi
 import at.hannibal2.skyhanni.features.garden.pests.PestType
 import at.hannibal2.skyhanni.features.garden.pests.SprayType
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
@@ -151,7 +151,7 @@ object PestProfitTracker {
     }
 
     private fun SkyHanniChatEvent.checkPestChats() {
-        PestAPI.pestDeathChatPattern.matchMatcher(message) {
+        PestApi.pestDeathChatPattern.matchMatcher(message) {
             val pest = PestType.getByNameOrNull(group("pest")) ?: ErrorManager.skyHanniError(
                 "Could not find PestType for killed pest, please report this in the Discord.",
                 "pest_name" to group("pest"),
@@ -283,7 +283,7 @@ object PestProfitTracker {
         val allInactive = lastPestKillTimes.all {
             it.value.passedSince() > config.timeDisplayed.seconds
         }
-        val notHoldingTool = !PestAPI.hasVacuumInHand() && !PestAPI.hasSprayonatorInHand()
+        val notHoldingTool = !PestApi.hasVacuumInHand() && !PestApi.hasSprayonatorInHand()
         if (allInactive && notHoldingTool) return
 
         tracker.renderDisplay(config.position)

@@ -50,7 +50,7 @@ object PestParticleWaypoint {
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onItemClick(event: ItemClickEvent) {
         if (!isEnabled()) return
-        if (PestAPI.hasVacuumInHand()) {
+        if (PestApi.hasVacuumInHand()) {
             if (event.clickType == ClickType.LEFT_CLICK && !Minecraft.getMinecraft().thePlayer.isSneaking) {
                 reset()
                 lastPestTrackerUse = SimpleTimeMark.now()
@@ -170,7 +170,7 @@ object PestParticleWaypoint {
 
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onPestUpdate(event: PestUpdateEvent) {
-        if (PestAPI.scoreboardPests == 0) reset()
+        if (PestApi.scoreboardPests == 0) reset()
     }
 
     private fun calculateWaypoint(): LorenzVec? {
