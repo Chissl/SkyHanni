@@ -6,7 +6,7 @@ import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionUpdateEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
-import at.hannibal2.skyhanni.features.garden.GardenAPI
+import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.ItemUtils.getLore
@@ -48,16 +48,16 @@ object CropCollectionAPI {
         "§e(?<name>.*) [XIV]{1,3}",
     )
 
-    private val storage get() = GardenAPI.storage
+    private val storage get() = GardenApi.storage
 
     private val cropCollectionCounter:
-        MutableMap<CropType, Long>? get() = GardenAPI.storage?.cropCollectionCounter
+        MutableMap<CropType, Long>? get() = GardenApi.storage?.cropCollectionCounter
 
     var lastGainedCrop: CropType?
-        get() = GardenAPI.storage?.lastGainedCrop
+        get() = GardenApi.storage?.lastGainedCrop
         set(value) {
             value?.let {
-                GardenAPI.storage?.lastGainedCrop = it
+                GardenApi.storage?.lastGainedCrop = it
             }
         }
 

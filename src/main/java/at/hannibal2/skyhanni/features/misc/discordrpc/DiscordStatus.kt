@@ -56,7 +56,7 @@ private fun getVisitingName(): String {
 var beenAfkFor = SimpleTimeMark.now()
 
 private fun getCropCollection(): String {
-    val crop = GardenAPI.storage?.lastGainedCrop ?: return "Not Farming!"
+    val crop = GardenApi.storage?.lastGainedCrop ?: return "Not Farming!"
     val collection = crop.getCollection()
     return "$crop Collection: ${collection.addSeparators()}"
 }

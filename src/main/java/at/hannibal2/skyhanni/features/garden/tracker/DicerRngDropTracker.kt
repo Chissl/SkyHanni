@@ -3,9 +3,9 @@ package at.hannibal2.skyhanni.features.garden.tracker
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
-import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.config.commands.CommandCategory
 import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
+import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.chat.SkyHanniChatEvent
@@ -20,8 +20,8 @@ import at.hannibal2.skyhanni.utils.ConditionalUtils
 import at.hannibal2.skyhanni.utils.ItemUtils.itemNameWithoutColor
 import at.hannibal2.skyhanni.utils.ItemUtils.name
 import at.hannibal2.skyhanni.utils.LorenzUtils.isAnyOf
-import at.hannibal2.skyhanni.utils.NEUInternalName
-import at.hannibal2.skyhanni.utils.NEUItems
+import at.hannibal2.skyhanni.utils.NeuInternalName
+import at.hannibal2.skyhanni.utils.NeuItems
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
 import at.hannibal2.skyhanni.utils.renderables.Renderable
@@ -91,8 +91,8 @@ object DicerRngDropTracker {
             val amount = group("amount").toLong()
             val drop = group("drop")
 
-            val internalName = NEUInternalName.fromItemNameOrNull(itemType) ?: return@matchMatcher
-            val primitiveStack = NEUItems.getPrimitiveMultiplier(internalName)
+            val internalName = NeuInternalName.fromItemNameOrNull(itemType) ?: return@matchMatcher
+            val primitiveStack = NeuItems.getPrimitiveMultiplier(internalName)
             val rawName = primitiveStack.internalName.itemNameWithoutColor
             val cropType = CropType.getByNameOrNull(rawName) ?: return@matchMatcher
 

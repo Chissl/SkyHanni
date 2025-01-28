@@ -8,9 +8,9 @@ import at.hannibal2.skyhanni.events.OwnInventoryItemUpdateEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropClickEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
-import at.hannibal2.skyhanni.features.garden.GardenAPI
-import at.hannibal2.skyhanni.features.garden.GardenAPI.getCropType
-import at.hannibal2.skyhanni.features.garden.GardenAPI.readCounter
+import at.hannibal2.skyhanni.features.garden.GardenApi
+import at.hannibal2.skyhanni.features.garden.GardenApi.getCropType
+import at.hannibal2.skyhanni.features.garden.GardenApi.readCounter
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.SkyBlockItemModifierUtils.getItemUuid
 import net.minecraft.item.ItemStack
@@ -19,7 +19,7 @@ import kotlin.random.Random
 
 @SkyHanniModule
 object GardenCropBreakTracker {
-    private val storage get() = GardenAPI.storage
+    private val storage get() = GardenApi.storage
     private val counterData: MutableMap<String, Long>? get() = storage?.counterData
     private val blocksBroken: MutableMap<CropType, Long>? get() = storage?.blocksBroken
 
@@ -39,14 +39,14 @@ object GardenCropBreakTracker {
 
     @HandleEvent
     fun onCropBreak(event: CropClickEvent) {
-        if (event.clickType != ClickType.LEFT_CLICK || !GardenAPI.inGarden()) return
+        if (event.clickType != ClickType.LEFT_CLICK || !GardenApi.inGarden()) return
         if (event.crop != cropBrokenType) cropBrokenType = event.crop
 
         blocksBroken?.set(event.crop, blocksBroken?.get(event.crop)?.plus(1) ?: 1)
         // TODO via pet api
-        if (GardenAPI.mushroomCowPet) {
+        if (GardenApi.mushroomCowPet) {
             CropType.MUSHROOM.addCollectionCounter(
-                CropCollectionType.MOOSHROOM_COW, weightedRandomRound(GardenAPI.mushroomCowPetLevel / 100.0).toLong()
+                CropCollectionType.MOOSHROOM_COW, weightedRandomRound(GardenApi.mushroomCowPetLevel / 100.0).toLong()
             )
         }
 
@@ -62,11 +62,11 @@ object GardenCropBreakTracker {
     // TODO account for late updates after swapping held item
     @HandleEvent
     fun onOwnInventoryItemUpdate(event: OwnInventoryItemUpdateEvent) {
-        if (!GardenAPI.inGarden() || !itemHasCounter || event.itemStack.getItemUuid() != heldItem?.getItemUuid()) return
+        if (!GardenApi.inGarden() || !itemHasCounter || event.itemStack.getItemUuid() != heldItem?.getItemUuid()) return
         val item = event.itemStack
         val uuid = item.getItemUuid() ?: return
         val counter = readCounter(item) ?: return
-        val isHoe = GardenAPI.readHoeCounter(item) != null
+        val isHoe = GardenApi.readHoeCounter(item) != null
 
         val crop = if (isHoe || cropBrokenType == null) event.itemStack.getCropType() else cropBrokenType
         if (crop == null) return
@@ -83,5 +83,5 @@ object GardenCropBreakTracker {
         return if (num >= randomNumber) 1.0 else 0.0
     }
 
-    private val config get() = GardenAPI.config
+    private val config get() = GardenApi.config
 }

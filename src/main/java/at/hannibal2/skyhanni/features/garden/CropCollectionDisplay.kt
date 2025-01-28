@@ -15,8 +15,8 @@ import at.hannibal2.skyhanni.events.garden.DisplayCropChange
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionUpdateEvent
 import at.hannibal2.skyhanni.events.utils.TimedTrackerUpdateEvent
-import at.hannibal2.skyhanni.features.garden.GardenAPI.addCropIcon
-import at.hannibal2.skyhanni.features.garden.GardenAPI.storage
+import at.hannibal2.skyhanni.features.garden.GardenApi.addCropIcon
+import at.hannibal2.skyhanni.features.garden.GardenApi.storage
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.CollectionUtils.addString
 import at.hannibal2.skyhanni.utils.CollectionUtils.sumAllValues
@@ -35,7 +35,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object CropCollectionDisplay {
-    private val config get() = GardenAPI.config.cropCollections
+    private val config get() = GardenApi.config.cropCollections
     private var needsInventory = false
     private val tracker = SkyhanniTimedTracker<Data>(
         "Crop Collection Tracker",
@@ -246,7 +246,7 @@ object CropCollectionDisplay {
     @HandleEvent
     fun onRenderOverlay(event: GuiRenderEvent) {
         if (!isEnabled()) return
-        if (GardenAPI.hideExtraGuis()) return
+        if (GardenApi.hideExtraGuis()) return
 
         tracker.renderDisplay(config.collectionDisplayPos)
     }
@@ -270,6 +270,6 @@ object CropCollectionDisplay {
         return newList
     }
 
-    private fun isEnabled() = config.collectionDisplay && GardenAPI.inGarden()
+    private fun isEnabled() = config.collectionDisplay && GardenApi.inGarden()
 
 }

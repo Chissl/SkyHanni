@@ -3,8 +3,6 @@ package at.hannibal2.skyhanni.features.garden.farming
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
-import at.hannibal2.skyhanni.config.commands.CommandCategory
-import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
 import at.hannibal2.skyhanni.config.enums.OutsideSBFeature
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.ProfileStorageData
@@ -16,10 +14,9 @@ import at.hannibal2.skyhanni.data.jsonobjects.other.EliteLeaderboardJson
 import at.hannibal2.skyhanni.data.jsonobjects.other.UpcomingLeaderboardPlayer
 import at.hannibal2.skyhanni.events.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.IslandChangeEvent
-import at.hannibal2.skyhanni.events.LorenzTickEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
-import at.hannibal2.skyhanni.events.minecraft.SkyHanniTickEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
+import at.hannibal2.skyhanni.events.minecraft.SkyHanniTickEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenApi
@@ -104,7 +101,7 @@ object FarmingWeightDisplay {
         }
 
         var multiplier = 1
-        if (GardenAPI.cropInHand?.isAnyOf(CropType.CACTUS, CropType.SUGAR_CANE) == true && event.crop == CropType.MUSHROOM) multiplier = 2
+        if (GardenApi.cropInHand?.isAnyOf(CropType.CACTUS, CropType.SUGAR_CANE) == true && event.crop == CropType.MUSHROOM) multiplier = 2
 
         weight += event.amount / (event.crop.getFactor() * multiplier)
 
@@ -247,7 +244,7 @@ object FarmingWeightDisplay {
             val values = calculateWeightPerCrop().values
             if (values.isNotEmpty()) {
                 weight = values.sum()
-                weight += GardenAPI.storage?.farmingWeightBonusWeight ?: 0.0
+                weight += GardenApi.storage?.farmingWeightBonusWeight ?: 0.0
                 weightNeedsRecalculating = false
             }
         }
@@ -490,7 +487,7 @@ object FarmingWeightDisplay {
         var totalWeight = 0.0
         for (crop in CropType.entries) {
             var weight =
-                (crop.getCollection() - (GardenAPI.storage?.farmingWeightUncountedCrops?.get(crop) ?: 0)) / crop.getFactor()
+                (crop.getCollection() - (GardenApi.storage?.farmingWeightUncountedCrops?.get(crop) ?: 0)) / crop.getFactor()
             if (weight < 0) weight = 0.0
             weightPerCrop[crop] = weight
             totalWeight += weight

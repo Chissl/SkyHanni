@@ -17,11 +17,8 @@ import at.hannibal2.skyhanni.events.garden.DisplayCropChange
 import at.hannibal2.skyhanni.events.garden.farming.CropMilestoneUpdateEvent
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.FarmingFortuneDisplay
-import at.hannibal2.skyhanni.features.garden.GardenAPI
-import at.hannibal2.skyhanni.features.garden.GardenAPI.addCropIcon
 import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.features.garden.GardenApi.addCropIcon
-import at.hannibal2.skyhanni.features.garden.GardenApi.getCropType
 import at.hannibal2.skyhanni.features.garden.farming.GardenCropSpeed.setSpeed
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.CollectionUtils.addString
@@ -120,7 +117,7 @@ object GardenCropMilestoneDisplay {
         mushroomCowPerkDisplay = emptyList()
         GardenBestCropTime.display = null
         val displayCrop =
-            currentCrop ?: if (config.showWithoutTool) CropCollectionAPI.lastGainedCrop else GardenAPI.getCurrentlyFarmedCrop()
+            currentCrop ?: if (config.showWithoutTool) CropCollectionAPI.lastGainedCrop else GardenApi.getCurrentlyFarmedCrop()
         displayCrop?.let {
             progressDisplay = drawProgressDisplay(it)
         }

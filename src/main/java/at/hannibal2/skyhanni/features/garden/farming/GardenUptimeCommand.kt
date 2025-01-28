@@ -3,7 +3,7 @@ package at.hannibal2.skyhanni.features.garden.farming
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.commands.CommandCategory
 import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
-import at.hannibal2.skyhanni.features.garden.GardenAPI
+import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.ChatUtils.chat
@@ -14,8 +14,8 @@ import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object GardenUptimeCommand {
-    private val config get() = GardenAPI.config.gardenUptime
-    private val storage get() = GardenAPI.storage?.uptimeTracker
+    private val config get() = GardenApi.config.gardenUptime
+    private val storage get() = GardenApi.storage?.uptimeTracker
 
     fun onCommand(args: Array<String>) {
         if (!config.showDisplay) {

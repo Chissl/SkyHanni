@@ -71,7 +71,7 @@ object ApiUtils {
     /**
      * TODO
      * make suspend
-     * use withContext(Dispatchers.IO) { APIUtils.getJSONResponse(url) }.asJsonObject
+     * use withContext(Dispatchers.IO) { ApiUtils.getJSONResponse(url) }.asJsonObject
      */
     fun getJSONResponse(urlString: String, silentError: Boolean = false, gunzip: Boolean = false) =
         getJSONResponseAsElement(urlString, silentError, gunzip = gunzip) as JsonObject

@@ -16,7 +16,7 @@ import at.hannibal2.skyhanni.events.garden.visitor.VisitorAcceptedEvent
 import at.hannibal2.skyhanni.events.garden.visitor.VisitorOpenEvent
 import at.hannibal2.skyhanni.events.garden.visitor.VisitorRefusedEvent
 import at.hannibal2.skyhanni.events.utils.TimedTrackerUpdateEvent
-import at.hannibal2.skyhanni.features.garden.GardenAPI
+import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.CollectionUtils.addString
 import at.hannibal2.skyhanni.utils.ConditionalUtils.afterChange
@@ -38,7 +38,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object GardenUptimeTracker {
-    private val config get() = GardenAPI.config.gardenUptime
+    private val config get() = GardenApi.config.gardenUptime
 
     private val tracker = SkyhanniTimedTracker<Data>(
         "Garden Uptime Tracker",
@@ -186,7 +186,7 @@ object GardenUptimeTracker {
     }
 
     private var blockBreaksLastSecond = 0
-    var storage = GardenAPI.storage
+    var storage = GardenApi.storage
     private var justRemovedAFK = false
     private var isAFK = false
     private var secondsAFK = 0
@@ -282,7 +282,7 @@ object GardenUptimeTracker {
         }
     )
 
-    private fun isEnabled() = GardenAPI.inGarden() && config.showDisplay
+    private fun isEnabled() = GardenApi.inGarden() && config.showDisplay
 
     enum class ActivityType(val displayName: String) {
         CROP_BREAK("Crop Break"),

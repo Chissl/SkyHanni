@@ -56,7 +56,7 @@ object GardenVisitorTimer {
     private var lastVisitors: Int = -1
 
     // TODO nea?
-//    private val visitorInterval by dynamic(GardenAPI::config, Storage.ProfileSpecific.GardenStorage::visitorInterval)
+//    private val visitorInterval by dynamic(GardenApi::config, Storage.ProfileSpecific.GardenStorage::visitorInterval)
     private var visitorInterval: Duration?
         get() = GardenApi.storage?.visitorInterval?.toDuration(DurationUnit.MILLISECONDS)
         set(value) {

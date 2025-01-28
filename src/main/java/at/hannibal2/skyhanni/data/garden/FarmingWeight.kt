@@ -11,11 +11,11 @@ import at.hannibal2.skyhanni.data.jsonobjects.other.EliteWeightsJson
 import at.hannibal2.skyhanni.events.IslandChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.features.garden.CropType
-import at.hannibal2.skyhanni.features.garden.GardenAPI
+import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.features.garden.pests.PestType
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
-import at.hannibal2.skyhanni.utils.APIUtils
+import at.hannibal2.skyhanni.utils.ApiUtils
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.CollectionUtils.sumAllValues
 import at.hannibal2.skyhanni.utils.LorenzUtils
@@ -44,7 +44,7 @@ object FarmingWeight {
         }
     }
 
-    private val config get() = GardenAPI.config.eliteFarmingWeights
+    private val config get() = GardenApi.config.eliteFarmingWeights
     private var apiError = false
 
     private var lastUpdate = SimpleTimeMark.farPast()
@@ -80,7 +80,7 @@ object FarmingWeight {
         if (lastUpdate > SimpleTimeMark.now() - 15.minutes && !apiError) return
         val uuid = LorenzUtils.getPlayerUuid()
         val url = "https://api.elitebot.dev/weight/$uuid/?collections=True"
-        val apiResponse = APIUtils.getJSONResponse(url)
+        val apiResponse = ApiUtils.getJSONResponse(url)
 
         var error: Throwable? = null
 
@@ -104,9 +104,9 @@ object FarmingWeight {
                         needCollectionUpdate = false
                     }
 
-                GardenAPI.storage?.farmingWeightUncountedCrops =
+                GardenApi.storage?.farmingWeightUncountedCrops =
                     selectedProfileEntry.uncountedCrops.mapKeys { entry -> CropType.getByName(entry.key) }
-                GardenAPI.storage?.farmingWeightBonusWeight = selectedProfileEntry.bonusWeight.sumAllValues()
+                GardenApi.storage?.farmingWeightBonusWeight = selectedProfileEntry.bonusWeight.sumAllValues()
                 ChatUtils.debug("Updated Crop Collection from Elite")
                 lastUpdate = SimpleTimeMark.now()
                 return
@@ -141,7 +141,7 @@ object FarmingWeight {
         if (attemptingCropWeightFetch || hasFetchedCropWeights) return
         attemptingCropWeightFetch = true
         val url = "https://api.elitebot.dev/weights/all"
-        val apiResponse = APIUtils.getJSONResponse(url)
+        val apiResponse = ApiUtils.getJSONResponse(url)
 
         try {
             val apiData = eliteWeightApiGson.fromJson<EliteWeightsJson>(apiResponse)

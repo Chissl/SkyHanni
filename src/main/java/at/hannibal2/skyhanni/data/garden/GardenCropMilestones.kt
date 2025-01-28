@@ -15,9 +15,8 @@ import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropMilestoneUpdateEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
-import at.hannibal2.skyhanni.features.garden.GardenAPI
-import at.hannibal2.skyhanni.features.garden.farming.GardenCropMilestoneDisplay
 import at.hannibal2.skyhanni.features.garden.GardenApi
+import at.hannibal2.skyhanni.features.garden.farming.GardenCropMilestoneDisplay
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.ChatUtils.chat
@@ -76,7 +75,7 @@ object GardenCropMilestones {
 
     private val config get() = GardenApi.config.cropMilestones
 
-    private val storage get() = GardenAPI.storage
+    private val storage get() = GardenApi.storage
 
     fun getCropTypeByLore(itemStack: ItemStack): CropType? {
         cropPattern.firstMatcher(itemStack.getLore()) {
@@ -105,7 +104,7 @@ object GardenCropMilestones {
 
     @HandleEvent
     fun onChat(event: SkyHanniChatEvent) {
-        if (!GardenAPI.inGarden()) return
+        if (!GardenApi.inGarden()) return
         levelUpPattern.matchMatcher(event.message) {
             val cropName = group("crop")
             val crop = CropType.getByNameOrNull(cropName) ?: return

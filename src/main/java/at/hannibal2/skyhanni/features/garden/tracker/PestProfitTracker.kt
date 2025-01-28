@@ -20,11 +20,10 @@ import at.hannibal2.skyhanni.events.RepositoryReloadEvent
 import at.hannibal2.skyhanni.events.chat.SkyHanniChatEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
-import at.hannibal2.skyhanni.features.garden.GardenAPI
+import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.features.garden.pests.PestApi
 import at.hannibal2.skyhanni.features.garden.pests.PestType
 import at.hannibal2.skyhanni.features.garden.pests.SprayType
-import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.CollectionUtils.addOrPut
@@ -34,7 +33,7 @@ import at.hannibal2.skyhanni.utils.ItemUtils.itemNameWithoutColor
 import at.hannibal2.skyhanni.utils.LorenzUtils
 import at.hannibal2.skyhanni.utils.NeuInternalName
 import at.hannibal2.skyhanni.utils.NeuInternalName.Companion.toInternalName
-import at.hannibal2.skyhanni.utils.NEUItems
+import at.hannibal2.skyhanni.utils.NeuItems
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.shortFormat
 import at.hannibal2.skyhanni.utils.RegexUtils.matchGroup
@@ -163,7 +162,7 @@ object PestProfitTracker {
             val internalName = NeuInternalName.fromItemNameOrNull(group("item")) ?: return
             val amount = group("amount").toInt().fixAmount(internalName, pest)
 
-            val primitiveStack = NEUItems.getPrimitiveMultiplier(internalName)
+            val primitiveStack = NeuItems.getPrimitiveMultiplier(internalName)
             val rawName = primitiveStack.internalName.itemNameWithoutColor
             val cropType = CropType.getByNameOrNull(rawName) ?: return
 
@@ -188,7 +187,7 @@ object PestProfitTracker {
             }
             tracker.addItem(pest, internalName, amount)
 
-            val primitiveStack = NEUItems.getPrimitiveMultiplier(internalName)
+            val primitiveStack = NeuItems.getPrimitiveMultiplier(internalName)
             val rawName = primitiveStack.internalName.itemNameWithoutColor
             val cropType = CropType.getByNameOrNull(rawName) ?: return
 
@@ -318,8 +317,6 @@ object PestProfitTracker {
             callback { tracker.resetCommand() }
         }
     }
-
-    fun isEnabled() = GardenAPI.inGarden() && config.enabled
 
     @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
