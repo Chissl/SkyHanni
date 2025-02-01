@@ -40,19 +40,11 @@ public class CropCollectionsConfig {
 
     @Expose
     @ConfigOption(
-        name = "Stats List",
-        desc = "Drag text to change what displays in the summary card."
-    )
-    @ConfigEditorDraggableList
-    public List<CropCollectionDisplayText> statDisplayList = new ArrayList<>(defaultCollectionDisplayList);
-
-    @Expose
-    @ConfigOption(
         name = "Crop Collection Display List",
         desc = "Drag text to change what displays in the summary card."
     )
     @ConfigEditorDraggableList
-    public List<CropCollectionDisplayText> collectionBreakdownList = new ArrayList<>(defaultCollectionDisplayList);
+    public List<CropCollectionDisplayText> statDisplayList = new ArrayList<>(defaultCollectionDisplayList);
 
     public enum CropCollectionDisplayText {
         TITLE("Melon Crop Collection"),
