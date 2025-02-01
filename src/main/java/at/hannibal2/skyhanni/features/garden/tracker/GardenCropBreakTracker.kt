@@ -32,7 +32,14 @@ object GardenCropBreakTracker {
     fun onToolChange(event: GardenToolChangeEvent) {
         heldItem = event.toolItem
         if (event.toolItem == null || event.toolInHand == null) return
-        val counter = readCounter(event.toolItem) ?: return
+        val counter = readCounter(event.toolItem)
+
+        if (counter == null) {
+            itemHasCounter = false
+            return
+        }
+
+        itemHasCounter = true
 
         val uuid = event.toolItem.getItemUuid() ?: return
         counterData?.set(uuid, counter)
@@ -60,7 +67,6 @@ object GardenCropBreakTracker {
         )
     }
 
-    // TODO account for late updates after swapping held item
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onOwnInventoryItemUpdate(event: OwnInventoryItemUpdateEvent) {
         if (!itemHasCounter || event.itemStack.getItemUuid() != heldItem?.getItemUuid()) return
