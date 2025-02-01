@@ -5,6 +5,7 @@ import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.commands.CommandCategory
 import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
+import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.GardenToolChangeEvent
@@ -80,9 +81,8 @@ object DicerRngDropTracker {
         }
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onChat(event: SkyHanniChatEvent) {
-        if (!GardenApi.inGarden()) return
         if (cropInHand?.isAnyOf(CropType.MELON, CropType.PUMPKIN) != true) return
 
         val message = event.message
