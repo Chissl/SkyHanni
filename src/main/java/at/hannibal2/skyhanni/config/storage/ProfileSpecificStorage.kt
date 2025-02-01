@@ -29,6 +29,7 @@ import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenPlotApi.PlotData
 import at.hannibal2.skyhanni.features.garden.farming.lane.FarmingLane
 import at.hannibal2.skyhanni.features.garden.fortuneguide.FarmingItems
+import at.hannibal2.skyhanni.features.garden.pests.PestTrapApi.PestTrapData
 import at.hannibal2.skyhanni.features.garden.pests.VinylType
 import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
 import at.hannibal2.skyhanni.features.garden.tracker.DicerRngDropTracker
@@ -536,6 +537,9 @@ class ProfileSpecificStorage {
 
         @Expose
         var cropCollectionTracker: CropCollectionDisplay.TimeData = CropCollectionDisplay.TimeData()
+
+        @Expose
+        var pestTrapStatus: MutableList<PestTrapData> = mutableListOf()
     }
 
     @Expose
