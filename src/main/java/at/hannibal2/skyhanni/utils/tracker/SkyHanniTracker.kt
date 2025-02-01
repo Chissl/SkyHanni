@@ -264,7 +264,7 @@ open class SkyHanniTracker<Data : TrackerData>(
         }
     }
 
-    enum class DisplayMode(private val displayName: String) {
+    enum class DisplayMode(internal val displayName: String) {
         TOTAL("Total"),
         SESSION("Session"),
         MAYOR("This Mayor"),

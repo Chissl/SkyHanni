@@ -3,7 +3,6 @@ package at.hannibal2.skyhanni.utils.tracker
 import at.hannibal2.skyhanni.config.storage.ProfileSpecificStorage
 import at.hannibal2.skyhanni.data.ProfileStorageData
 import at.hannibal2.skyhanni.events.utils.TimedTrackerUpdateEvent
-import at.hannibal2.skyhanni.utils.KeyboardManager
 import at.hannibal2.skyhanni.utils.RenderUtils
 import at.hannibal2.skyhanni.utils.TimeUtils.monthFormatter
 import at.hannibal2.skyhanni.utils.TimeUtils.weekFormatter
@@ -67,20 +66,6 @@ class SkyhanniTimedTracker<Data : TrackerData>(
         val lastTracker = "§7Previous Mode: §a${getPreviousDisplay().displayName} §e(Ctrl + Click)"
         return listOf(currentTracker, nextTracker, lastTracker)
     }
-
-    override fun buildDisplayModeView() = Renderable.clickAndHover(
-        "§7Display Mode: §a[§e${displayMode?.displayName ?: "§anone"}§a]", buildLore(),
-        onClick = {
-            displayMode = if (KeyboardManager.isModifierKeyDown()) {
-                getPreviousDisplay()
-            } else {
-                getNextDisplay()
-            }
-            storedTrackers[name] = getDisplayMode()
-            update()
-            TimedTrackerUpdateEvent(name, getDisplayMode(), date, week, month, year).post()
-        }
-    )
 
     override fun getDisplay() = ProfileStorageData.profileSpecific?.let { ps ->
         val data = when (getDisplayMode()) {
@@ -168,7 +153,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
         add(searchBox)
         if (isEmpty()) return@buildList
         if (inventoryOpen) {
-            add(buildDisplayModeView())
+            buildDisplayModeView()
             if (getDisplayMode() == DisplayMode.SESSION) {
                 add(buildSessionResetButton())
             }
