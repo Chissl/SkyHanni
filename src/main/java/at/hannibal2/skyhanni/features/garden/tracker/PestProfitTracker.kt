@@ -11,7 +11,6 @@ import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.ItemAddManager
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.data.jsonobjects.repo.GardenJson
-import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.IslandChangeEvent
 import at.hannibal2.skyhanni.events.ItemAddEvent
 import at.hannibal2.skyhanni.events.PurseChangeCause
@@ -87,7 +86,7 @@ object PestProfitTracker {
 
     val DUNG_ITEM = "DUNG".toInternalName()
     private val lastPestKillTimes: TimeLimitedCache<PestType, SimpleTimeMark> = TimeLimitedCache(15.seconds)
-    private val tracker = SkyHanniBucketedItemTracker<PestType, BucketData>(
+    private val tracker = SkyHanniBucketedItemTracker(
         "Pest Profit Tracker",
         { BucketData() },
         { it.garden.pestProfitTracker },
@@ -101,7 +100,7 @@ object PestProfitTracker {
             pestKills.clear()
         }
 
-        override fun getDescription(timesGained: Long): List<String> {
+        override fun getDescription(bucket: PestType?, timesGained: Long): List<String> {
             val percentage = timesGained.toDouble() / getTotalPestCount()
             val dropRate = LorenzUtils.formatPercentage(percentage.coerceAtMost(1.0))
             return listOf(
@@ -139,15 +138,15 @@ object PestProfitTracker {
 
     private fun SprayType.addSprayUsed() = tracker.modify { it.spraysUsed.addOrPut(this, 1) }
 
-    @HandleEvent
+    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onItemAdd(event: ItemAddEvent) {
-        if (!isEnabled() || event.source != ItemAddManager.Source.COMMAND) return
+        if (!config.enabled || event.source != ItemAddManager.Source.COMMAND) return
         with(tracker) { event.addItemFromEvent() }
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onChat(event: SkyHanniChatEvent) {
-        if (!isEnabled()) return
+        if (!config.enabled) return
         event.checkPestChats()
         event.checkSprayChats()
     }
@@ -185,6 +184,7 @@ object PestProfitTracker {
                 val fixedString = message.replace(itemGroup, "§a${it}x $itemGroup")
                 chatComponent = ChatComponentText(fixedString)
             }
+
             tracker.addItem(pest, internalName, amount)
 
             val primitiveStack = NeuItems.getPrimitiveMultiplier(internalName)
@@ -239,9 +239,9 @@ object PestProfitTracker {
                         }.forEach { (type, count) ->
                             add("§7${type.pluralName}: §e${count.addSeparators()}")
                         }
-                    }
+                    },
                 ).toSearchable()
-            }
+            },
         )
 
         if (selectedBucket == null || selectedBucket.spray != null) {
@@ -268,8 +268,8 @@ object PestProfitTracker {
             add(
                 Renderable.hoverTips(
                     "§aSprays used: §a$sumSpraysUsed$sprayCostString",
-                    hoverTips
-                ).toSearchable()
+                    hoverTips,
+                ).toSearchable(),
             )
         }
 
@@ -278,22 +278,23 @@ object PestProfitTracker {
         tracker.addPriceFromButton(this)
     }
 
-    @HandleEvent
-    fun onRenderOverlay(event: GuiRenderEvent) {
-        if (!isEnabled()) return
-        if (GardenApi.isCurrentlyFarming()) return
+    init {
+        tracker.initRenderer({ config.position }) { shouldShowDisplay() }
+    }
+
+    private fun shouldShowDisplay(): Boolean {
+        if (!config.enabled || !GardenApi.inGarden()) return false
+        if (GardenApi.isCurrentlyFarming()) return false
         val allInactive = lastPestKillTimes.all {
             it.value.passedSince() > config.timeDisplayed.seconds
         }
         val notHoldingTool = !PestApi.hasVacuumInHand() && !PestApi.hasSprayonatorInHand()
-        if (allInactive && notHoldingTool) return
-
-        tracker.renderDisplay(config.position)
+        return !(allInactive && notHoldingTool)
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onPurseChange(event: PurseChangeEvent) {
-        if (!isEnabled() || event.reason != PurseChangeCause.GAIN_MOB_KILL || lastPestKillTimes.isEmpty()) return
+        if (!config.enabled || event.reason != PurseChangeCause.GAIN_MOB_KILL || lastPestKillTimes.isEmpty()) return
         val coins = event.coins.takeIf { it in 1000.0..10000.0 } ?: return
 
         // Get a list of all that have been killed in the last 2 seconds, it will
@@ -326,7 +327,7 @@ object PestProfitTracker {
         val pestTypeMap: MutableMap<NeuInternalName, PestType> = mutableMapOf()
         val pestKillCountMap: MutableMap<PestType, Long> = mutableMapOf()
         event.move(
-            69,
+            73,
             "#profile.garden.pestProfitTracker.items",
             "#profile.garden.pestProfitTracker.bucketedItems",
         ) { items ->
@@ -355,16 +356,16 @@ object PestProfitTracker {
             ConfigManager.gson.toJsonTree(newItems)
         }
 
-        event.add(69, "#profile.garden.pestProfitTracker.pestKills") {
+        event.add(73, "#profile.garden.pestProfitTracker.pestKills") {
             ConfigManager.gson.toJsonTree(pestKillCountMap)
         }
 
-        event.transform(69, "#profile.garden.pestProfitTracker.totalPestsKills") { entry ->
+        event.transform(73, "#profile.garden.pestProfitTracker.totalPestsKills") { entry ->
             // Subtract all pestKillCountMap values from the totalPestsKills
             JsonPrimitive(
                 entry.asLong - pestKillCountMap.entries.filter {
                     it.key != PestType.UNKNOWN
-                }.sumOf { it.value }
+                }.sumOf { it.value },
             )
         }
     }

@@ -28,8 +28,6 @@ abstract class BucketedItemTrackerData<E : Enum<E>> : ItemTrackerData() {
 
     abstract fun E.isBucketSelectable(): Boolean
 
-    abstract fun E.isBucketSelectable(): Boolean
-
     override fun reset() {
         bucketedItems.clear()
         selectedBucket = null

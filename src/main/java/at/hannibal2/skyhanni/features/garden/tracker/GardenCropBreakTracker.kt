@@ -2,6 +2,7 @@ package at.hannibal2.skyhanni.features.garden.tracker
 
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.data.ClickType
+import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.events.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.OwnInventoryItemUpdateEvent
@@ -37,9 +38,9 @@ object GardenCropBreakTracker {
         counterData?.set(uuid, counter)
     }
 
-    @HandleEvent
+    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onCropBreak(event: CropClickEvent) {
-        if (event.clickType != ClickType.LEFT_CLICK || !GardenApi.inGarden()) return
+        if (event.clickType != ClickType.LEFT_CLICK) return
         if (event.crop != cropBrokenType) cropBrokenType = event.crop
 
         blocksBroken?.set(event.crop, blocksBroken?.get(event.crop)?.plus(1) ?: 1)
@@ -60,9 +61,9 @@ object GardenCropBreakTracker {
     }
 
     // TODO account for late updates after swapping held item
-    @HandleEvent
+    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onOwnInventoryItemUpdate(event: OwnInventoryItemUpdateEvent) {
-        if (!GardenApi.inGarden() || !itemHasCounter || event.itemStack.getItemUuid() != heldItem?.getItemUuid()) return
+        if (!itemHasCounter || event.itemStack.getItemUuid() != heldItem?.getItemUuid()) return
         val item = event.itemStack
         val uuid = item.getItemUuid() ?: return
         val counter = readCounter(item) ?: return
