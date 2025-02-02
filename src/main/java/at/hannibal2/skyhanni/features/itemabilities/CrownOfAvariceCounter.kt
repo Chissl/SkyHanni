@@ -38,7 +38,7 @@ object CrownOfAvariceCounter {
     private val internalName = "CROWN_OF_AVARICE".toInternalName()
 
     private var display: List<Renderable> = emptyList()
-    private var currentHelmet: String? = null
+    private var crownUuid: String? = null
     private val MAX_AVARICE_COINS = 1.billion
     private val MAX_AFK_TIME = 2.minutes
     private val coinAmount: MutableMap<String, Long> = mutableMapOf()
@@ -53,21 +53,21 @@ object CrownOfAvariceCounter {
     @HandleEvent
     fun onRenderOverlay(event: GuiRenderEvent) {
         if (!isEnabled()) return
-        if (currentHelmet == null || display.isEmpty()) return
+        if (crownUuid == null || display.isEmpty()) return
         config.position.renderRenderables(buildFinalDisplay(), posLabel = "Crown of Avarice Counter")
     }
 
     @HandleEvent
     fun onSecondPassed(event: SecondPassedEvent) {
         if (!isEnabled()) return
-        if (currentHelmet == null) return
+        if (crownUuid == null) return
         update()
     }
 
     @HandleEvent
     fun onItemRemoved(event: OwnInventorySlotEmptyEvent) {
         if (!isEnabled() || event.slot != 5) return
-        currentHelmet = null
+        crownUuid = null
         update()
     }
 
@@ -80,11 +80,11 @@ object CrownOfAvariceCounter {
         val coins = item.getCoinsOfAvarice()
 
         if (coins == null || uuid == null) {
-            currentHelmet = null
+            crownUuid = null
             update()
             return
         } else {
-            currentHelmet = uuid
+            crownUuid = uuid
         }
 
         if (coinAmount[uuid] == null) coinAmount[uuid] = coins
@@ -117,11 +117,11 @@ object CrownOfAvariceCounter {
     }
 
     private fun buildList(): List<Renderable> = buildList {
-        if (coinAmount[currentHelmet] == null) return@buildList
+        if (coinAmount[crownUuid] == null) return@buildList
         addLine {
             addItemStack(internalName.getItemStack())
             addString(
-                "§6" + if (config.shortFormat) coinAmount[currentHelmet]?.shortFormat() else coinAmount[currentHelmet]?.addSeparators()
+                "§6" + if (config.shortFormat) coinAmount[crownUuid]?.shortFormat() else coinAmount[crownUuid]?.addSeparators()
             )
         }
 
@@ -176,7 +176,7 @@ object CrownOfAvariceCounter {
     private fun calculateTimeUntilMax(): String {
         val coinsPerHour = calculateCoinsPerHour()
         if (coinsPerHour == 0.0) return "Forever..."
-        val timeUntilMax = ((MAX_AVARICE_COINS - (coinAmount[currentHelmet] ?: 0)) / coinsPerHour).hours
+        val timeUntilMax = ((MAX_AVARICE_COINS - (coinAmount[crownUuid] ?: 0)) / coinsPerHour).hours
         return timeUntilMax.format()
     }
 
@@ -185,13 +185,13 @@ object CrownOfAvariceCounter {
         val coins = helmet.getCoinsOfAvarice()
 
         if (coins == null) {
-            currentHelmet = null
+            crownUuid = null
             return
         }
 
         val uuid = helmet.getItemUuid() ?: return
 
-        currentHelmet = uuid
+        crownUuid = uuid
         coinAmount[uuid] = coins
     }
 
