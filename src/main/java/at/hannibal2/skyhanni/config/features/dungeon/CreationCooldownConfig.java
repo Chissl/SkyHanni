@@ -47,6 +47,7 @@ public class CreationCooldownConfig {
         desc = "Block sending the /joininstance command during creation cooldown."
     )
     @ConfigEditorBoolean
+    @FeatureToggle
     public boolean blockInstanceCreation = false;
 
     @Expose
