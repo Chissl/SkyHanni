@@ -52,7 +52,7 @@ object DungeonCreationCooldown {
         if (event.message.startsWith("/joininstance")) {
             event.cancel()
             ChatUtils.chat(
-                "Blocked creating dungeon instance due to cooldown! Cooldown: §b${cooldown.timeUntil().format()}",
+                "Blocked instance creation due to cooldown! Cooldown: §b${cooldown.timeUntil().format()}",
                 replaceSameMessage = true
             )
         }
