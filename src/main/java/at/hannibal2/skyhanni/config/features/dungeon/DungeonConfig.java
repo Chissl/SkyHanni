@@ -120,6 +120,11 @@ public class DungeonConfig {
     public boolean highlightSkeletonSkull = true;
 
     @Expose
+    @ConfigOption(name = "Creation Cooldown", desc = "")
+    @Accordion
+    public CreationCooldownConfig creationCooldown = new CreationCooldownConfig();
+
+    @Expose
     @ConfigOption(name = "Chests Config", desc = "")
     @Accordion
     public DungeonChestConfig chest = new DungeonChestConfig();
