@@ -1,29 +1,23 @@
-package at.hannibal2.skyhanni.config.features.dungeon;
+package at.hannibal2.skyhanni.config.features.dungeon
 
-import at.hannibal2.skyhanni.config.FeatureToggle;
-import at.hannibal2.skyhanni.config.core.config.Position;
-import com.google.gson.annotations.Expose;
-import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean;
-import io.github.notenoughupdates.moulconfig.annotations.ConfigLink;
-import io.github.notenoughupdates.moulconfig.annotations.ConfigOption;
+import at.hannibal2.skyhanni.config.FeatureToggle
+import at.hannibal2.skyhanni.config.core.config.Position
+import com.google.gson.annotations.Expose
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
+import io.github.notenoughupdates.moulconfig.annotations.ConfigLink
+import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 
-public class CreationCooldownConfig {
+class CreationCooldownConfig {
     @Expose
-    @ConfigOption(
-        name = "Enabled",
-        desc = "Show the time until another dungeon instance can be created."
-    )
+    @ConfigOption(name = "Enabled", desc = "Show the time until another dungeon instance can be created.")
     @ConfigEditorBoolean
     @FeatureToggle
-    public boolean enabled = true;
+    var enabled: Boolean = true
 
     @Expose
-    @ConfigOption(
-        name = "Show Outside of Dungeons",
-        desc = "Show on other skyblock islands."
-    )
+    @ConfigOption(name = "Show Outside of Dungeons", desc = "Show on other skyblock islands.")
     @ConfigEditorBoolean
-    public boolean showOutside = false;
+    var showOutside: Boolean = false
 
     @Expose
     @ConfigOption(
@@ -31,15 +25,12 @@ public class CreationCooldownConfig {
         desc = "Only show the display when in the entrance room of a dungeon."
     )
     @ConfigEditorBoolean
-    public boolean entranceOnly = true;
+    var entranceOnly: Boolean = true
 
     @Expose
-    @ConfigOption(
-        name = "Send Chat Message",
-        desc = "Send a chat message when creation cooldown is over."
-    )
+    @ConfigOption(name = "Send Chat Message", desc = "Send a chat message when creation cooldown is over.")
     @ConfigEditorBoolean
-    public boolean sendChatMessage = false;
+    var sendChatMessage: Boolean = false
 
     @Expose
     @ConfigOption(
@@ -48,9 +39,9 @@ public class CreationCooldownConfig {
     )
     @ConfigEditorBoolean
     @FeatureToggle
-    public boolean blockInstanceCreation = false;
+    var blockInstanceCreation: Boolean = false
 
     @Expose
-    @ConfigLink(owner = CreationCooldownConfig.class, field = "enabled")
-    public Position position = new Position(383, 93, false, true);
+    @ConfigLink(owner = CreationCooldownConfig::class, field = "enabled")
+    var position: Position = Position(383, 93, false, true)
 }
