@@ -28,7 +28,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
     *extraStorage,
     drawDisplay = drawDisplay
 ) {
-    private val availableTrackers = arrayOf(
+    override val availableTrackers = listOf(
         DisplayMode.TOTAL,
         DisplayMode.SESSION,
         DisplayMode.DAY,

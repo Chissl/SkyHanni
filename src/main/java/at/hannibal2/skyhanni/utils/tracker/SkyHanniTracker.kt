@@ -156,11 +156,11 @@ open class SkyHanniTracker<Data : TrackerData>(
         },
     )
 
-    private val availableTrackers = listOf(DisplayMode.TOTAL, DisplayMode.SESSION) + extraDisplayModes.keys
+    protected open val availableTrackers = listOf(DisplayMode.TOTAL, DisplayMode.SESSION) + extraDisplayModes.keys
 
     protected open fun MutableList<Renderable>.buildDisplayModeView() {
         addRenderableNullableButton<DisplayMode>(
-            label = "Display Mode",
+            label = "Display Mode:",
             current = getDisplayMode(),
             onChange = { new ->
                 if (new == null) return@addRenderableNullableButton
