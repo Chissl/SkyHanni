@@ -80,7 +80,7 @@ object FarmingWeight {
         if (lastUpdate > SimpleTimeMark.now() - 15.minutes && !apiError) return
         val uuid = LorenzUtils.getPlayerUuid()
         val url = "https://api.elitebot.dev/weight/$uuid/?collections=True"
-        val apiResponse = ApiUtils.getJSONResponse(url)
+        val apiResponse = ApiUtils.getJSONResponse(url, apiName = "Elite Farming Weight")
 
         var error: Throwable? = null
 
@@ -141,7 +141,7 @@ object FarmingWeight {
         if (attemptingCropWeightFetch || hasFetchedCropWeights) return
         attemptingCropWeightFetch = true
         val url = "https://api.elitebot.dev/weights/all"
-        val apiResponse = ApiUtils.getJSONResponse(url)
+        val apiResponse = ApiUtils.getJSONResponse(url, apiName = "Elite Farming Weight")
 
         try {
             val apiData = eliteWeightApiGson.fromJson<EliteWeightsJson>(apiResponse)

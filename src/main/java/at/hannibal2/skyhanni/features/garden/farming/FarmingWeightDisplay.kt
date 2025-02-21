@@ -451,7 +451,7 @@ object FarmingWeightDisplay {
         val atRank = if (isEtaEnabled() && goalRank != 10001) "&atRank=$goalRank" else ""
 
         val url = "https://api.elitebot.dev/leaderboard/rank/farmingweight/$uuid/${FarmingWeight.profileId()}$includeUpcoming$atRank"
-        val apiResponse = ApiUtils.getJSONResponse(url)
+        val apiResponse = ApiUtils.getJSONResponse(url, apiName = "Elitebot Farming Leaderboard")
 
         try {
             val apiData = toEliteLeaderboardJson(apiResponse).data

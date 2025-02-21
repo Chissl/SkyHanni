@@ -96,8 +96,10 @@ object PestProfitTracker {
 
     class BucketData : BucketedItemTrackerData<PestType>() {
         override fun resetItems() {
+            @Suppress("DEPRECATION")
             totalPestsKills = 0L
             pestKills.clear()
+            spraysUsed.clear()
         }
 
         override fun getDescription(bucket: PestType?, timesGained: Long): List<String> {
@@ -121,6 +123,7 @@ object PestProfitTracker {
 
         override fun PestType.isBucketSelectable() = this in PestType.filterableEntries
 
+        @Suppress("DEPRECATION")
         fun getTotalPestCount(): Long =
             if (selectedBucket != null) pestKills[selectedBucket] ?: 0L
             else (pestKills.entries.filter { it.key != PestType.UNKNOWN }.sumOf { it.value } + totalPestsKills)
@@ -146,7 +149,6 @@ object PestProfitTracker {
 
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onChat(event: SkyHanniChatEvent) {
-        if (!config.enabled) return
         event.checkPestChats()
         event.checkSprayChats()
     }
@@ -166,13 +168,14 @@ object PestProfitTracker {
             val cropType = CropType.getByNameOrNull(rawName) ?: return
 
             cropType.addCollectionCounter(CropCollectionType.PEST_BASE, primitiveStack.amount * amount.toLong())
+            if (config.hideChat) blockedReason = "pest_drop"
+            if (!config.enabled) return
+
             tracker.addItem(pest, internalName, amount)
 
             // Field Mice drop 6 separate items, but we only want to count the kill once
             if (pest == PestType.FIELD_MOUSE && internalName == DUNG_ITEM) addKill(pest)
             else if (pest != PestType.FIELD_MOUSE) addKill(pest)
-
-            if (config.hideChat) blockedReason = "pest_drop"
         }
         pestRareDropPattern.matchMatcher(message) {
             val itemGroup = group("item")
@@ -184,6 +187,9 @@ object PestProfitTracker {
                 val fixedString = message.replace(itemGroup, "§a${it}x $itemGroup")
                 chatComponent = ChatComponentText(fixedString)
             }
+
+            // Happens here so that the amount is fixed independently of tracker being enabled
+            if (!config.enabled) return
 
             tracker.addItem(pest, internalName, amount)
 
@@ -197,6 +203,7 @@ object PestProfitTracker {
     }
 
     private fun SkyHanniChatEvent.checkSprayChats() {
+        if (!config.enabled) return
         sprayonatorUsedPattern.matchGroup(message, "spray")?.let {
             SprayType.getByNameOrNull(it)?.addSprayUsed()
         }
