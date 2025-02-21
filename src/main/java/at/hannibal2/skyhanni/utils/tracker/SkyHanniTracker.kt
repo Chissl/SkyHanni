@@ -50,7 +50,7 @@ open class SkyHanniTracker<Data : TrackerData>(
 
     companion object {
 
-        private val config get() = SkyHanniMod.feature.misc.tracker
+        protected val config get() = SkyHanniMod.feature.misc.tracker
         internal val storedTrackers get() = SkyHanniMod.feature.storage.trackerDisplayModes
 
         fun getPricePer(name: NeuInternalName) = name.getPrice(config.priceSource)
