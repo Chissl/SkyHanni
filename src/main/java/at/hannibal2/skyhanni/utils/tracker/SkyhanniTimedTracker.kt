@@ -20,12 +20,12 @@ class SkyhanniTimedTracker<Data : TrackerData>(
     createNewSession: () -> Data,
     private var storage: (ProfileSpecificStorage) -> TimedTrackerData<Data>,
     drawDisplay: (Data) -> List<Searchable>,
-    vararg extraStorage: Pair<DisplayMode, (ProfileSpecificStorage) -> Data>,
+    extraDisplayModes: Map<DisplayMode, (ProfileSpecificStorage) -> Data> = emptyMap(),
 ) : SkyHanniTracker<Data>(
     name,
     createNewSession,
     { throw UnsupportedOperationException("getStorage not used") },
-    *extraStorage,
+    extraDisplayModes,
     drawDisplay = drawDisplay
 ) {
     override val availableTrackers = listOf(
@@ -207,7 +207,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
             previous?.let {
                 Renderable.optionalLink(
                     "§a[ §r§f§l<- §a]",
-                    onClick = {
+                    onLeftClick = {
                         when (getDisplayMode()) {
                             DisplayMode.WEEK -> week = it
                             DisplayMode.MONTH -> month = it
@@ -222,7 +222,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
             next?.let {
                 Renderable.optionalLink(
                     "§a[ §r§f§l-> §r§a]",
-                    onClick = {
+                    onLeftClick = {
                         when (getDisplayMode()) {
                             DisplayMode.WEEK -> week = it
                             DisplayMode.MONTH -> month = it
@@ -244,7 +244,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
             ) {
                 Renderable.optionalLink(
                     "§a[ §r§f§l->> §r§a]",
-                    onClick = {
+                    onLeftClick = {
                         when (getDisplayMode()) {
                             DisplayMode.WEEK -> week = LocalDate.now().format(weekFormatter).weekToLocalDate()
                             DisplayMode.MONTH -> month = LocalDate.now().format(monthFormatter).monthToLocalDate()

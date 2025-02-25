@@ -255,10 +255,10 @@ object CropCollectionDisplay {
         val newList = mutableListOf<Searchable>()
         if (tracker.isInventoryOpen()) {
             newList.add(
-                Renderable.clickAndHover(
+                Renderable.clickable(
                     "§7[§a${cropDisplayMode ?: "Default"}§7]",
-                    listOf("Click for next crop"),
-                    onClick = {
+                    tips = listOf("Click for next crop"),
+                    onLeftClick = {
                         selectNextCrop()
                         tracker.update()
                         DisplayCropChange(cropDisplayMode).post()

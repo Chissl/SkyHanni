@@ -34,11 +34,10 @@ open class SkyHanniTracker<Data : TrackerData>(
     val name: String,
     private val createNewSession: () -> Data,
     private val getStorage: (ProfileSpecificStorage) -> Data,
-    vararg extraStorage: Pair<DisplayMode, (ProfileSpecificStorage) -> Data>,
+    private val extraDisplayModes: Map<DisplayMode, (ProfileSpecificStorage) -> Data> = emptyMap(),
     protected val drawDisplay: (Data) -> List<Searchable>,
 ) {
 
-    protected val extraDisplayModes = extraStorage.toMap()
     protected var inventoryOpen = false
     internal var displayMode: DisplayMode? = null
     private val currentSessions = mutableMapOf<ProfileSpecificStorage, Data>()
@@ -50,7 +49,7 @@ open class SkyHanniTracker<Data : TrackerData>(
 
     companion object {
 
-        protected val config get() = SkyHanniMod.feature.misc.tracker
+        internal val config get() = SkyHanniMod.feature.misc.tracker
         internal val storedTrackers get() = SkyHanniMod.feature.storage.trackerDisplayModes
 
         fun getPricePer(name: NeuInternalName) = name.getPrice(config.priceSource)
@@ -140,7 +139,7 @@ open class SkyHanniTracker<Data : TrackerData>(
         }
     }
 
-    private fun buildSessionResetButton() = Renderable.clickable(
+    protected fun buildSessionResetButton() = Renderable.clickable(
         "§cReset session!",
         tips = listOf(
             "§cThis will reset your",
@@ -155,7 +154,7 @@ open class SkyHanniTracker<Data : TrackerData>(
         },
     )
 
-    protected open val availableTrackers = listOf(DisplayMode.TOTAL, DisplayMode.SESSION) + extraDisplayModes.keys
+    protected open val availableTrackers = listOf(DisplayMode.TOTAL, DisplayMode.SESSION) + this.extraDisplayModes.keys
 
     protected open fun MutableList<Renderable>.buildDisplayModeView() {
         addRenderableNullableButton<DisplayMode>(

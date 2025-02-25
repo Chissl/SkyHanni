@@ -251,10 +251,10 @@ object GardenCropMilestoneDisplay {
         val newList = mutableListOf<Renderable>()
         if (InventoryUtils.inInventory() || InventoryUtils.inContainer()) {
             newList.add(
-                Renderable.clickAndHover(
+                Renderable.clickable(
                     "§7[§a${currentCrop ?: "Default"}§7]",
-                    listOf("Click for next crop"),
-                    onClick = {
+                    tips = listOf("Click for next crop"),
+                    onLeftClick = {
                         selectNextCrop()
                         update()
                         DisplayCropChange(currentCrop).post()
