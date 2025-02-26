@@ -116,8 +116,8 @@ public class DiscordRPCConfig {
         DYNAMIC("Dynamic", 10),
         CROP_MILESTONE("Crop Milestone", 11),
         CURRENT_PET("Current Pet", 12),
-        CROP_COLLECTION("Crop Collection", -1),
-        FARMING_WEIGHT("Farming Weight", -1),
+        CROP_COLLECTION("Crop Collection"),
+        FARMING_WEIGHT("Farming Weight"),
         ;
 
         private final String displayName;
