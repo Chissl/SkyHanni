@@ -63,10 +63,10 @@ private fun getCropCollection(): String {
 }
 
 private fun getFarmingWeight(): String {
-    val weight = FarmingWeightDisplay.weight
+    val weight = FarmingWeightDisplay.weight.toInt()
     val leaderboard = FarmingWeightDisplay.leaderboardPosition
     val lbString = if (leaderboard == -1) "" else "[#$leaderboard]"
-    if (weight == -1.0) return ""
+    if (weight == -1) return ""
     return "Farming Weight: $weight $lbString"
 }
 
@@ -283,12 +283,11 @@ enum class DiscordStatus(private val displayMessageSupplier: (() -> String?)) {
 
     CROP_MILESTONES({ getCropMilestoneDisplay() }),
 
-    FARMING_WEIGHT({ getFarmingWeight() }),
-
     PETS({ getPetDisplay() }),
 
     CROP_COLLECTION({ getCropCollection() }),
 
+    FARMING_WEIGHT({ getFarmingWeight() }),
     // Dynamic-only
     STACKING(
         {
