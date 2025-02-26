@@ -65,7 +65,7 @@ private fun getCropCollection(): String {
 private fun getFarmingWeight(): String {
     val weight = FarmingWeightDisplay.weight
     val leaderboard = FarmingWeightDisplay.leaderboardPosition
-    val lbString = if (leaderboard == -1) "" else "(#$leaderboard)"
+    val lbString = if (leaderboard == -1) "" else "[#$leaderboard]"
     if (weight == -1.0) return ""
     return "Farming Weight: $weight $lbString"
 }
