@@ -62,6 +62,7 @@ object FarmingWeightDisplay {
         )
     }
 
+
     private fun shouldShowDisplay(): Boolean {
         if (GardenApi.hideExtraGuis()) return false
 
@@ -140,8 +141,8 @@ object FarmingWeightDisplay {
     private var display = emptyList<Renderable>()
     private var lastLeaderboardUpdate = SimpleTimeMark.farPast()
     private var apiError = false
-    private var leaderboardPosition = -1
-    private var weight = -1.0
+    public var leaderboardPosition = -1
+    public var weight = -1.0
     private var weightPerSecond = -1.0
     private var weightNeedsRecalculating = true
     private var lastWeightCalculation = SimpleTimeMark.farPast()

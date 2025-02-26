@@ -15,6 +15,7 @@ import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.progressToNextLeve
 import at.hannibal2.skyhanni.features.dungeon.DungeonApi
 import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.features.garden.GardenApi.getCropType
+import at.hannibal2.skyhanni.features.garden.farming.FarmingWeightDisplay
 import at.hannibal2.skyhanni.features.misc.compacttablist.AdvancedPlayerList
 import at.hannibal2.skyhanni.features.rift.RiftApi
 import at.hannibal2.skyhanni.utils.InventoryUtils
@@ -59,6 +60,14 @@ private fun getCropCollection(): String {
     val crop = GardenApi.storage?.lastGainedCrop ?: return "Not Farming!"
     val collection = crop.getCollection()
     return "$crop Collection: ${collection.addSeparators()}"
+}
+
+private fun getFarmingWeight(): String {
+    val weight = FarmingWeightDisplay.weight
+    val leaderboard = FarmingWeightDisplay.leaderboardPosition
+    val lbString = if (leaderboard == -1) "" else "(#$leaderboard)"
+    if (weight == -1.0) return ""
+    return "Farming Weight: $weight $lbString"
 }
 
 private fun getCropMilestoneDisplay(): String {
@@ -273,6 +282,8 @@ enum class DiscordStatus(private val displayMessageSupplier: (() -> String?)) {
     ),
 
     CROP_MILESTONES({ getCropMilestoneDisplay() }),
+
+    FARMING_WEIGHT({ getFarmingWeight() }),
 
     PETS({ getPetDisplay() }),
 
