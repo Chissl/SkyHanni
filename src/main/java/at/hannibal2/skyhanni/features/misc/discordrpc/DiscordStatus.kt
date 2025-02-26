@@ -68,7 +68,7 @@ private fun getFarmingWeight(): String {
     val leaderboard = FarmingWeightDisplay.leaderboardPosition
     val lbString = if (leaderboard == -1) "" else "[#$leaderboard]"
     if (weight == -1.0) return ""
-    return "Farming Weight: ${weight.roundTo(2)} $lbString"
+    return "Farming Weight: ${weight.roundTo(2).addSeparators()} $lbString"
 }
 
 private fun getCropMilestoneDisplay(): String {
