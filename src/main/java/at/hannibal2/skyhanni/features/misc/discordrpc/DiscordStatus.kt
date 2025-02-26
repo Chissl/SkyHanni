@@ -283,12 +283,11 @@ enum class DiscordStatus(private val displayMessageSupplier: (() -> String?)) {
 
     CROP_MILESTONES({ getCropMilestoneDisplay() }),
 
-    FARMING_WEIGHT({ getFarmingWeight() }),
-
     PETS({ getPetDisplay() }),
 
     CROP_COLLECTION({ getCropCollection() }),
 
+    FARMING_WEIGHT({ getFarmingWeight() }),
     // Dynamic-only
     STACKING(
         {
