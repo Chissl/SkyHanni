@@ -23,6 +23,7 @@ import at.hannibal2.skyhanni.utils.ItemUtils.extraAttributes
 import at.hannibal2.skyhanni.utils.LorenzUtils
 import at.hannibal2.skyhanni.utils.LorenzUtils.colorCodeToRarity
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
+import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.SkyBlockTime
 import at.hannibal2.skyhanni.utils.StringUtils.firstLetterUppercase
@@ -63,11 +64,11 @@ private fun getCropCollection(): String {
 }
 
 private fun getFarmingWeight(): String {
-    val weight = FarmingWeightDisplay.weight.toInt()
+    val weight = FarmingWeightDisplay.weight
     val leaderboard = FarmingWeightDisplay.leaderboardPosition
     val lbString = if (leaderboard == -1) "" else "[#$leaderboard]"
-    if (weight == -1) return ""
-    return "Farming Weight: $weight $lbString"
+    if (weight == -1.0) return ""
+    return "Farming Weight: ${weight.roundTo(2)} $lbString"
 }
 
 private fun getCropMilestoneDisplay(): String {
