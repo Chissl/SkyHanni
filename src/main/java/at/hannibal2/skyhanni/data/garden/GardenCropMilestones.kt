@@ -218,7 +218,7 @@ object GardenCropMilestones {
         getTierForCrop(this, allowOverflow)
 
     private fun getTierForCrop(crop: CropType, allowOverflow: Boolean = false): Int =
-        getTierForCropCount(crop.getCounter(), crop, allowOverflow)
+        getTierForCropCount(crop.getMilestoneCounter(), crop, allowOverflow)
 
     fun getTierForCropCount(count: Long, crop: CropType, allowOverflow: Boolean = false): Int {
         var tier = 0
