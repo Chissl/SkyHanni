@@ -64,9 +64,7 @@ object FarmingWeightDisplay {
 
 
     private fun shouldShowDisplay(): Boolean {
-        if (GardenApi.hideExtraGuis()) return false
-
-        return true
+        return !GardenApi.hideExtraGuis()
     }
 
     @HandleEvent
