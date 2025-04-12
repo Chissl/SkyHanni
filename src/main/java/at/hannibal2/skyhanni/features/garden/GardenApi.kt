@@ -65,7 +65,7 @@ object GardenApi {
     val mushroomCowPet
         get() = PetApi.isCurrentPet("Mooshroom Cow") &&
             FarmingItemType.MOOSHROOM_COW.getItemOrNull()?.let { it.getItemRarityOrNull()?.isAtLeast(LorenzRarity.RARE) } ?: false
-    val mushroomCowPetLevel get() = storage?.fortune?.farmingItems?.get(FarmingItems.MOOSHROOM_COW)?.getPetLevel() ?: 100
+    val mushroomCowPetLevel get() = storage?.fortune?.farmingItems?.get(FarmingItemType.MOOSHROOM_COW)?.getPetLevel() ?: 100
     private var inBarn = false
     val onBarnPlot get() = inBarn && inGarden()
     val storage get() = ProfileStorageData.profileSpecific?.garden
