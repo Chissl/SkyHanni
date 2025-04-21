@@ -143,8 +143,9 @@ object PestProfitTracker {
 
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onItemAdd(event: ItemAddEvent) {
-        if (!config.enabled || event.source != ItemAddManager.Source.COMMAND) return
-        with(tracker) { event.addItemFromEvent() }
+        if (config.enabled && event.source == ItemAddManager.Source.COMMAND) {
+            with(tracker) { event.addItemFromEvent() }
+        }
     }
 
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
@@ -169,7 +170,6 @@ object PestProfitTracker {
 
             cropType.addCollectionCounter(CropCollectionType.PEST_BASE, primitiveStack.amount * amount.toLong())
             if (config.hideChat) blockedReason = "pest_drop"
-            if (!config.enabled) return
 
             tracker.addItem(pest, internalName, amount)
 
@@ -189,7 +189,6 @@ object PestProfitTracker {
             }
 
             // Happens here so that the amount is fixed independently of tracker being enabled
-            if (!config.enabled) return
 
             tracker.addItem(pest, internalName, amount)
 
@@ -203,7 +202,6 @@ object PestProfitTracker {
     }
 
     private fun SkyHanniChatEvent.checkSprayChats() {
-        if (!config.enabled) return
         sprayonatorUsedPattern.matchGroup(message, "spray")?.let {
             SprayType.getByNameOrNull(it)?.addSprayUsed()
         }
@@ -301,7 +299,7 @@ object PestProfitTracker {
 
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onPurseChange(event: PurseChangeEvent) {
-        if (!config.enabled || event.reason != PurseChangeCause.GAIN_MOB_KILL || lastPestKillTimes.isEmpty()) return
+        if (event.reason != PurseChangeCause.GAIN_MOB_KILL || lastPestKillTimes.isEmpty()) return
         val coins = event.coins.takeIf { it in 1000.0..10000.0 } ?: return
 
         // Get a list of all that have been killed in the last 2 seconds, it will
@@ -376,6 +374,4 @@ object PestProfitTracker {
             )
         }
     }
-
-    fun isEnabled() = GardenApi.inGarden() && config.enabled
 }

@@ -170,7 +170,7 @@ object DicerRngDropTracker {
 
     class ItemDrop(val crop: CropType, val rarity: DropRarity, val pattern: Pattern)
 
-    fun isEnabled() = GardenApi.inGarden() && config.display
+    private fun isEnabled() = GardenApi.inGarden() && config.display
 
     @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
