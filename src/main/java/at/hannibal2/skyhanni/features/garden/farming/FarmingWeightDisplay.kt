@@ -40,6 +40,7 @@ import at.hannibal2.skyhanni.utils.json.BaseGsonBuilder
 import at.hannibal2.skyhanni.utils.json.SkyHanniTypeAdapters
 import at.hannibal2.skyhanni.utils.json.fromJson
 import at.hannibal2.skyhanni.utils.renderables.Renderable
+import at.hannibal2.skyhanni.utils.renderables.RenderableString
 import com.google.gson.JsonObject
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
@@ -180,7 +181,7 @@ object FarmingWeightDisplay {
         if (weight == -1.0) {
             if (isLoadingWeight()) {
                 if (display.isEmpty()) {
-                    display = Renderable.singeltonString("§6Farming Weight§7: §eLoading..")
+                    display = listOf(RenderableString(("§6Farming Weight§7: §eLoading..")))
                 }
             }
             return
@@ -242,14 +243,14 @@ object FarmingWeightDisplay {
         var goal = 10000
 
         // Check that the provided string is valid
-        val parsed = value.toIntOrNull() ?: 0
+        val parsed = value.get().toIntOrNull() ?: 0
         if (parsed < 1 || parsed > goal) {
             ChatUtils.chatAndOpenConfig(
                 "Invalid Farming Weight Overtake Goal! Click here to edit the Overtake Goal config value " +
                     "to a valid number [1-10000] to use this feature!",
                 GardenApi.config.eliteFarmingWeights::etaGoalRank,
             )
-            config.etaGoalRank = goal.toString()
+            config.etaGoalRank.set(goal.toString())
         } else {
             goal = parsed
         }
