@@ -2,6 +2,7 @@ package at.hannibal2.skyhanni.features.garden.farming
 
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
+import at.hannibal2.skyhanni.api.pet.CurrentPetApi
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.features.garden.MoneyPerHourConfig.CustomFormatEntry
 import at.hannibal2.skyhanni.events.DebugDataCollectEvent
@@ -160,7 +161,8 @@ object CropMoneyDisplay {
                 }
 
                 val mushroomPrice = (redPrice + brownPrice) / 2
-                val perSecond = GardenCropSpeed.getRecentBPS() * it.multiplier * mushroomPrice * GardenApi.mushroomCowPetLevel / 100.0
+                val perSecond =
+                    GardenCropSpeed.getRecentBPS() * it.multiplier * mushroomPrice * (CurrentPetApi.currentPet?.level ?: 0) / 100.0
                 extraMoneyPerHour.mushroomCowCoins = perSecond * 60 * 60
             }
 

@@ -18,7 +18,7 @@ import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.ApiUtils
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.EnumUtils.isAnyOf
-import at.hannibal2.skyhanni.utils.LorenzUtils
+import at.hannibal2.skyhanni.utils.PlayerUtils
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.sumAllValues
 import at.hannibal2.skyhanni.utils.json.BaseGsonBuilder
@@ -78,7 +78,7 @@ object FarmingWeight {
 
     private fun loadWeight(localProfile: String) {
         if (lastUpdate > SimpleTimeMark.now() - 15.minutes && !apiError) return
-        val uuid = LorenzUtils.getPlayerUuid()
+        val uuid = PlayerUtils.getUuid()
         val url = "https://api.elitebot.dev/weight/$uuid/?collections=True"
         val apiResponse = ApiUtils.getJSONResponse(url, apiName = "Elite Farming Weight")
 

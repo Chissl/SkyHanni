@@ -7,7 +7,7 @@ import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.ChatUtils.chat
-import at.hannibal2.skyhanni.utils.LorenzUtils
+import at.hannibal2.skyhanni.utils.PlayerUtils
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import java.time.LocalDate
 import kotlin.time.Duration.Companion.seconds
@@ -29,7 +29,7 @@ object GardenUptimeCommand {
 
         val commandString = mutableListOf(
             "§r§3§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬§r",
-            "§b${LorenzUtils.getPlayerName()}'s§e garden uptime for the past §a$dayAmount §edays:",
+            "§b${PlayerUtils.getName()}'s§e garden uptime for the past §a$dayAmount §edays:",
             ""
         )
 

@@ -1,6 +1,7 @@
 package at.hannibal2.skyhanni.features.garden.tracker
 
 import at.hannibal2.skyhanni.api.event.HandleEvent
+import at.hannibal2.skyhanni.api.pet.CurrentPetApi
 import at.hannibal2.skyhanni.data.ClickType
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
@@ -54,7 +55,7 @@ object GardenCropBreakTracker {
         // TODO via pet api
         if (GardenApi.mushroomCowPet) {
             CropType.MUSHROOM.addCollectionCounter(
-                CropCollectionType.MOOSHROOM_COW, weightedRandomRound(GardenApi.mushroomCowPetLevel / 100.0).toLong()
+                CropCollectionType.MOOSHROOM_COW, weightedRandomRound((CurrentPetApi.currentPet?.level ?: 0) / 100.0).toLong()
             )
         }
 

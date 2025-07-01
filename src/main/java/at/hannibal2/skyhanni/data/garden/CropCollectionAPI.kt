@@ -10,8 +10,8 @@ import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.ItemUtils.getLore
-import at.hannibal2.skyhanni.utils.LorenzUtils
 import at.hannibal2.skyhanni.utils.NumberUtil.formatLong
+import at.hannibal2.skyhanni.utils.PlayerUtils
 import at.hannibal2.skyhanni.utils.RegexUtils.firstMatcher
 import at.hannibal2.skyhanni.utils.RegexUtils.matchGroup
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
@@ -107,7 +107,7 @@ object CropCollectionAPI {
                         val playerName = group("playerName").cleanPlayerName()
                         val amount = group("amount")
 
-                        if (playerName != LorenzUtils.getPlayerName()) return@matchMatcher
+                        if (playerName != PlayerUtils.getName()) return@matchMatcher
                         ChatUtils.debug("Name: $name Crop: $crop Player: $playerName Amount: $amount")
 
                         val amountLong = when {
