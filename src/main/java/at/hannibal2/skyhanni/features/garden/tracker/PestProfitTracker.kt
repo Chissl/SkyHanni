@@ -36,12 +36,13 @@ import at.hannibal2.skyhanni.utils.NumberUtil.shortFormat
 import at.hannibal2.skyhanni.utils.RegexUtils.matchGroup
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
-import at.hannibal2.skyhanni.utils.TimeLimitedCache
 import at.hannibal2.skyhanni.utils.chat.TextHelper.asComponent
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.addOrPut
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addSearchString
+import at.hannibal2.skyhanni.utils.collection.TimeLimitedCache
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.Searchable
+import at.hannibal2.skyhanni.utils.renderables.StringRenderable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import at.hannibal2.skyhanni.utils.tracker.BucketedItemTrackerData
@@ -85,7 +86,7 @@ object PestProfitTracker {
     )
 
     val DUNG_ITEM = "DUNG".toInternalName()
-    private val lastPestKillTimes: TimeLimitedCache<PestType, SimpleTimeMark> = TimeLimitedCache(15.seconds)
+    private val lastPestKillTimes = TimeLimitedCache<PestType, SimpleTimeMark>(15.seconds)
     private val tracker = SkyHanniBucketedItemTracker(
         "Pest Profit Tracker",
         { BucketData() },
@@ -94,7 +95,7 @@ object PestProfitTracker {
     )
     private var adjustmentMap: Map<PestType, Map<NeuInternalName, Int>> = mapOf()
 
-    class BucketData : BucketedItemTrackerData<PestType>() {
+    class BucketData : BucketedItemTrackerData<PestType>(PestType::class) {
         override fun resetItems() {
             @Suppress("DEPRECATION")
             totalPestsKills = 0L
@@ -171,7 +172,7 @@ object PestProfitTracker {
             cropType.addCollectionCounter(CropCollectionType.PEST_BASE, primitiveStack.amount * amount.toLong())
             if (config.hideChat) blockedReason = "pest_drop"
 
-            tracker.addItem(pest, internalName, amount)
+            tracker.addItem(pest, internalName, amount, command = false)
 
             // Field Mice drop 6 separate items, but we only want to count the kill once
             if (pest == PestType.FIELD_MOUSE && internalName == DUNG_ITEM) addKill(pest)
@@ -190,7 +191,7 @@ object PestProfitTracker {
 
             // Happens here so that the amount is fixed independently of tracker being enabled
 
-            tracker.addItem(pest, internalName, amount)
+            tracker.addItem(pest, internalName, amount, command = false)
 
             val primitiveStack = NeuItems.getPrimitiveMultiplier(internalName)
             val rawName = primitiveStack.internalName.itemNameWithoutColor
@@ -234,7 +235,7 @@ object PestProfitTracker {
 
         add(
             when {
-                selectedBucket != null -> Renderable.string(pestCountFormat).toSearchable()
+                selectedBucket != null -> StringRenderable(pestCountFormat).toSearchable()
                 else -> Renderable.hoverTips(
                     pestCountFormat,
                     buildList {
@@ -305,7 +306,7 @@ object PestProfitTracker {
         // Get a list of all that have been killed in the last 2 seconds, it will
         // want to be the most recent one that was killed.
         val pest = lastPestKillTimes.minByOrNull { it.value }?.key ?: return
-        tracker.addCoins(pest, coins.roundToInt())
+        tracker.addCoins(pest, coins.roundToInt(), command = false)
     }
 
     @HandleEvent

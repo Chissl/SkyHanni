@@ -6,7 +6,8 @@ import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestone
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig.TimeFormatEntry
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.MushroomPetPerkConfig.MushroomTextEntry
 import at.hannibal2.skyhanni.data.ProfileStorageData
-import at.hannibal2.skyhanni.data.TitleManager
+import at.hannibal2.skyhanni.data.title.TitleContext
+import at.hannibal2.skyhanni.data.title.TitleManager
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones
 import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
@@ -48,7 +49,7 @@ object GardenCropMilestoneDisplay {
     private val overflowConfig get() = config.overflow
     private val storage get() = ProfileStorageData.profileSpecific?.garden?.customGoalMilestone
 
-    private var countdownTitleContext: TitleManager.TitleContext? = null
+    private var countdownTitleContext: TitleContext? = null
     private var lastTitleWarnedLevel = -1
     private var needsInventory = false
 
@@ -124,7 +125,7 @@ object GardenCropMilestoneDisplay {
             progressDisplay = drawProgressDisplay(it)
         }
 
-        if (config.next.bestDisplay && config.next.bestAlwaysOn || displayCrop != null) {
+        if (config.next.bestDisplay && config.next.bestAlwaysOn.get() || displayCrop != null) {
             GardenBestCropTime.display = GardenBestCropTime.drawBestDisplay(displayCrop)
         }
     }
@@ -182,7 +183,7 @@ object GardenCropMilestoneDisplay {
                 val missing = need - have
                 val missingTime = (missing / farmingFortuneSpeed).seconds
                 val millis = missingTime.inWholeMilliseconds
-                GardenBestCropTime.timeTillNextCrop[crop] = millis
+                GardenBestCropTime.timeTillNextCrop[crop] = millis.milliseconds
                 tryWarn(missingTime, "§b${crop.cropName} $nextTier in %t", crop)
                 val biggestUnit = config.highestTimeFormat.get().timeUnit
                 val duration = missingTime.format(biggestUnit)

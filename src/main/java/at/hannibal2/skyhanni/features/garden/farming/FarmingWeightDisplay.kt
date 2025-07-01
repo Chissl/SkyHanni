@@ -28,19 +28,22 @@ import at.hannibal2.skyhanni.utils.ApiUtils
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.EnumUtils.isAnyOf
 import at.hannibal2.skyhanni.utils.LorenzUtils
+import at.hannibal2.skyhanni.utils.ConditionalUtils
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
 import at.hannibal2.skyhanni.utils.OSUtils
+import at.hannibal2.skyhanni.utils.PlayerUtils
 import at.hannibal2.skyhanni.utils.RenderDisplayHelper
 import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
+import at.hannibal2.skyhanni.utils.SkyBlockUtils
 import at.hannibal2.skyhanni.utils.StringUtils
 import at.hannibal2.skyhanni.utils.TimeUtils.format
 import at.hannibal2.skyhanni.utils.json.BaseGsonBuilder
 import at.hannibal2.skyhanni.utils.json.SkyHanniTypeAdapters
 import at.hannibal2.skyhanni.utils.json.fromJson
 import at.hannibal2.skyhanni.utils.renderables.Renderable
-import at.hannibal2.skyhanni.utils.renderables.RenderableString
+import at.hannibal2.skyhanni.utils.renderables.StringRenderable
 import com.google.gson.JsonObject
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
@@ -181,7 +184,7 @@ object FarmingWeightDisplay {
         if (weight == -1.0) {
             if (isLoadingWeight()) {
                 if (display.isEmpty()) {
-                    display = listOf(RenderableString(("§6Farming Weight§7: §eLoading..")))
+                    display = listOf(StringRenderable(("§6Farming Weight§7: §eLoading..")))
                 }
             }
             return
@@ -197,7 +200,7 @@ object FarmingWeightDisplay {
             Renderable.clickable(
                 "§6Farming Weight§7: $weight$leaderboard",
                 tips = listOf("§eClick to open your Farming Profile."),
-                onLeftClick = { openWebsite(LorenzUtils.getPlayerName()) },
+                onLeftClick = { openWebsite(PlayerUtils.getName()) },
             ),
         )
 
@@ -363,13 +366,13 @@ object FarmingWeightDisplay {
                 "§eClick to open your Farming Weight",
                 "§eprofile on §celitebot.dev",
             ),
-            "/shfarmingprofile ${LorenzUtils.getPlayerName()}",
+            "/shfarmingprofile ${PlayerUtils.getName()}",
         )
     }
 
     private fun isEnabled() = config.display && (outsideEnabled() || inGardenEnabled())
-    private fun outsideEnabled() = OutsideSBFeature.FARMING_WEIGHT.isSelected() && !LorenzUtils.inSkyBlock
-    private fun inGardenEnabled() = (LorenzUtils.inSkyBlock && GardenApi.inGarden()) || config.showOutsideGarden
+    private fun outsideEnabled() = OutsideSBFeature.FARMING_WEIGHT.isSelected() && !SkyBlockUtils.inSkyBlock
+    private fun inGardenEnabled() = (SkyBlockUtils.inSkyBlock && GardenApi.inGarden()) || config.showOutsideGarden
 
     private fun isEtaEnabled() = config.overtakeETA
 
@@ -430,7 +433,7 @@ object FarmingWeightDisplay {
     }
 
     private fun loadLeaderboardPosition(): Int {
-        val uuid = LorenzUtils.getPlayerUuid()
+        val uuid = PlayerUtils.getUuid()
 
         val includeUpcoming = if (isEtaEnabled()) "?includeUpcoming=true" else ""
         val goalRank = getRankGoal() + 1 // API returns upcoming players as if you were at this rank already
@@ -498,7 +501,7 @@ object FarmingWeightDisplay {
     private fun CropType.getLocalCounter() = localCounter[this] ?: 0L
 
     fun lookUpCommand(it: Array<String>) {
-        val name = if (it.size == 1) it[0] else LorenzUtils.getPlayerName()
+        val name = if (it.size == 1) it[0] else PlayerUtils.getName()
         openWebsite(name, ignoreCooldown = true)
     }
 

@@ -36,7 +36,7 @@ import java.util.regex.Pattern
 @SkyHanniModule
 object DicerRngDropTracker {
 
-    private val config get() = GardenApi.config.dicerCounters
+    private val config get() = GardenApi.config.dicerRngDropTracker
     private val tracker = SkyHanniTracker("Dicer RNG Drop Tracker", { Data() }, { it.garden.dicerDropTracker }) {
         drawDisplay(it)
     }
@@ -194,6 +194,7 @@ object DicerRngDropTracker {
 
         event.move(87, "garden.dicerCounters.pos", "garden.dicerCounters.position")
         event.move(87, "garden.dicerCounters.display", "garden.dicerCounters.enabled")
+        event.move(88, "garden.dicerCounters", "garden.dicerRngDropTracker")
     }
 
     @HandleEvent
