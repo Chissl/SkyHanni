@@ -26,14 +26,16 @@ import at.hannibal2.skyhanni.features.fishing.tracker.SeaCreatureTracker
 import at.hannibal2.skyhanni.features.fishing.trophy.TrophyRarity
 import at.hannibal2.skyhanni.features.foraging.ForagingTrackerLegacy
 import at.hannibal2.skyhanni.features.garden.CropAccessory
+import at.hannibal2.skyhanni.features.garden.CropCollectionDisplay
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenPlotApi.PlotData
-import at.hannibal2.skyhanni.features.garden.farming.ArmorDropTracker
-import at.hannibal2.skyhanni.features.garden.farming.DicerRngDropTracker
 import at.hannibal2.skyhanni.features.garden.farming.lane.FarmingLane
 import at.hannibal2.skyhanni.features.garden.fortuneguide.FarmingItemType
-import at.hannibal2.skyhanni.features.garden.pests.PestProfitTracker
 import at.hannibal2.skyhanni.features.garden.pests.stereo.VinylType
+import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
+import at.hannibal2.skyhanni.features.garden.tracker.DicerRngDropTracker
+import at.hannibal2.skyhanni.features.garden.tracker.GardenUptimeTracker
+import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker
 import at.hannibal2.skyhanni.features.garden.visitor.VisitorReward
 import at.hannibal2.skyhanni.features.gifting.GiftProfitTracker
 import at.hannibal2.skyhanni.features.inventory.EquipmentApi
@@ -65,6 +67,7 @@ import com.google.gson.annotations.Expose
 import net.minecraft.item.ItemStack
 import java.time.LocalDate
 import java.util.UUID
+import java.util.EnumMap
 import kotlin.time.Duration
 
 // put everything under its respective feature, the order of the features is the same as in the folder structure
@@ -414,7 +417,25 @@ class ProfileSpecificStorage(
         var experience: Long? = null
 
         @Expose
-        var cropCounter: MutableMap<CropType, Long> = enumMapOf()
+        var lastMilestoneFix: SimpleTimeMark = farPast()
+
+        @Expose
+        var lastCollectionFix: MutableMap<CropType, SimpleTimeMark> = EnumMap(CropType::class.java)
+
+        @Expose
+        var cropCollectionCounter: MutableMap<CropType, Long> = EnumMap(CropType::class.java)
+
+        @Expose
+        var lastGainedCrop: CropType? = null
+
+        @Expose
+        var cropMilestoneCounter: MutableMap<CropType, Long> = EnumMap(CropType::class.java)
+
+        @Expose
+        var counterData: MutableMap<String, Long> = HashMap()
+
+        @Expose
+        var blocksBroken: MutableMap<CropType, Long> = enumMapOf()
 
         @Expose
         var cropUpgrades: MutableMap<CropType, Int> = enumMapOf()
@@ -573,6 +594,12 @@ class ProfileSpecificStorage(
         @Expose
         var farmingWeight: FarmingWeightConfig = FarmingWeightConfig()
 
+        @Expose
+        var farmingWeightUncountedCrops: Map<CropType, Int> = EnumMap(CropType::class.java)
+
+        @Expose
+        var farmingWeightBonusWeight: Double = 0.0
+
         class FarmingWeightConfig {
             // TODO rename to lastLeaderboard
             @Expose
@@ -590,6 +617,12 @@ class ProfileSpecificStorage(
 
         @Expose
         var activeVinyl: VinylType? = null
+
+        @Expose
+        var uptimeTracker: GardenUptimeTracker.TimeData = GardenUptimeTracker.TimeData()
+
+        @Expose
+        var cropCollectionTracker: CropCollectionDisplay.TimeData = CropCollectionDisplay.TimeData()
     }
 
     // - gui

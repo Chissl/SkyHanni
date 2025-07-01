@@ -3,9 +3,9 @@ package at.hannibal2.skyhanni.features.garden
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.commands.CommandCategory
 import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
-import at.hannibal2.skyhanni.data.GardenCropMilestones
-import at.hannibal2.skyhanni.data.GardenCropMilestones.getCounter
 import at.hannibal2.skyhanni.data.ProfileStorageData
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestones
+import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
 import at.hannibal2.skyhanni.features.garden.farming.GardenCropSpeed.getSpeed
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
@@ -33,7 +33,7 @@ object FarmingMilestoneCommand {
         val targetMilestone = target?.toIntOrNull()
 
         if (currentMilestone == null) {
-            val currentProgress = enteredCrop.getCounter()
+            val currentProgress = enteredCrop.getMilestoneCounter()
             val currentCropMilestone =
                 GardenCropMilestones.getTierForCropCount(currentProgress, enteredCrop, allowOverflow = true) + 1
             val cropsForTier =
@@ -77,7 +77,7 @@ object FarmingMilestoneCommand {
         }
         val targetLevel = args[1].formatIntOrUserError() ?: return
 
-        val counter = enteredCrop.getCounter()
+        val counter = enteredCrop.getMilestoneCounter()
         val level = GardenCropMilestones.getTierForCropCount(counter, enteredCrop)
         if (targetLevel <= level && targetLevel != 0) {
             ChatUtils.userError("Custom goal milestone ($targetLevel) must be greater than your current milestone ($level).")

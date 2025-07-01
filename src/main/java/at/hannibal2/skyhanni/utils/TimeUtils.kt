@@ -7,6 +7,10 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
+import java.time.temporal.WeekFields
+import java.util.Locale
 import kotlin.math.absoluteValue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -195,6 +199,29 @@ object TimeUtils {
 
     // TODO move into lorenz logger. then rewrite lorenz logger and use something different entirely
     fun SimpleDateFormat.formatCurrentTime(): String = this.format(System.currentTimeMillis())
+
+    val weekFields = WeekFields.of(Locale.getDefault())
+    val weekFormatter =
+        DateTimeFormatterBuilder()
+            .appendValue(ChronoField.YEAR)
+            .appendLiteral('-')
+            .appendValue(weekFields.weekOfYear())
+            .parseDefaulting(ChronoField.DAY_OF_WEEK, weekFields.firstDayOfWeek.value.toLong())
+            .toFormatter()
+
+    val monthFormatter =
+        DateTimeFormatterBuilder().appendPattern("yyyy'-'MM").parseDefaulting(ChronoField.DAY_OF_MONTH, 1).toFormatter()
+
+    val yearFormatter =
+        DateTimeFormatterBuilder().appendPattern("yyyy").parseDefaulting(ChronoField.DAY_OF_YEAR, 1).toFormatter()
+
+    val weekTextFormatter =
+        DateTimeFormatterBuilder()
+            .appendValue(ChronoField.YEAR)
+            .appendLiteral(", week ")
+            .appendValue(weekFields.weekOfYear())
+            .parseDefaulting(ChronoField.DAY_OF_WEEK, weekFields.firstDayOfWeek.value.toLong())
+            .toFormatter()
 }
 
 private const val FACTOR_SECONDS = 1000L
@@ -222,3 +249,4 @@ val Duration.inPartialSeconds: Double get() = toDouble(DurationUnit.SECONDS)
 val Duration.inPartialMinutes: Double get() = inPartialSeconds / 60
 val Duration.inPartialHours: Double get() = inPartialSeconds / 3600
 val Duration.inPartialDays: Double get() = inPartialSeconds / 86_400
+

@@ -24,34 +24,34 @@ import at.hannibal2.skyhanni.utils.renderables.RenderableUtils.addRenderableNull
 import at.hannibal2.skyhanni.utils.renderables.SearchTextInput
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.buildSearchBox
-import at.hannibal2.skyhanni.utils.renderables.container.VerticalContainerRenderable
 import at.hannibal2.skyhanni.utils.renderables.toRenderable
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.client.gui.inventory.GuiInventory
 import kotlin.time.Duration.Companion.seconds
 
+@Suppress("TooManyFunctions")
 open class SkyHanniTracker<Data : TrackerData>(
     val name: String,
     private val createNewSession: () -> Data,
     private val getStorage: (ProfileSpecificStorage) -> Data,
     private val extraDisplayModes: Map<DisplayMode, (ProfileSpecificStorage) -> Data> = emptyMap(),
-    private val drawDisplay: (Data) -> List<Searchable>,
+    protected val drawDisplay: (Data) -> List<Searchable>,
 ) {
 
-    private var inventoryOpen = false
-    private var displayMode: DisplayMode? = null
+    protected var inventoryOpen = false
+    internal var displayMode: DisplayMode? = null
     private val currentSessions = mutableMapOf<ProfileSpecificStorage, Data>()
     private var display = emptyList<Renderable>()
     private var sessionResetTime = SimpleTimeMark.farPast()
     private var wasSearchEnabled = config.trackerSearchEnabled.get()
     private var dirty = false
-    val textInput = SearchTextInput()
+    protected val textInput = SearchTextInput()
 
     companion object {
 
-        private val config get() = SkyHanniMod.feature.misc.tracker
-        private val storedTrackers get() = SkyHanniMod.feature.storage.trackerDisplayModes
+        internal val config get() = SkyHanniMod.feature.misc.tracker
+        internal val storedTrackers get() = SkyHanniMod.feature.storage.trackerDisplayModes
 
         fun getPricePer(name: NeuInternalName) = name.getPrice(config.priceSource)
     }
@@ -104,12 +104,7 @@ open class SkyHanniTracker<Data : TrackerData>(
 
         val searchEnabled = config.trackerSearchEnabled.get()
         if (dirty || TrackerManager.dirty || (searchEnabled != wasSearchEnabled)) {
-            display = getSharedTracker()?.let {
-                val data = it.get(getDisplayMode())
-                val searchables = drawDisplay(data)
-                if (config.trackerSearchEnabled.get()) buildFinalDisplay(searchables.buildSearchBox(textInput))
-                else buildFinalDisplay(VerticalContainerRenderable(searchables.toRenderable()))
-            }.orEmpty()
+            display = getDisplay()
             dirty = false
         }
         wasSearchEnabled = searchEnabled
@@ -121,7 +116,14 @@ open class SkyHanniTracker<Data : TrackerData>(
         dirty = true
     }
 
-    private fun buildFinalDisplay(searchBox: Renderable) = buildList {
+    protected open fun getDisplay() = getSharedTracker()?.let {
+        val data = it.get(getDisplayMode())
+        val searchables = drawDisplay(data)
+        if (config.trackerSearchEnabled.get()) buildFinalDisplay(searchables.buildSearchBox(textInput))
+        else buildFinalDisplay(Renderable.verticalContainer(searchables.toRenderable()))
+    }.orEmpty()
+
+    protected open fun buildFinalDisplay(searchBox: Renderable) = buildList {
         add(searchBox)
         if (isEmpty()) return@buildList
         if (inventoryOpen) {
@@ -132,7 +134,7 @@ open class SkyHanniTracker<Data : TrackerData>(
         }
     }
 
-    private fun buildSessionResetButton() = Renderable.clickable(
+    protected fun buildSessionResetButton() = Renderable.clickable(
         "§cReset session!",
         tips = listOf(
             "§cThis will reset your",
@@ -147,11 +149,11 @@ open class SkyHanniTracker<Data : TrackerData>(
         },
     )
 
-    private val availableTrackers = listOf(DisplayMode.TOTAL, DisplayMode.SESSION) + extraDisplayModes.keys
+    protected open val availableTrackers = listOf(DisplayMode.TOTAL, DisplayMode.SESSION) + this.extraDisplayModes.keys
 
-    private fun MutableList<Renderable>.buildDisplayModeView() {
+    protected open fun MutableList<Renderable>.buildDisplayModeView() {
         addRenderableNullableButton<DisplayMode>(
-            label = "Display Mode",
+            label = "Display Mode:",
             current = getDisplayMode(),
             onChange = { new ->
                 if (new == null) return@addRenderableNullableButton
@@ -163,7 +165,7 @@ open class SkyHanniTracker<Data : TrackerData>(
         )
     }
 
-    protected fun getSharedTracker() = ProfileStorageData.profileSpecific?.let { ps ->
+    protected open fun getSharedTracker() = ProfileStorageData.profileSpecific?.let { ps ->
         SharedTracker(
             mapOf(
                 DisplayMode.TOTAL to ps.getTotal(),
@@ -184,7 +186,7 @@ open class SkyHanniTracker<Data : TrackerData>(
         }
     }
 
-    private fun getDisplayMode() = displayMode ?: run {
+    protected fun getDisplayMode() = displayMode ?: run {
         val newValue = config.defaultDisplayMode.get().mode ?: storedTrackers[name] ?: DisplayMode.TOTAL
         displayMode = newValue
         newValue
@@ -257,10 +259,14 @@ open class SkyHanniTracker<Data : TrackerData>(
         }
     }
 
-    enum class DisplayMode(private val displayName: String) {
+    enum class DisplayMode(internal val displayName: String) {
         TOTAL("Total"),
-        SESSION("This Session"),
+        SESSION("Session"),
         MAYOR("This Mayor"),
+        DAY("Day"),
+        WEEK("Week"),
+        MONTH("Month"),
+        YEAR("Year"),
         ;
 
         override fun toString(): String = displayName
