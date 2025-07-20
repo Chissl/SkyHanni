@@ -15,6 +15,7 @@ import at.hannibal2.skyhanni.events.garden.pests.PestSpawnEvent
 import at.hannibal2.skyhanni.events.minecraft.SkyHanniTickEvent
 import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.features.garden.GardenApi.hasFarmingToolInHand
+import at.hannibal2.skyhanni.features.garden.GardenApi.inGarden
 import at.hannibal2.skyhanni.features.garden.GardenApi.lastCropBrokenTime
 import at.hannibal2.skyhanni.features.garden.GardenApi.pestCooldownEndTime
 import at.hannibal2.skyhanni.features.garden.pests.PestApi.hasVacuumInHand
@@ -31,6 +32,7 @@ import at.hannibal2.skyhanni.utils.SoundUtils
 import at.hannibal2.skyhanni.utils.TimeUtils.average
 import at.hannibal2.skyhanni.utils.TimeUtils.format
 import at.hannibal2.skyhanni.utils.renderables.Renderable
+import at.hannibal2.skyhanni.utils.renderables.StringRenderable
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -114,7 +116,7 @@ object PestSpawnTimer {
         lastPestSpawnTime = SimpleTimeMark.now()
     }
 
-    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
+    @HandleEvent
     fun onRenderOverlay(event: GuiRenderEvent.GuiOverlayRenderEvent) {
         if (!shouldRender) return
         config.position.renderRenderables(display, posLabel = "Pest Spawn Timer")
@@ -132,7 +134,7 @@ object PestSpawnTimer {
         lastCropBrokenTime = SimpleTimeMark.now()
     }
 
-    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
+    @HandleEvent
     fun onSecondPassed(event: SecondPassedEvent) {
         if (!isEnabled()) return
         update()
@@ -147,8 +149,9 @@ object PestSpawnTimer {
         }
     }
 
-    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
+    @HandleEvent
     fun onTick(event: SkyHanniTickEvent) {
+        if (!isEnabled()) return
         if (!event.isMod(5)) return
         shouldRender = shouldRender()
     }
@@ -178,7 +181,7 @@ object PestSpawnTimer {
             "§eLast pest spawned: §b$timeSinceLastPest ago"
         }
 
-        lineMap[PestTimerTextEntry.PEST_TIMER] = Renderable.string(lastPestSpawned)
+        lineMap[PestTimerTextEntry.PEST_TIMER] = StringRenderable(lastPestSpawned)
 
         val pestCooldown = if (!TabWidget.PESTS.isActive) {
             "§cPests Widget not detected! Enable via /widget!"
@@ -192,11 +195,11 @@ object PestSpawnTimer {
             "§ePest Cooldown: §b$cooldownValue"
         }
 
-        lineMap[PestTimerTextEntry.PEST_COOLDOWN] = Renderable.string(pestCooldown)
+        lineMap[PestTimerTextEntry.PEST_COOLDOWN] = StringRenderable(pestCooldown)
 
         val averageSpawn = averageSpawnTime.format()
         if (averageSpawnTime != 0.seconds) {
-            lineMap[PestTimerTextEntry.AVERAGE_PEST_SPAWN] = Renderable.string("§eAverage time to spawn: §b$averageSpawn")
+            lineMap[PestTimerTextEntry.AVERAGE_PEST_SPAWN] = StringRenderable("§eAverage time to spawn: §b$averageSpawn")
         }
 
         return formatDisplay(lineMap)
@@ -233,5 +236,5 @@ object PestSpawnTimer {
         hasWarned = true
     }
 
-    private fun isEnabled() = GardenApi.inGarden() && config.enabled
+    private fun isEnabled() = (inGarden() || config.showOutsideGarden) && config.enabled
 }

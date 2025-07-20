@@ -27,6 +27,11 @@ class PestTimerConfig {
     var onlyWithVacuum: Boolean = false
 
     @Expose
+    @ConfigOption(name = "Show Outside Garden", desc = "Show timer outside Garden.")
+    @ConfigEditorBoolean
+    var showOutsideGarden: Boolean = false
+
+    @Expose
     @ConfigOption(name = "Pest Timer Text", desc = "Drag text to change the appearance of the overlay.")
     @ConfigEditorDraggableList
     val pestDisplay: MutableList<PestTimerTextEntry> = mutableListOf(
