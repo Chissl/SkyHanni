@@ -66,8 +66,8 @@ object GardenCropMilestoneInventory {
         val maxTier = GardenCropMilestones.getMaxTier()
         val maxCounter = GardenCropMilestones.getCropsForTier(maxTier, crop)
 
-        val index = event.toolTip.indexOfFirst(
-            "§5§o§7Rewards:",
+        val index = event.toolTipRemovedPrefix().indexOfFirst(
+            "§7Rewards:",
         ) ?: return
 
         val counter = crop.getMilestoneCounter().toDouble()

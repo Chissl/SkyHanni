@@ -42,7 +42,7 @@ import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addSearc
 import at.hannibal2.skyhanni.utils.collection.TimeLimitedCache
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.Searchable
-import at.hannibal2.skyhanni.utils.renderables.StringRenderable
+import at.hannibal2.skyhanni.utils.renderables.primitives.text
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import at.hannibal2.skyhanni.utils.tracker.BucketedItemTrackerData
@@ -123,6 +123,10 @@ object PestProfitTracker {
         }
 
         override fun PestType.isBucketSelectable() = this in PestType.filterableEntries
+
+        override fun bucketName(): String {
+            return "Pest"
+        }
 
         @Suppress("DEPRECATION")
         fun getTotalPestCount(): Long =
@@ -235,7 +239,7 @@ object PestProfitTracker {
 
         add(
             when {
-                selectedBucket != null -> StringRenderable(pestCountFormat).toSearchable()
+                selectedBucket != null -> Renderable.text(pestCountFormat).toSearchable()
                 else -> Renderable.hoverTips(
                     pestCountFormat,
                     buildList {
