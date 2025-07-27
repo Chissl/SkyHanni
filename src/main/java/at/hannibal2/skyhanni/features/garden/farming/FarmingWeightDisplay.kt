@@ -10,8 +10,8 @@ import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getCollection
 import at.hannibal2.skyhanni.data.garden.FarmingWeight
 import at.hannibal2.skyhanni.data.garden.FarmingWeight.getFactor
 import at.hannibal2.skyhanni.data.garden.FarmingWeight.isLoadingWeight
-import at.hannibal2.skyhanni.data.jsonobjects.other.EliteLeaderboardJson
-import at.hannibal2.skyhanni.data.jsonobjects.other.UpcomingLeaderboardPlayer
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteLeaderboard
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.UpcomingLeaderboardPlayer
 import at.hannibal2.skyhanni.events.IslandChangeEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.events.garden.GardenToolChangeEvent
@@ -24,7 +24,6 @@ import at.hannibal2.skyhanni.features.garden.farming.GardenCropSpeed.getSpeed
 import at.hannibal2.skyhanni.features.garden.pests.PestType
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
-import at.hannibal2.skyhanni.utils.ApiUtils
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.EnumUtils.isAnyOf
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
@@ -37,13 +36,13 @@ import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.SkyBlockUtils
 import at.hannibal2.skyhanni.utils.StringUtils
 import at.hannibal2.skyhanni.utils.TimeUtils.format
+import at.hannibal2.skyhanni.utils.api.ApiUtils
 import at.hannibal2.skyhanni.utils.json.BaseGsonBuilder
 import at.hannibal2.skyhanni.utils.json.SkyHanniTypeAdapters
 import at.hannibal2.skyhanni.utils.json.fromJson
 import at.hannibal2.skyhanni.utils.renderables.Renderable
-import at.hannibal2.skyhanni.utils.renderables.StringRenderable
+import at.hannibal2.skyhanni.utils.renderables.primitives.StringRenderable
 import com.google.gson.JsonObject
-import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -289,7 +288,7 @@ object FarmingWeightDisplay {
             } else {
                 leaderboardPosition--
             }
-            GardenApi.storage?.farmingWeight?.lastFarmingWeightLeaderboard =
+            GardenApi.storage?.farmingWeight?.lastLeaderboard =
                 leaderboardPosition
 
             // Remove passed player to present the next one
@@ -330,7 +329,7 @@ object FarmingWeightDisplay {
         val weightFormat = weightUntilOvertake.roundTo(2).addSeparators()
         val text = "§e$weightFormat$timeFormat §7behind §b$nextName"
         return if (showRankGoal) {
-            Renderable.string(text)
+            StringRenderable(text)
         } else {
             Renderable.clickable(
                 text,
@@ -392,13 +391,13 @@ object FarmingWeightDisplay {
         if (isLoadingLeaderboard) return
         isLoadingLeaderboard = true
 
-        SkyHanniMod.coroutineScope.launch {
+        SkyHanniMod.launchIOCoroutine {
             val wasNotLoaded = leaderboardPosition == -1
             leaderboardPosition = loadLeaderboardPosition()
             if (wasNotLoaded && config.showLbChange) {
                 checkOffScreenLeaderboardChanges()
             }
-            GardenApi.storage?.farmingWeight?.lastFarmingWeightLeaderboard =
+            GardenApi.storage?.farmingWeight?.lastLeaderboard =
                 leaderboardPosition
             lastLeaderboardUpdate = SimpleTimeMark.now()
             isLoadingLeaderboard = false
@@ -407,7 +406,7 @@ object FarmingWeightDisplay {
 
     private fun checkOffScreenLeaderboardChanges() {
         val profileSpecific = ProfileStorageData.profileSpecific ?: return
-        val oldPosition = profileSpecific.garden.farmingWeight.lastFarmingWeightLeaderboard
+        val oldPosition = profileSpecific.garden.farmingWeight.lastLeaderboard
 
         if (oldPosition <= 0) return
         if (leaderboardPosition <= 0) return
@@ -430,7 +429,7 @@ object FarmingWeightDisplay {
         )
     }
 
-    private fun loadLeaderboardPosition(): Int {
+    private suspend fun loadLeaderboardPosition(): Int {
         val uuid = PlayerUtils.getUuid()
 
         val includeUpcoming = if (isEtaEnabled()) "?includeUpcoming=true" else ""
@@ -438,15 +437,13 @@ object FarmingWeightDisplay {
         val atRank = if (isEtaEnabled() && goalRank != 10001) "&atRank=$goalRank" else ""
 
         val url = "https://api.elitebot.dev/leaderboard/rank/farmingweight/$uuid/${FarmingWeight.profileId()}$includeUpcoming$atRank"
-        val apiResponse = ApiUtils.getJSONResponse(url, apiName = "Elitebot Farming Leaderboard")
+        val (apiResponse, responseData) = ApiUtils.getTypedJsonResponse<JsonObject>(
+            url,
+            apiName = "Elitebot Farming Leaderboard"
+        ).assertSuccessWithData() ?: return leaderboardPosition
 
         try {
-            val apiData = toEliteLeaderboardJson(apiResponse).data
-
-            if (isEtaEnabled()) {
-                nextPlayers.clear()
-                apiData.upcomingPlayers.forEach { nextPlayers.add(it) }
-            }
+            val apiData = toEliteLeaderboardJson(responseData)
 
             return apiData.rank
         } catch (e: Exception) {
@@ -459,10 +456,10 @@ object FarmingWeightDisplay {
         return -1
     }
 
-    private fun toEliteLeaderboardJson(obj: JsonObject): EliteLeaderboardJson {
+    private fun toEliteLeaderboardJson(obj: JsonObject): EliteLeaderboard {
         val jsonObject = JsonObject()
         jsonObject.add("data", obj)
-        return eliteWeightApiGson.fromJson<EliteLeaderboardJson>(jsonObject)
+        return eliteWeightApiGson.fromJson<EliteLeaderboard>(jsonObject)
     }
 
     private fun CropType.calculateWeight(amount: Long): Double {

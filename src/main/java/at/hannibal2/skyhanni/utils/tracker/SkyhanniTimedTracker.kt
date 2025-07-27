@@ -11,6 +11,9 @@ import at.hannibal2.skyhanni.utils.TimeUtils.yearFormatter
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.buildSearchBox
+import at.hannibal2.skyhanni.utils.renderables.container.HorizontalContainerRenderable.Companion.horizontal
+import at.hannibal2.skyhanni.utils.renderables.container.VerticalContainerRenderable.Companion.vertical
+import at.hannibal2.skyhanni.utils.renderables.primitives.placeholder
 import at.hannibal2.skyhanni.utils.renderables.toRenderable
 import java.time.LocalDate
 
@@ -76,7 +79,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
         }
         val searchables = drawDisplay(data)
         if (config.trackerSearchEnabled.get()) buildFinalDisplay(searchables.buildSearchBox(textInput))
-        else buildFinalDisplay(Renderable.verticalContainer(searchables.toRenderable()))
+        else buildFinalDisplay(Renderable.vertical(searchables.toRenderable()))
     }.orEmpty()
 
     fun changeDate(oldDate: LocalDate, newDate: LocalDate) {
@@ -137,7 +140,7 @@ class SkyhanniTimedTracker<Data : TrackerData>(
         if (inventoryOpen) {
             buildDateSwitcherView()?.let { dateSwitcherView ->
                 add(
-                    Renderable.horizontalContainer(
+                    Renderable.horizontal(
                         dateSwitcherView,
                         spacing = 5,
                         horizontalAlign = RenderUtils.HorizontalAlignment.CENTER,

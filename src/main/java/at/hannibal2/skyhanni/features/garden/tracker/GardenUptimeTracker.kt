@@ -26,6 +26,8 @@ import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addString
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.Searchable
+import at.hannibal2.skyhanni.utils.renderables.container.VerticalContainerRenderable.Companion.vertical
+import at.hannibal2.skyhanni.utils.renderables.primitives.StringRenderable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker.DisplayMode
@@ -195,7 +197,7 @@ object GardenUptimeTracker {
 
     private fun drawDisplay(data: Data): List<Searchable> = buildList {
         val lineMap = mutableMapOf<GardenUptimeDisplayText, Searchable>()
-        lineMap[GardenUptimeDisplayText.TITLE] = Renderable.string("§6Garden Uptime").toSearchable()
+        lineMap[GardenUptimeDisplayText.TITLE] = StringRenderable("§6Garden Uptime").toSearchable()
 
         lineMap[GardenUptimeDisplayText.DATE] = buildDate().toSearchable()
 
@@ -203,7 +205,7 @@ object GardenUptimeTracker {
         if (config.includeVisitors.get()) uptime += data.visitorTime
         if (config.includePests.get()) uptime += data.pestTime
         lineMap[GardenUptimeDisplayText.UPTIME] =
-            Renderable.string(
+            StringRenderable(
                 "§7Uptime: §e${if (uptime > 0) uptime.seconds else "§cnone"}${if (isAFK) " §cPaused!" else ""}"
             ).toSearchable()
 
@@ -212,11 +214,11 @@ object GardenUptimeTracker {
             (data.blocksBroken.toDouble() - blockBreaksLastSecond) / uptime
         if (bps > 0) {
             lineMap[GardenUptimeDisplayText.BPS] =
-                Renderable.string("§7Blocks/Second: §e${bps.roundTo(2)}").toSearchable()
+                StringRenderable("§7Blocks/Second: §e${bps.roundTo(2)}").toSearchable()
         }
 
         lineMap[GardenUptimeDisplayText.BLOCKS_BROKEN] =
-            Renderable.string("§7Blocks Broken: §e${data.blocksBroken.addSeparators()}").toSearchable()
+            StringRenderable("§7Blocks Broken: §e${data.blocksBroken.addSeparators()}").toSearchable()
 
         return formatDisplay(lineMap)
     }
@@ -256,7 +258,7 @@ object GardenUptimeTracker {
         return true
     }
 
-    private fun buildDate() = Renderable.verticalContainer(
+    private fun buildDate() = Renderable.vertical(
         buildList {
             val displayText: String = when (tracker.displayMode) {
                 DisplayMode.DAY -> {

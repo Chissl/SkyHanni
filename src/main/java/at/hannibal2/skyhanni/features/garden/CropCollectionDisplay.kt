@@ -19,10 +19,13 @@ import at.hannibal2.skyhanni.features.garden.GardenApi.storage
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.sumAllValues
+import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addItemStack
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addString
 import at.hannibal2.skyhanni.utils.inPartialHours
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.Searchable
+import at.hannibal2.skyhanni.utils.renderables.container.HorizontalContainerRenderable.Companion.horizontal
+import at.hannibal2.skyhanni.utils.renderables.primitives.StringRenderable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import at.hannibal2.skyhanni.utils.tracker.SkyhanniTimedTracker
@@ -152,14 +155,14 @@ object CropCollectionDisplay {
             else -> tracker.date
         }
 
-        lineMap[CropCollectionDisplayText.TITLE] = Renderable.horizontalContainer(
+        lineMap[CropCollectionDisplayText.TITLE] = Renderable.horizontal(
             buildList {
-                add(Renderable.itemStack(crop.icon))
+                addItemStack(crop.icon)
                 addString("§6 ${crop.cropName} Collection")
             }
         ).toSearchable()
 
-        lineMap[CropCollectionDisplayText.ALL_TIME] = Renderable.string("§7All-Time: §e${allTime.addSeparators()}").toSearchable()
+        lineMap[CropCollectionDisplayText.ALL_TIME] = StringRenderable("§7All-Time: §e${allTime.addSeparators()}").toSearchable()
 
         val total: Long = cropData.getTotal()
         lineMap[CropCollectionDisplayText.SESSION] =
@@ -175,43 +178,43 @@ object CropCollectionDisplay {
             if (uptime != 0) {
                 val collectionPerHour = total / uptime.seconds.inPartialHours
                 lineMap[CropCollectionDisplayText.PER_HOUR] =
-                    Renderable.string("§7Per hour: §e${collectionPerHour.toLong().addSeparators()}").toSearchable()
+                    StringRenderable("§7Per hour: §e${collectionPerHour.toLong().addSeparators()}").toSearchable()
             }
         }
 
-        lineMap[CropCollectionDisplayText.BREAKDOWN] = Renderable.string("§6§lCollection Breakdown").toSearchable()
+        lineMap[CropCollectionDisplayText.BREAKDOWN] = StringRenderable("§6§lCollection Breakdown").toSearchable()
 
         val farming = cropData.getCollection(CropCollectionType.MOOSHROOM_COW) +
             cropData.getCollection(CropCollectionType.BREAKING_CROPS) +
             cropData.getCollection(CropCollectionType.DICER)
 
-        lineMap[CropCollectionDisplayText.FARMING] = Renderable.string("§7Farming: §e${farming.addSeparators()}").toSearchable()
+        lineMap[CropCollectionDisplayText.FARMING] = StringRenderable("§7Farming: §e${farming.addSeparators()}").toSearchable()
 
         lineMap[CropCollectionDisplayText.BREAKING_CROPS] =
-            Renderable.string(
+            StringRenderable(
                 "§7- Breaking Crops: §e${cropData.getCollection(CropCollectionType.BREAKING_CROPS).addSeparators()}"
             ).toSearchable()
 
         if (crop == CropType.MUSHROOM) lineMap[CropCollectionDisplayText.MOOSHROOM_COW] =
-            Renderable.string(
+            StringRenderable(
                 "§7- Mooshroom Cow: §e${cropData.getCollection(CropCollectionType.MOOSHROOM_COW).addSeparators()}"
             ).toSearchable()
 
         lineMap[CropCollectionDisplayText.DICER] =
-            Renderable.string(
+            StringRenderable(
                 "§7- Dicer Drops: §e${cropData.getCollection(CropCollectionType.DICER).addSeparators()}"
             ).toSearchable()
 
         val pests = cropData.getCollection(CropCollectionType.PEST_BASE) + cropData.getCollection(CropCollectionType.PEST_RNG)
-        lineMap[CropCollectionDisplayText.PESTS] = Renderable.string("§7Pests: §e${pests.addSeparators()}").toSearchable()
+        lineMap[CropCollectionDisplayText.PESTS] = StringRenderable("§7Pests: §e${pests.addSeparators()}").toSearchable()
 
         lineMap[CropCollectionDisplayText.PEST_BASE] =
-            Renderable.string(
+            StringRenderable(
                 "§7- Pest Base Drops: §e${cropData.getCollection(CropCollectionType.PEST_BASE).addSeparators()}"
             ).toSearchable()
 
         lineMap[CropCollectionDisplayText.PEST_RNG] =
-            Renderable.string(
+            StringRenderable(
                 "§7- Pest Crop RNG: §e${cropData.getCollection(CropCollectionType.PEST_RNG).addSeparators()}"
             ).toSearchable()
 

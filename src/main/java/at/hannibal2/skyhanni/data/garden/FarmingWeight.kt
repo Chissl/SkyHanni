@@ -2,29 +2,25 @@ package at.hannibal2.skyhanni.data.garden
 
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
-import at.hannibal2.skyhanni.data.HypixelData
-import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.needCollectionUpdate
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.setCollectionCounter
-import at.hannibal2.skyhanni.data.jsonobjects.other.ElitePlayerWeightJson
-import at.hannibal2.skyhanni.data.jsonobjects.other.EliteWeightsJson
-import at.hannibal2.skyhanni.events.IslandChangeEvent
-import at.hannibal2.skyhanni.events.ProfileJoinEvent
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.ElitePlayerWeightJson
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteWeightsJson
+import at.hannibal2.skyhanni.events.minecraft.SkyHanniTickEvent
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.features.garden.pests.PestType
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.test.command.ErrorManager
-import at.hannibal2.skyhanni.utils.ApiUtils
 import at.hannibal2.skyhanni.utils.ChatUtils
-import at.hannibal2.skyhanni.utils.EnumUtils.isAnyOf
 import at.hannibal2.skyhanni.utils.PlayerUtils
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
+import at.hannibal2.skyhanni.utils.api.ApiStaticGetPath
+import at.hannibal2.skyhanni.utils.api.ApiUtils
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.sumAllValues
 import at.hannibal2.skyhanni.utils.json.BaseGsonBuilder
 import at.hannibal2.skyhanni.utils.json.SkyHanniTypeAdapters
 import at.hannibal2.skyhanni.utils.json.fromJson
-import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.minutes
 
@@ -32,15 +28,9 @@ import kotlin.time.Duration.Companion.minutes
 object FarmingWeight {
 
     @HandleEvent
-    fun onProfileJoin(event: ProfileJoinEvent) {
-        profileId = ""
-        update()
-    }
-
-    @HandleEvent
-    fun onIslandChange(event: IslandChangeEvent) {
-        if (event.newIsland.isAnyOf(IslandType.GARDEN) || config.showOutsideGarden) {
-            update()
+    fun onTick(event: SkyHanniTickEvent) {
+        SkyHanniMod.launchIOCoroutine {
+            getCropWeights()
         }
     }
 
@@ -63,30 +53,22 @@ object FarmingWeight {
 
     fun apiError() = apiError
 
-    fun update() {
-        getCropWeights()
-        if (isLoadingWeight.compareAndSet(false, true)) {
-            val localProfile = HypixelData.profileName
-            apiError = false
-            SkyHanniMod.coroutineScope.launch {
-                loadWeight(localProfile)
-                isLoadingWeight.set(false)
-            }
-        }
-        getCropWeights()
-    }
 
-    private fun loadWeight(localProfile: String) {
+    private suspend fun loadWeight(localProfile: String) {
         if (lastUpdate > SimpleTimeMark.now() - 15.minutes && !apiError) return
         val uuid = PlayerUtils.getUuid()
+
         val url = "https://api.elitebot.dev/weight/$uuid/?collections=True"
-        val apiResponse = ApiUtils.getJSONResponse(url, apiName = "Elite Farming Weight")
+
+
+        val apiResponse = ApiUtils.getJsonResponse(url, apiName = "Elite Farming Weight").assertSuccess() ?: return
+        val apiResponseData = apiResponse.data ?: return
 
         var error: Throwable? = null
 
         try {
 
-            val apiData = eliteWeightApiGson.fromJson<ElitePlayerWeightJson>(apiResponse)
+            val apiData = eliteWeightApiGson.fromJson<ElitePlayerWeightJson>(apiResponseData)
 
             val selectedProfileId = apiData.selectedProfileId
             var selectedProfileEntry = apiData.profiles.find { it.profileId == selectedProfileId }
@@ -137,26 +119,22 @@ object FarmingWeight {
     private var attemptingCropWeightFetch = false
     private var hasFetchedCropWeights = false
 
-    private fun getCropWeights() {
+    private val weightStatic = ApiStaticGetPath(
+        "https://api.elitebot.dev/weights/all",
+        "Elitebot Farming Weights",
+    )
+
+    private suspend fun getCropWeights() {
         if (attemptingCropWeightFetch || hasFetchedCropWeights) return
         attemptingCropWeightFetch = true
-        val url = "https://api.elitebot.dev/weights/all"
-        val apiResponse = ApiUtils.getJSONResponse(url, apiName = "Elite Farming Weight")
-
-        try {
-            val apiData = eliteWeightApiGson.fromJson<EliteWeightsJson>(apiResponse)
-            apiData.crops
-            for (crop in apiData.crops) {
-                val cropType = CropType.getByNameOrNull(crop.key) ?: continue
-                cropWeight[cropType] = crop.value
-            }
-            hasFetchedCropWeights = true
-        } catch (e: Exception) {
-            ErrorManager.logErrorWithData(
-                e, "Error getting crop weights from elitebot.dev",
-                "apiResponse" to apiResponse,
-            )
+        val apiResponse = ApiUtils.getJsonResponse(weightStatic).assertSuccess() ?: return
+        val apiResponseData = apiResponse.data ?: return
+        val apiData = eliteWeightApiGson.fromJson<EliteWeightsJson>(apiResponseData)
+        for (crop in apiData.crops) {
+            val cropType = CropType.getByNameOrNull(crop.key) ?: continue
+            cropWeight[cropType] = crop.value
         }
+        hasFetchedCropWeights = true
     }
 
     // TODO move to repo

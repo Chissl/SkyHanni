@@ -4,8 +4,8 @@ import at.hannibal2.skyhanni.config.FeatureToggle
 import at.hannibal2.skyhanni.config.NoConfigLink
 import at.hannibal2.skyhanni.config.core.config.Position
 import at.hannibal2.skyhanni.config.features.garden.composter.ComposterConfig
-import at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig
 import at.hannibal2.skyhanni.config.features.garden.contest.JacobContestConfig
+import at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig
 import at.hannibal2.skyhanni.config.features.garden.laneswitch.FarmingLaneConfig
 import at.hannibal2.skyhanni.config.features.garden.optimalAngles.OptimalAnglesConfig
