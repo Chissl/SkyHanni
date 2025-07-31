@@ -17,6 +17,7 @@ import at.hannibal2.skyhanni.events.WidgetUpdateEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropClickEvent
 import at.hannibal2.skyhanni.events.garden.pests.PestSpawnEvent
 import at.hannibal2.skyhanni.events.minecraft.SkyHanniTickEvent
+import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.features.garden.GardenApi.hasFarmingToolInHand
 import at.hannibal2.skyhanni.features.garden.GardenApi.inGarden
 import at.hannibal2.skyhanni.features.garden.GardenApi.lastCropBrokenTime
@@ -298,7 +299,7 @@ object PestSpawnTimer {
 
     private fun repeatSound() {
         with(config) {
-            if (!enabled || !GardenApi.inGarden()) return
+            if (!enabled || !inGarden()) return
             if (lastPlayedSound.passedSince() >= sound.repeatDuration.ticks) {
                 lastPlayedSound = SimpleTimeMark.now()
                 playUserSound()
