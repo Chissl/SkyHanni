@@ -40,9 +40,17 @@ data class CachedItemData(
     var lastExtraAttributes: NBTTagCompound? = null,
 
     var lastExtraAttributesFetchTime: SimpleTimeMark = SimpleTimeMark.farPast(),
+
+    var stackTip: String? = null,
+
+    var identifier: String? = null,
 ) {
     companion object {
-        private val cache = TimeLimitedCache<IdentityCharacteristics<Item>, CachedItemData>(expireAfterWrite = 5.minutes)
-        val ItemStack.cachedData: CachedItemData get() = cache.getOrPut(IdentityCharacteristics(item)) { CachedItemData() }
+        private val cache = TimeLimitedCache<IdentityCharacteristics<ItemStack>, CachedItemData>(expireAfterWrite = 2.minutes)
+        val ItemStack.cachedData: CachedItemData get() = cache.getOrPut(IdentityCharacteristics(this)) { CachedItemData() }
+
+        fun forEachValue(action: (CachedItemData) -> Unit) {
+            cache.map { action(it.value) }
+        }
     }
 }
