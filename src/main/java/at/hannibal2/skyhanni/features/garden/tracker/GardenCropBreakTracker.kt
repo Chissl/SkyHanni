@@ -8,6 +8,7 @@ import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.addCollectionCounter
 import at.hannibal2.skyhanni.events.OwnInventoryItemUpdateEvent
 import at.hannibal2.skyhanni.events.garden.GardenToolChangeEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropClickEvent
+import at.hannibal2.skyhanni.events.minecraft.SkyHanniTickEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenApi
@@ -28,6 +29,8 @@ object GardenCropBreakTracker {
     private var cropBrokenType: CropType? = null
     private var heldItem: ItemStack? = null
     private var itemHasCounter: Boolean = false
+    private var cropMap: MutableMap<CropType, Int> = mutableMapOf()
+    private var mooshroomCowCrops: Int = 0
 
     @HandleEvent
     fun onToolChange(event: GardenToolChangeEvent) {
@@ -52,19 +55,17 @@ object GardenCropBreakTracker {
         if (event.crop != cropBrokenType) cropBrokenType = event.crop
 
         blocksBroken?.set(event.crop, blocksBroken?.get(event.crop)?.plus(1) ?: 1)
-        // TODO via pet api
+
         if (GardenApi.mushroomCowPet) {
-            CropType.MUSHROOM.addCollectionCounter(
-                CropCollectionType.MOOSHROOM_COW, weightedRandomRound((CurrentPetApi.currentPet?.level ?: 0) / 100.0).toLong()
-            )
+            mooshroomCowCrops += weightedRandomRound((CurrentPetApi.currentPet?.level ?: 0) / 100.0).toInt()
         }
 
         if (itemHasCounter || heldItem == null) return
 
         val fortune = storage?.latestTrueFarmingFortune?.get(event.crop) ?: return
-        event.crop.addCollectionCounter(
-            CropCollectionType.BREAKING_CROPS,
-            ((weightedRandomRound(fortune % 100) + floor(fortune / 100) + 1) * 5.0).toLong()
+        addToCropMap(
+            event.crop,
+            ((weightedRandomRound(fortune % 100) + floor(fortune / 100) + 1) * 5.0).toInt()
         )
     }
 
@@ -82,8 +83,24 @@ object GardenCropBreakTracker {
         val old = counterData?.get(uuid) ?: return
         val addedCounter = counter - old
 
-        crop.addCollectionCounter(CropCollectionType.BREAKING_CROPS, addedCounter)
+        addToCropMap(crop, addedCounter.toInt())
         counterData?.set(uuid, counter)
+    }
+
+    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
+    fun onTick(event: SkyHanniTickEvent) {
+        if (!event.isMod(5)) return
+        if (cropMap.isEmpty()) return
+
+        for (crop in cropMap) {
+            crop.key.addCollectionCounter(CropCollectionType.BREAKING_CROPS, cropMap[crop.key]?.toLong() ?: 0)
+            cropMap.remove(crop.key)
+        }
+
+        if (mooshroomCowCrops > 0) {
+            CropType.MUSHROOM.addCollectionCounter(CropCollectionType.MOOSHROOM_COW, mooshroomCowCrops.toLong())
+            mooshroomCowCrops = 0
+        }
     }
 
     private fun weightedRandomRound(num: Double): Double {
@@ -91,5 +108,7 @@ object GardenCropBreakTracker {
         return if (num >= randomNumber) 1.0 else 0.0
     }
 
-    private val config get() = GardenApi.config
+    private fun addToCropMap(cropType: CropType, amount: Int) {
+        cropMap[cropType] = cropMap[cropType]?.plus(amount) ?: amount
+    }
 }
