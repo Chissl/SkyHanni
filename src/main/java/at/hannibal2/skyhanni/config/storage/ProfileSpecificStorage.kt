@@ -37,9 +37,6 @@ import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
 import at.hannibal2.skyhanni.features.garden.tracker.DicerRngDropTracker
 import at.hannibal2.skyhanni.features.garden.tracker.GardenUptimeTracker
 import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker
-import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
-import at.hannibal2.skyhanni.features.garden.tracker.DicerRngDropTracker
-import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker
 import at.hannibal2.skyhanni.features.garden.visitor.VisitorReward
 import at.hannibal2.skyhanni.features.gifting.GiftProfitTracker
 import at.hannibal2.skyhanni.features.inventory.EquipmentApi
@@ -73,7 +70,6 @@ import net.minecraft.item.ItemStack
 import java.time.LocalDate
 import java.util.EnumMap
 import java.util.UUID
-import java.util.EnumMap
 import kotlin.time.Duration
 
 // put everything under its respective feature, the order of the features is the same as in the folder structure
