@@ -1,11 +1,12 @@
 package at.hannibal2.skyhanni.features.garden.inventory
 
-import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
-import at.hannibal2.skyhanni.data.garden.GardenCropMilestones
-import at.hannibal2.skyhanni.data.garden.GardenCropMilestones.getMilestoneCounter
+import at.hannibal2.skyhanni.data.garden.cropmilestones.CropMilestonesAPI.getCurrentMilestoneTier
+import at.hannibal2.skyhanni.data.garden.cropmilestones.CropMilestonesAPI.milestoneNextTierAmount
+import at.hannibal2.skyhanni.data.garden.cropmilestones.CropMilestonesAPI.milestoneProgressToNextTier
 import at.hannibal2.skyhanni.events.minecraft.ToolTipEvent
 import at.hannibal2.skyhanni.features.garden.CropType
+import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.InventoryUtils
 import at.hannibal2.skyhanni.utils.ItemUtils.cleanName
@@ -22,7 +23,7 @@ import at.hannibal2.skyhanni.utils.compat.setCustomItemName
 @SkyHanniModule
 object GardenInventoryTooltipOverflow {
 
-    private val config get() = SkyHanniMod.feature.garden.cropMilestones.overflow
+    private val config get() = GardenApi.config.cropMilestones.overflow
 
     @HandleEvent
     fun onToolTip(event: ToolTipEvent) {
@@ -36,10 +37,9 @@ object GardenInventoryTooltipOverflow {
 
         val split = stack.cleanName().split(" ")
         val crop = getCrop(split)
-        val counter = crop.getMilestoneCounter()
 
-        val currentTier = GardenCropMilestones.getTierForCropCount(counter, crop, allowOverflow = true)
-        val (have, need) = getHaveNeed(currentTier, crop, counter)
+        val currentTier = crop.getCurrentMilestoneTier()
+        val (have, need) = getHaveNeed(crop)
         val (level, nextLevel) = getLevels(split, currentTier)
 
         var next = false
@@ -75,15 +75,10 @@ object GardenInventoryTooltipOverflow {
     }
 
     private fun getHaveNeed(
-        currentTier: Int,
         crop: CropType,
-        counter: Long,
     ): Pair<Long, Long> {
-        val nextTier = currentTier + 1
-        val cropsForCurrentTier = GardenCropMilestones.getCropsForTier(currentTier, crop, allowOverflow = true)
-        val cropsForNextTier = GardenCropMilestones.getCropsForTier(nextTier, crop, allowOverflow = true)
-        val have = counter - cropsForCurrentTier
-        val need = cropsForNextTier - cropsForCurrentTier
+        val have = crop.milestoneProgressToNextTier()
+        val need = crop.milestoneNextTierAmount()
         return Pair(have, need)
     }
 

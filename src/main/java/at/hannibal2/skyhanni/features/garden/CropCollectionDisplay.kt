@@ -5,12 +5,10 @@ import at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollecti
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI
 import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getCollection
-import at.hannibal2.skyhanni.data.garden.GardenCropMilestones
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.DateChangeEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
 import at.hannibal2.skyhanni.events.IslandChangeEvent
-import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.events.garden.DisplayCropChange
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionUpdateEvent
@@ -77,14 +75,15 @@ object CropCollectionDisplay {
         var cropCollectionType: MutableMap<CropCollectionType, Long> = EnumMap(CropCollectionType::class.java)
     }
 
+    /*
     @HandleEvent(priority = HandleEvent.LOW)
     fun onProfileJoin(event: ProfileJoinEvent) {
-        GardenCropMilestones.cropMilestoneCounter?.let {
+        cropMilestoneCounter?.let {
             if (it.values.sum() == 0L) {
                 needsInventory = true
             }
         }
-    }
+    } */
 
     @HandleEvent
     fun onConfigLoad(event: ConfigLoadEvent) {

@@ -438,7 +438,7 @@ class ProfileSpecificStorage(
         var cropMilestoneCounter: MutableMap<CropType, Long> = EnumMap(CropType::class.java)
 
         @Expose
-        var counterData: MutableMap<String, Long> = HashMap()
+        var toolCounterData: MutableMap<String, Long> = HashMap()
 
         @Expose
         var blocksBroken: MutableMap<CropType, Long> = enumMapOf()

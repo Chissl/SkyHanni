@@ -30,7 +30,6 @@ import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
 
-@Suppress("SpreadOperator")
 open class
 SkyHanniItemTracker<Data : ItemTrackerData>(
     name: String,

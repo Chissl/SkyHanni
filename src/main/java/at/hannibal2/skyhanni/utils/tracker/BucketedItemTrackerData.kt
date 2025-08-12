@@ -73,6 +73,7 @@ abstract class BucketedItemTrackerData<E : Enum<E>>(clazz: KClass<E>) : ItemTrac
 
     @Expose
     var selectedBucket: E? = null
+
     @Expose
     val bucketedItems: MutableMap<E, MutableMap<NeuInternalName, TrackedItem>> = mutableMapOf()
 

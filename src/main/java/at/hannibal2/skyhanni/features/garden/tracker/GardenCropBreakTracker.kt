@@ -23,7 +23,7 @@ import kotlin.random.Random
 @SkyHanniModule
 object GardenCropBreakTracker {
     private val storage get() = GardenApi.storage
-    private val counterData: MutableMap<String, Long>? get() = storage?.counterData
+    private val toolCounterData: MutableMap<String, Long>? get() = storage?.toolCounterData
     private val blocksBroken: MutableMap<CropType, Long>? get() = storage?.blocksBroken
 
     private var cropBrokenType: CropType? = null
@@ -46,7 +46,7 @@ object GardenCropBreakTracker {
         itemHasCounter = true
 
         val uuid = event.toolItem.getItemUuid() ?: return
-        counterData?.set(uuid, counter)
+        toolCounterData?.set(uuid, counter)
     }
 
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
@@ -57,7 +57,7 @@ object GardenCropBreakTracker {
         blocksBroken?.set(event.crop, blocksBroken?.get(event.crop)?.plus(1) ?: 1)
 
         if (GardenApi.mushroomCowPet) {
-            mooshroomCowCrops += weightedRandomRound((CurrentPetApi.currentPet?.level ?: 0) / 100.0).toInt()
+            mooshroomCowCrops += weightedRandomRound(CurrentPetApi.currentPet?.level ?: 0)
         }
 
         if (itemHasCounter || heldItem == null) return
@@ -65,7 +65,7 @@ object GardenCropBreakTracker {
         val fortune = storage?.latestTrueFarmingFortune?.get(event.crop) ?: return
         addToCropMap(
             event.crop,
-            ((weightedRandomRound(fortune % 100) + floor(fortune / 100) + 1) * 5.0).toInt()
+            ((weightedRandomRound((fortune % 100).toInt()) + floor(fortune / 100) + 1) * event.crop.baseDrops).toInt()
         )
     }
 
@@ -80,11 +80,11 @@ object GardenCropBreakTracker {
         val crop = if (isHoe || cropBrokenType == null) event.itemStack.getCropType() else cropBrokenType
         if (crop == null) return
 
-        val old = counterData?.get(uuid) ?: return
+        val old = toolCounterData?.get(uuid) ?: return
         val addedCounter = counter - old
 
         addToCropMap(crop, addedCounter.toInt())
-        counterData?.set(uuid, counter)
+        toolCounterData?.set(uuid, counter)
     }
 
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
@@ -103,9 +103,9 @@ object GardenCropBreakTracker {
         }
     }
 
-    private fun weightedRandomRound(num: Double): Double {
-        val randomNumber = Random.nextInt(1, 100)
-        return if (num >= randomNumber) 1.0 else 0.0
+    private fun weightedRandomRound(num: Int): Int {
+        val randomNumber = Random.nextInt(0, 100)
+        return if (num >= randomNumber) 1 else 0
     }
 
     private fun addToCropMap(cropType: CropType, amount: Int) {
