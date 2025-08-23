@@ -24,7 +24,7 @@ import at.hannibal2.skyhanni.utils.StringUtils.cleanPlayerName
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 
 @SkyHanniModule
-object CropCollectionAPI {
+object CropCollectionApi {
 
     private val patternGroup = RepoPattern.group("data.garden.collection")
 

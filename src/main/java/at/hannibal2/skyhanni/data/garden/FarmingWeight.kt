@@ -2,8 +2,8 @@ package at.hannibal2.skyhanni.data.garden
 
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.event.HandleEvent
-import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.needCollectionUpdate
-import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.setCollectionCounter
+import at.hannibal2.skyhanni.data.garden.CropCollectionApi.needCollectionUpdate
+import at.hannibal2.skyhanni.data.garden.CropCollectionApi.setCollectionCounter
 import at.hannibal2.skyhanni.data.jsonobjects.elitedev.ElitePlayerWeightJson
 import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteWeightsJson
 import at.hannibal2.skyhanni.events.minecraft.SkyHanniTickEvent
@@ -79,7 +79,7 @@ object FarmingWeight {
             if (selectedProfileEntry != null) {
                 profileId = selectedProfileEntry.profileId
                 val lastUpdated = selectedProfileEntry.lastUpdated
-                if (lastUpdated >= CropCollectionAPI.lastGainedCollectionTime.toMillis() / 1000)
+                if (lastUpdated >= CropCollectionApi.lastGainedCollectionTime.toMillis() / 1000)
                     for (crop in selectedProfileEntry.crops) {
                         val cropType = CropType.getByName(crop.key)
                         cropType.setCollectionCounter(crop.value)

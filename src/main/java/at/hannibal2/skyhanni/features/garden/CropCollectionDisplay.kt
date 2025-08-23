@@ -3,8 +3,8 @@ package at.hannibal2.skyhanni.features.garden
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText
 import at.hannibal2.skyhanni.data.IslandType
-import at.hannibal2.skyhanni.data.garden.CropCollectionAPI
-import at.hannibal2.skyhanni.data.garden.CropCollectionAPI.getCollection
+import at.hannibal2.skyhanni.data.garden.CropCollectionApi
+import at.hannibal2.skyhanni.data.garden.CropCollectionApi.getCollection
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.DateChangeEvent
 import at.hannibal2.skyhanni.events.GuiRenderEvent
@@ -142,7 +142,7 @@ object CropCollectionDisplay {
 
     // Todo add bucketed tracker
     private fun drawDisplay(data: Data): List<Searchable> {
-        val crop: CropType = cropDisplayMode ?: CropCollectionAPI.lastGainedCrop ?: return emptyList()
+        val crop: CropType = cropDisplayMode ?: CropCollectionApi.lastGainedCrop ?: return emptyList()
         val allTime = crop.getCollection()
         val cropData = data.cropCollection.getOrPut(crop) { CropCollection() }
         val lineMap = mutableMapOf<CropCollectionDisplayText, Searchable>()
