@@ -174,4 +174,3 @@ object CropCollectionAPI {
         }
     }
 }
-
