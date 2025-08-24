@@ -8,15 +8,17 @@ import at.hannibal2.skyhanni.data.HypixelData
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.ScoreboardData
 import at.hannibal2.skyhanni.data.garden.CropCollectionApi.getCollection
+import at.hannibal2.skyhanni.data.garden.EliteFarmersLeaderboard
+import at.hannibal2.skyhanni.data.garden.FarmingWeight
 import at.hannibal2.skyhanni.data.garden.cropmilestones.CropMilestonesApi.getCurrentMilestoneTier
 import at.hannibal2.skyhanni.data.garden.cropmilestones.CropMilestonesApi.getMaxTier
 import at.hannibal2.skyhanni.data.garden.cropmilestones.CropMilestonesApi.getMilestoneCounter
 import at.hannibal2.skyhanni.data.garden.cropmilestones.CropMilestonesApi.isMaxMilestone
 import at.hannibal2.skyhanni.data.garden.cropmilestones.CropMilestonesApi.percentToNextMilestone
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteLeaderboardType
 import at.hannibal2.skyhanni.features.dungeon.DungeonApi
 import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.features.garden.GardenApi.getCropType
-import at.hannibal2.skyhanni.features.garden.farming.FarmingWeightDisplay
 import at.hannibal2.skyhanni.features.misc.compacttablist.AdvancedPlayerList
 import at.hannibal2.skyhanni.features.misc.items.EstimatedItemValue
 import at.hannibal2.skyhanni.features.rift.RiftApi
@@ -67,10 +69,10 @@ private fun getCropCollection(): String {
 }
 
 private fun getFarmingWeight(): String {
-    val weight = FarmingWeightDisplay.weight
-    val leaderboard = FarmingWeightDisplay.leaderboardPosition
-    val lbString = if (leaderboard == -1) "" else "[#$leaderboard]"
-    if (weight == -1.0) return ""
+    val weight = FarmingWeight.getWeight(EliteLeaderboardType.ALL_TIME)
+    val leaderboard = EliteFarmersLeaderboard.getLeaderboardPosition(EliteLeaderboardType.ALL_TIME)
+    val lbString = if (leaderboard == null) "" else "[#$leaderboard]"
+    if (weight == null) return ""
     return "Farming Weight: ${weight.roundTo(2).addSeparators()} $lbString"
 }
 

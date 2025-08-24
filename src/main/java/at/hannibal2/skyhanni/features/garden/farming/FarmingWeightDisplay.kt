@@ -89,7 +89,7 @@ object FarmingWeightDisplay {
     }
 
 
-    private var currentLeaderboardType: EliteLeaderboardType
+    var currentLeaderboardType: EliteLeaderboardType
         get() = storage?.lastLeaderboardType ?: EliteLeaderboardType.ALL_TIME
         set(value) {
             value.let {

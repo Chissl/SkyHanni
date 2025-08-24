@@ -430,9 +430,6 @@ class ProfileSpecificStorage(
         var lastCollectionFix: MutableMap<CropType, SimpleTimeMark> = EnumMap(CropType::class.java)
 
         @Expose
-        var cropCollectionCounter: MutableMap<CropType, Long> = EnumMap(CropType::class.java)
-
-        @Expose
         var lastGainedCrop: CropType? = null
 
         @Expose

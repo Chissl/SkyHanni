@@ -72,7 +72,7 @@ object CropCollectionApi {
     fun CropType.getCollection() =
         cropCollectionCounter?.get(this) ?: 0L
 
-    fun CropType.setCollectionCounter(counter: Long) {
+    private fun CropType.setCollectionCounter(counter: Long) {
         cropCollectionCounter?.set(this, counter)
         CropCollectionUpdateEvent.post()
     }
@@ -101,11 +101,6 @@ object CropCollectionApi {
 
     fun CropType.updateTotalCollection(amount: Long) {
         this.addCollectionCounter(CropCollectionType.UNKNOWN, amount - this.getCollection())
-    }
-
-
-    private fun CropType.setCollectionCounter(counter: Long) {
-        cropCollectionCounter?.set(this, counter)
     }
 
     private fun addCollectionCommand(cropText: String, amount: Long, typeText: String) {
