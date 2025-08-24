@@ -27,9 +27,9 @@ data class WeightProfile(
     @Expose val lastUpdated: Long,
 )
 
-enum class EliteLeaderboardType(private val displayName: String, val suffix: String = "") {
-    NORMAL("Normal"),
-    MONTHLY("Monthly", "-monthly"),
+enum class EliteLeaderboardType(val displayName: String, val specificDisplayName: String, val suffix: String = "") {
+    ALL_TIME("All-Time", "Farming Weight"),
+    MONTHLY("Monthly", "Monthly Farming Weight", "-monthly"),
     ;
 
     override fun toString() = displayName

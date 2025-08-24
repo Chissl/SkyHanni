@@ -58,7 +58,7 @@ object CropCollectionApi {
         MutableMap<CropType, Long>? get() = GardenApi.storage?.cropCollectionCounter
 
     var lastGainedCrop: CropType?
-        get() = GardenApi.storage?.lastGainedCrop
+        get() = storage?.lastGainedCrop
         set(value) {
             value?.let {
                 GardenApi.storage?.lastGainedCrop = it
@@ -84,7 +84,9 @@ object CropCollectionApi {
 
         this.setCollectionCounter(amount + this.getCollection())
 
-        lastGainedCollectionTime = SimpleTimeMark.now()
+        if (type != CropCollectionType.UNKNOWN) {
+            lastGainedCollectionTime = SimpleTimeMark.now()
+        }
         CropCollectionAddEvent(this, type, amount).post()
     }
 
@@ -96,6 +98,15 @@ object CropCollectionApi {
             CropCollectionType.DICER,
             CropCollectionType.PEST_RNG,
         )
+
+    fun CropType.updateTotalCollection(amount: Long) {
+        this.addCollectionCounter(CropCollectionType.UNKNOWN, amount - this.getCollection())
+    }
+
+
+    private fun CropType.setCollectionCounter(counter: Long) {
+        cropCollectionCounter?.set(this, counter)
+    }
 
     private fun addCollectionCommand(cropText: String, amount: Long, typeText: String) {
         val crop = CropType.getByNameOrNull(cropText.replace("_", " ")) ?: run {
@@ -170,6 +181,16 @@ object CropCollectionApi {
                         callback { addCollectionCommand(getArg(crop), getArg(amount), getArg(type)) }
                     }
                 }
+            }
+        }
+        event.registerBrigadier("shshowcropcollection") {
+            description = "Show current crop collection amounts"
+            category = CommandCategory.DEVELOPER_DEBUG
+            callback {
+                for (entry in CropType.entries) {
+                    ChatUtils.chat("$entry collection: ${entry.getCollection()}")
+                }
+                ChatUtils.debug("$cropCollectionCounter")
             }
         }
     }
