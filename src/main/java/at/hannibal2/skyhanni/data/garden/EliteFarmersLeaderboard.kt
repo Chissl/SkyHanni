@@ -26,7 +26,10 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.INFINITE
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
+
+// TODO fix loading weight profiles + #1 player
 @SkyHanniModule
 object EliteFarmersLeaderboard {
     val loadingLeaderboardMutex = Mutex()
@@ -35,26 +38,32 @@ object EliteFarmersLeaderboard {
     private val leaderboardPosMap: MutableMap<EliteLeaderboardType, Int>? get() = storage?.lastLeaderboardMap
     private val minWeight: MutableMap<EliteLeaderboardType, Double>? get() = storage?.minWeight
     private val lastLeaderboardUpdate: MutableMap<EliteLeaderboardType, SimpleTimeMark> = mutableMapOf()
-    private val leaderboardWeight: MutableMap<EliteLeaderboardType, Double> = mutableMapOf()
+    private val shouldRefreshLeaderboard: MutableMap<EliteLeaderboardType, Boolean> = mutableMapOf()
     private val lastPlayer: MutableMap<EliteLeaderboardType, UpcomingLeaderboardPlayer?> = mutableMapOf()
     private val nextPlayers: MutableMap<EliteLeaderboardType, MutableList<UpcomingLeaderboardPlayer>> = mutableMapOf()
-    private val shouldRefreshLeaderboard: MutableMap<EliteLeaderboardType, Boolean> = mutableMapOf()
+    private val lastApiData: MutableMap<EliteLeaderboardType, EliteLeaderboard> = mutableMapOf()
+    private val isUnranked: MutableMap<EliteLeaderboardType, Boolean> = mutableMapOf()
 
     var apiError = false
     private var hasWarned = false
     private var rankGoal: Int? = null
     private var wasNotLoaded = true
+    private var fetchAttempts = 0
+    private var lastFetchAttempt = SimpleTimeMark.farPast()
 
     fun reset() {
         leaderboardPosMap?.clear()
         lastLeaderboardUpdate.clear()
-        leaderboardWeight.clear()
-        lastLeaderboardUpdate.clear()
         lastPlayer.clear()
         nextPlayers.clear()
+        shouldRefreshLeaderboard.clear()
+        isUnranked.clear()
+        hasWarned = false
         apiError = false
         hasWarned = false
         rankGoal = null
+        fetchAttempts = 0
+        lastFetchAttempt = SimpleTimeMark.farPast()
     }
     @HandleEvent
     fun onConfigLoad(event: ConfigLoadEvent) {
@@ -66,21 +75,42 @@ object EliteFarmersLeaderboard {
         }
     }
 
+    fun isUnranked(leaderboardType: EliteLeaderboardType): Boolean {
+        if (leaderboardType == EliteLeaderboardType.ALL_TIME) return false // We support other methods to calculate all-time farming weight
+        return isUnranked[leaderboardType] ?: false
+    }
+
     fun getMinWeight(leaderboardType: EliteLeaderboardType): Double? {
         return minWeight?.get(leaderboardType)
     }
 
     fun getLeaderboardPosition(leaderboardType: EliteLeaderboardType, override: Boolean = false): Int? {
-        var refreshLeaderboard = shouldRefreshLeaderboard[leaderboardType] ?: true
-        if (override) refreshLeaderboard = true
-        if ((lastLeaderboardUpdate[leaderboardType]?.passedSince() ?: INFINITE) < 10.minutes && !refreshLeaderboard) {
-            return leaderboardPosMap?.get(leaderboardType)
+        val lastUpdate = lastLeaderboardUpdate[leaderboardType]?.passedSince() ?: INFINITE
+        val refresh = override || (shouldRefreshLeaderboard[leaderboardType] ?: true)
+
+        if (!refresh && lastUpdate < 10.minutes) {
+            val pos = leaderboardPosMap?.get(leaderboardType)
+            if (pos != null && pos <= 0) {
+                leaderboardPosMap?.remove(leaderboardType)
+            } else {
+                return pos
+            }
         }
-        shouldRefreshLeaderboard[leaderboardType] = false
-        return loadLeaderboardIfAble(leaderboardType)
+
+        if (lastFetchAttempt.passedSince() <= 5.seconds) return null
+        lastFetchAttempt = SimpleTimeMark.now()
+        fetchAttempts++
+
+        val pos = loadLeaderboardIfAble(leaderboardType)
+        if (pos != null || fetchAttempts > 3) {
+            lastLeaderboardUpdate[leaderboardType] = SimpleTimeMark.now()
+            shouldRefreshLeaderboard[leaderboardType] = false
+            fetchAttempts = 0
+        }
+
+        return pos
     }
 
-    // Gets last passed player if first
     fun getNextPlayer(leaderboardType: EliteLeaderboardType): Pair<String, Double>? {
         val weight = getWeight(leaderboardType) ?: return null
         var nextPlayer = nextPlayers[leaderboardType]?.firstOrNull() ?: lastPlayer[leaderboardType] ?: return null
@@ -89,7 +119,7 @@ object EliteFarmersLeaderboard {
             nextPlayer = updateNextPlayer(leaderboardType) ?: break
             weightDiff = nextPlayer.weight - weight
         }
-
+        // This currently doesn't work
         if (leaderboardPosMap?.get(leaderboardType) == 1) {
             val lastPlayer = lastPlayer[leaderboardType]
             if (lastPlayer != null && lastPlayer.weight <= weight) {
@@ -122,8 +152,8 @@ object EliteFarmersLeaderboard {
                 if (lbPos != null) {
                     leaderboardPosMap?.set(leaderboardType, lbPos)
                     if (wasNotLoaded) checkOffScreenLeaderboardChanges(oldPos, leaderboardType)
+                    lastLeaderboardUpdate[leaderboardType] = SimpleTimeMark.now()
                 }
-                lastLeaderboardUpdate[leaderboardType] = SimpleTimeMark.now()
             }
         }
         return leaderboardPosMap?.get(leaderboardType)
@@ -151,8 +181,7 @@ object EliteFarmersLeaderboard {
         // Fetch more upcoming players when the difference between ranks is expected to be tiny
         val currentPos = leaderboardPosMap?.get(leaderboardType) ?: Int.MAX_VALUE
         val upcomingPlayers = getUpcomingPlayerCount(currentPos)
-        // Tell the API to get upcoming players from our local rank (for when new data isn't fetched), or fallback to the
-        // provided eta goal rank from the config
+        // Fetch upcoming players from current lb pos if api hasn't updated, or from rank goal
         val rankGoal = getRankGoal(leaderboardType)
         val useRankGoal = config.useEtaGoalRank.get() && rankGoal != null
         val atRank = getAtRank(currentPos, rankGoal, useRankGoal)
@@ -168,17 +197,21 @@ object EliteFarmersLeaderboard {
             return null
         }
 
-        handleDiff(leaderboardType, apiData)
+        val shouldUpdateData = shouldUpdateData(leaderboardType, apiData)
+        // don't update anything besides upcoming players if data hasn't changed since last request
+        if (shouldUpdateData) handleDiff(leaderboardType, apiData)
         handleUpcomingPlayers(leaderboardType, apiData, atRank)
 
-        // Keep local rank if new data wasn't returned
-        // return if (newData) apiData.rank else currentLeaderboardPos
         minWeight?.set(leaderboardType, apiData.minAmount)
         lastLeaderboardUpdate[leaderboardType] = SimpleTimeMark.now()
-        leaderboardWeight[leaderboardType] = apiData.amount
+        shouldRefreshLeaderboard[leaderboardType] = false
         apiError = false
         FarmingWeightDisplay.update()
-        return if (apiData.rank == -1) null else apiData.rank
+        if (apiData.rank <= 0) {
+            isUnranked[leaderboardType] = true
+            return null
+        }
+        return if (shouldUpdateData && currentPos != Int.MAX_VALUE) currentPos else apiData.rank
     }
 
     private fun getUpcomingPlayerCount(currentPos: Int) = when {
@@ -194,6 +227,13 @@ object EliteFarmersLeaderboard {
         useRankGoal -> minOf((rankGoal ?: 0) + 1, currentPos)
         currentPos != Int.MAX_VALUE -> currentPos
         else -> null
+    }
+
+    private fun shouldUpdateData(leaderboardType: EliteLeaderboardType, apiData: EliteLeaderboard): Boolean {
+        val oldApiData = lastApiData[leaderboardType] ?: return true
+        val leaderboardDiff = oldApiData.rank != apiData.rank
+        val amountDiff = oldApiData.amount != apiData.amount
+        return leaderboardDiff || amountDiff
     }
 
     private fun handleDiff(leaderboardType: EliteLeaderboardType, apiData: EliteLeaderboard) {
