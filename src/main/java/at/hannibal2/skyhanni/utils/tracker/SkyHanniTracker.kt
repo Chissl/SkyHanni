@@ -45,6 +45,7 @@ open class SkyHanniTracker<Data : TrackerData>(
     private val createNewSession: () -> Data,
     private val getStorage: (ProfileSpecificStorage) -> Data,
     private val extraDisplayModes: Map<DisplayMode, (ProfileSpecificStorage) -> Data> = emptyMap(),
+    private val trackUptime: Boolean = true,
     protected val drawDisplay: (Data) -> List<Searchable>,
 ) {
 
@@ -67,11 +68,21 @@ open class SkyHanniTracker<Data : TrackerData>(
 
         @HandleEvent
         fun onTick(event: SkyHanniTickEvent) {
-            if (!event.isMod(5)) return
+            if (!event.isMod(10)) return
+            val toRemove = mutableListOf<SkyHanniTracker<*>>()
+            ChatUtils.debug("Unpaused trackers: $unpausedTrackers")
+
             unpausedTrackers.forEach { tracker ->
                 ChatUtils.debug("$tracker")
-                tracker.checkAfk()
+                if (tracker.trackUptime) {
+                    if (tracker.checkAfk()) {
+                        toRemove.add(tracker)
+                    } else {
+                        tracker.update()
+                    }
+                }
             }
+            unpausedTrackers.removeAll(toRemove)
         }
 
         fun getPricePer(name: NeuInternalName) = name.getPrice(config.priceSource)
@@ -159,25 +170,25 @@ open class SkyHanniTracker<Data : TrackerData>(
     }
 
     private fun showSessionUptime(): Boolean =
-        config.showUptime && (!config.onlyShowSession || displayMode != DisplayMode.TOTAL)
+        config.showUptime && (if (config.onlyShowSession) displayMode != DisplayMode.TOTAL else false)
 
-    private fun checkAfk() {
+    private fun checkAfk(): Boolean {
         if (getSessionUptime()?.isPaused() == true) {
-            unpausedTrackers.remove(this)
-            return
+            return true
         }
-        val sharedTracker = getSharedTracker() ?: return
+        val sharedTracker = getSharedTracker() ?: return true
         val afkTime = sharedTracker.get(DisplayMode.TOTAL).sessionUptime.getLapTime() // Afk time should be the same for all valid displays
         if (afkTime == null || afkTime > config.afkTimeout.seconds) {
             pauseSessionUptime()
-            return
+            return true
         }
-        update()
+        return false
     }
 
     private fun getSessionUptime(): Stopwatch? = displayMode?.let { getSharedTracker()?.get(it)?.sessionUptime }
 
     private fun startSessionUptime() {
+        if (!this.trackUptime) return
         val sharedTracker = getSharedTracker() ?: return
         sharedTracker.modify { it.sessionUptime.start(true) }
         unpausedTrackers.add(this)
@@ -185,9 +196,9 @@ open class SkyHanniTracker<Data : TrackerData>(
     }
 
     private fun pauseSessionUptime() {
+        if (!this.trackUptime) return
         val sharedTracker = getSharedTracker() ?: return
         sharedTracker.modify { it.sessionUptime.pause(true) }
-        unpausedTrackers.remove(this)
         update()
     }
 
