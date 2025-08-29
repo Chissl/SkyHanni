@@ -11,7 +11,7 @@ import java.util.*
 abstract class TimedTrackerData<Data : TrackerData>(
     private val createNewSession: () -> Data,
 ) : TrackerData() {
-    override fun reset() {
+    override fun resetData() {
         sessions = EnumMap(DisplayMode::class.java)
     }
 

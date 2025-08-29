@@ -58,7 +58,7 @@ object GardenUptimeTracker {
     }
 
     class Data : TrackerData() {
-        override fun reset() {
+        override fun resetData() {
             cropBreakTime = 0
             visitorTime = 0
             pestTime = 0
