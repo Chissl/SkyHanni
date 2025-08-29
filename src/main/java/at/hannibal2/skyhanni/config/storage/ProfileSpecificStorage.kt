@@ -4,7 +4,9 @@ import at.hannibal2.skyhanni.api.HotmApi.PowderType
 import at.hannibal2.skyhanni.api.SkillApi
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.MaxwellApi.ThaumaturgyPowerTuning
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteLeaderboardMode
 import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteLeaderboardType
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.FarmingWeight
 import at.hannibal2.skyhanni.data.jsonobjects.local.HotxTree
 import at.hannibal2.skyhanni.data.model.ComposterUpgrade
 import at.hannibal2.skyhanni.data.model.SkyblockStat
@@ -33,6 +35,7 @@ import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenPlotApi.PlotData
 import at.hannibal2.skyhanni.features.garden.farming.lane.FarmingLane
 import at.hannibal2.skyhanni.features.garden.fortuneguide.FarmingItemType
+import at.hannibal2.skyhanni.features.garden.pests.PestType
 import at.hannibal2.skyhanni.features.garden.pests.stereo.VinylType
 import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
 import at.hannibal2.skyhanni.features.garden.tracker.DicerRngDropTracker
@@ -611,14 +614,26 @@ class ProfileSpecificStorage(
         var farmingWeightBonusWeight: Double = 0.0
 
         class FarmingWeightConfig {
+            // TODO config fix this
             @Expose
-            var lastLeaderboardMap: MutableMap<EliteLeaderboardType, Int> = enumMapOf()
+            var lastLeaderboardPosMap: MutableMap<EliteLeaderboardType, Int> = mutableMapOf()
 
             @Expose
-            var minWeight: MutableMap<EliteLeaderboardType, Double> = enumMapOf()
+            var leaderboardAmountMap: MutableMap<EliteLeaderboardType, Double> = mutableMapOf()
 
             @Expose
-            var lastLeaderboardType: EliteLeaderboardType = EliteLeaderboardType.ALL_TIME
+            var cropDisplayType: Pair<CropType?, EliteLeaderboardMode> = Pair(null, EliteLeaderboardMode.ALL_TIME)
+
+            @Expose
+            var pestDisplayType: Pair<PestType?, EliteLeaderboardMode> = Pair(null, EliteLeaderboardMode.ALL_TIME)
+
+            // TODO config fix this
+            @Expose
+            var weightDisplayType: Pair<FarmingWeight, EliteLeaderboardMode> = Pair(FarmingWeight.FARMING_WEIGHT, EliteLeaderboardMode.ALL_TIME)
+            // TODO config fix this
+            @Expose
+            var minAmountMap: MutableMap<EliteLeaderboardType, Double> = mutableMapOf()
+
         }
 
         @Expose

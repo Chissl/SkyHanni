@@ -1,4 +1,4 @@
-package at.hannibal2.skyhanni.config.features.garden
+package at.hannibal2.skyhanni.config.features.garden.leaderboards
 
 import at.hannibal2.skyhanni.config.FeatureToggle
 import at.hannibal2.skyhanni.config.core.config.Position
@@ -10,7 +10,7 @@ import io.github.notenoughupdates.moulconfig.annotations.ConfigLink
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.notenoughupdates.moulconfig.observer.Property
 
-class EliteFarmingWeightConfig {
+class FarmingWeightDisplayConfig {
     @Expose
     @ConfigOption(
         name = "Display",
@@ -23,17 +23,8 @@ class EliteFarmingWeightConfig {
     var display: Boolean = true
 
     @Expose
-    @ConfigLink(owner = EliteFarmingWeightConfig::class, field = "display")
+    @ConfigLink(owner = FarmingWeightDisplayConfig::class, field = "display")
     val pos: Position = Position(180, 10)
-
-    @Expose
-    @ConfigOption(
-        name = "Leaderboard Ranking",
-        desc = "Show your position in the farming weight leaderboard. " +
-            "Only if your farming weight is high enough! Updates periodically."
-    )
-    @ConfigEditorBoolean
-    val leaderboard: Property<Boolean> = Property.of(true)
 
     @Expose
     @ConfigOption(
@@ -50,11 +41,21 @@ class EliteFarmingWeightConfig {
 
     enum class FarmingWeightTextEntry(private val displayName: String) {
         WEIGHT_POSITION("§6Farming Weight: §e104,481.49 §7[§b#5§7]"),
-        OVERTAKE("§e170.21 §7(§b12h 32m 15s§7) §7behind §bChissl")
+        OVERTAKE("§e170.21 §7(§b12h 32m 15s§7) §7behind §bChissl"),
+        LAST_PLAYER("§e170.21 §7 §7ahead of §bChissl")
         ;
 
         override fun toString() = displayName
     }
+
+    @Expose
+    @ConfigOption(
+        name = "Leaderboard Ranking",
+        desc = "Show your position in the farming weight leaderboard. " +
+            "Only if your farming weight is high enough! Updates periodically."
+    )
+    @ConfigEditorBoolean
+    val leaderboard: Property<Boolean> = Property.of(true)
 
     @Expose
     @ConfigOption(
@@ -80,20 +81,29 @@ class EliteFarmingWeightConfig {
 
     @Expose
     @ConfigOption(
-        name = "Use ETA Goal",
-        desc = "Use the ETA Goal number instead of the next upcoming rank. Useful when your rank is in the " +
+        name = "Use Rank Goal",
+        desc = "Use the Rank Goal number instead of the next upcoming rank. Useful when your rank is in the " +
             "ten thousands and you don't want to see small ETAs."
     )
     @ConfigEditorBoolean
-    val useEtaGoalRank: Property<Boolean> = Property.of(true)
+    val useRankGoal: Property<Boolean> = Property.of(true)
 
     @Expose
     @ConfigOption(
-        name = "ETA Goal",
-        desc = "Override the Overtake ETA to show when you'll reach the specified rank (if not there yet). (Default: \"10,000\")"
+        name = "All-Time Rank Goal",
+        desc = "Set a rank goal for the All-Time Farming Weight Leaderboard."
     )
     @ConfigEditorText
-    val etaGoalRank: Property<String> = Property.of("10000")
+    val weightRankGoal: Property<String> = Property.of("10000")
+
+    @Expose
+    @ConfigOption(
+        name = "Monthly Rank Goal",
+        desc = "Set a rank goal for the Monthly Farming Weight Leaderboard."
+    )
+    @ConfigEditorText
+    val monthlyWeightRankGoal: Property<String> = Property.of("10000")
+
 
     @Expose
     @ConfigOption(name = "Show below 200", desc = "Show the farming weight data even if you are below 200 weight.")

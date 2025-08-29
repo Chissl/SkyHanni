@@ -1,6 +1,8 @@
 package at.hannibal2.skyhanni.utils.json
 
 import at.hannibal2.skyhanni.data.IslandType
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteLeaderboardType
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteLeaderboardTypeAdapter
 import at.hannibal2.skyhanni.data.jsonobjects.other.NbtBoolean
 import at.hannibal2.skyhanni.data.model.SkyblockStat
 import at.hannibal2.skyhanni.features.fishing.trophy.TrophyRarity
@@ -79,6 +81,8 @@ object SkyHanniTypeAdapters {
         { this.getDuration().inWholeMilliseconds.toString() },
         { this.toIntOrNull()?.milliseconds?.let { Stopwatch(it) } ?: error("Could not parse Stopwatch duration from '$this'") },
     )
+
+    val ELITE_LEADERBOARD_TYPE: TypeAdapter<EliteLeaderboardType> = EliteLeaderboardTypeAdapter()
 
     val CROP_TYPE: TypeAdapter<CropType> = SimpleStringTypeAdapter(
         { name },
