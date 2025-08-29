@@ -74,8 +74,10 @@ private fun getFarmingWeight(): String {
     val weight = FarmingWeightData.getWeight(EliteLeaderboardMode.ALL_TIME)
     val leaderboard =
         EliteFarmersLeaderboard.getLeaderboardPosition(
-            EliteLeaderboardType.Weight(FarmingWeight.FARMING_WEIGHT,
-                EliteLeaderboardMode.ALL_TIME)
+            EliteLeaderboardType.Weight(
+                FarmingWeight.FARMING_WEIGHT,
+                EliteLeaderboardMode.ALL_TIME
+            )
         )
     val lbString = if (leaderboard == null) "" else "[#$leaderboard]"
     if (weight == null) return ""
