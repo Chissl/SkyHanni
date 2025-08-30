@@ -96,15 +96,20 @@ class TrackerConfig {
     @Expose
     @ConfigOption(name = "Show Uptime", desc = "Show how long the tracker has been active.")
     @ConfigEditorBoolean
-    var showUptime: Boolean = true
+    var showUptime: Property<Boolean> = Property.of(true)
+
+    @Expose
+    @ConfigOption(name = "Show Profit Per Hour", desc = "Show profit per hour on trackers that show profit.")
+    @ConfigEditorBoolean
+    var profitPerHour: Property<Boolean> = Property.of(true)
 
     @Expose
     @ConfigOption(
-        name = "Only show session uptime",
-        desc = "Only show uptime when the tracker is on session mode."
+        name = "Only Show Session Uptime",
+        desc = "Only show uptime and profit per hour when the tracker is on session mode."
     )
     @ConfigEditorBoolean
-    var onlyShowSession: Boolean = true
+    var onlyShowSession: Property<Boolean> = Property.of(true)
 
     @Expose
     @ConfigOption(
