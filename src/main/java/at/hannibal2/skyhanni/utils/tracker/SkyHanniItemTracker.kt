@@ -266,7 +266,7 @@ SkyHanniItemTracker<Data : ItemTrackerData>(
 
             if (totalAmount > 0 && duration > 0.seconds && actionPluralized != "") {
                 val amountPerHour = profit / duration.inPartialHours
-                add("§7$actionPluralized per hour: $profitPrefix${amountPerHour.shortFormat()}")
+                add("§7$actionPluralized per hour: §e${amountPerHour.shortFormat()}")
             }
         }
 
@@ -291,7 +291,7 @@ SkyHanniItemTracker<Data : ItemTrackerData>(
             onLeftClick = {
                 val line = "$name: ${text.removeColor()}"
                 val tipStats = profitTips.take(2)
-                val fullTipsLine = line + "\n " + tipStats.joinToString("\n ") { it.removeColor() }
+                val fullTipsLine = line + "\n " + tipStats.joinToString(" \n") { it.removeColor() }
                 copyOnClick(line, fullTipsLine, "profit")
             }
         )
@@ -320,7 +320,7 @@ SkyHanniItemTracker<Data : ItemTrackerData>(
             onLeftClick = {
                 val line = "$name: ${text.removeColor()}"
                 val tipStats = tips[0]
-                val fullTipsLine = "$line\n $tipStats"
+                val fullTipsLine = "$line \n${tipStats.removeColor()}"
                 copyOnClick(line, fullTipsLine, "profit per hour")
             }
         )
