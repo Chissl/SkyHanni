@@ -342,10 +342,10 @@ open class SkyHanniTracker<Data : TrackerData>(
         }
     }
 
-    enum class DisplayMode(internal val displayName: String) {
+    enum class DisplayMode(internal val displayName: String, val shortenedName: String = displayName) {
         TOTAL("Total"),
-        SESSION("Session"),
-        MAYOR("This Mayor"),
+        SESSION("Session", "Session"),
+        MAYOR("This Mayor", "Mayor"),
         DAY("Day"),
         WEEK("Week"),
         MONTH("Month"),
