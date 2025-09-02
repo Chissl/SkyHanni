@@ -254,7 +254,7 @@ object EliteFarmersLeaderboard {
             upcomingCount = upcomingPlayers,
             atRank = atRank,
         )
-        shouldRefreshLeaderboard[leaderboardType] = false // Don't want to fetch again if api call was successful
+
         val shouldUpdateData = shouldUpdateData(leaderboardType, apiData)
         // don't update anything besides upcoming players if data hasn't changed since last request
         if (shouldUpdateData) handleDiff(leaderboardType, apiData)
@@ -262,7 +262,7 @@ object EliteFarmersLeaderboard {
 
         minAmount?.set(leaderboardType, apiData.minAmount)
         lastLeaderboardUpdate[leaderboardType] = SimpleTimeMark.now()
-
+        shouldRefreshLeaderboard[leaderboardType] = false // Don't want to fetch again if api call was successful
         apiError = false
         if (apiData.rank <= 0) { // api returns -1 for unranked players
             isUnranked[leaderboardType] = true
@@ -361,12 +361,10 @@ object EliteFarmersLeaderboard {
         lastPlayer[leaderboardType] = apiData.previous?.firstOrNull()
         nextPlayers[leaderboardType] = mutableListOf()
         apiData.upcomingPlayers.forEach {
-            if (it.amount > (getAmount(leaderboardType) ?: apiData.amount)) {
-                nextPlayers[leaderboardType]?.add(it)
-            }
-        }
-        if ((nextPlayers[leaderboardType]?.size ?: 0) == 0 && apiData.upcomingPlayers.isNotEmpty()) {
-            shouldRefreshLeaderboard[leaderboardType] = true
+            nextPlayers[leaderboardType]?.add(it)
+            /*if (it.amount > (getAmount(leaderboardType) ?: apiData.amount)) {
+
+            }*/
         }
     }
 
