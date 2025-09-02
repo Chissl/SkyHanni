@@ -46,7 +46,7 @@ object GardenCropBreakTracker {
         itemHasCounter = true
 
         val uuid = event.toolItem.getItemUuid() ?: return
-        toolCounterData?.set(uuid, counter)
+        toolCounterData?.put(uuid, counter)
     }
 
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
@@ -81,7 +81,12 @@ object GardenCropBreakTracker {
         if (crop == null) return
 
         val old = toolCounterData?.get(uuid) ?: return
-        val addedCounter = counter - old
+        val addedCounter = if (counter < 0 && old > 0) {
+            // 32 bit overflow protection
+            counter + 4_294_967_296 - old
+        } else {
+            counter - old
+        }
 
         addToCropMap(crop, addedCounter.toInt())
         toolCounterData?.set(uuid, counter)
@@ -93,8 +98,8 @@ object GardenCropBreakTracker {
         if (cropMap.isEmpty()) return
 
         for (crop in cropMap) {
-            crop.key.addCollectionCounter(CropCollectionType.BREAKING_CROPS, cropMap[crop.key]?.toLong() ?: 0)
-            cropMap.remove(crop.key)
+            val amount = cropMap.remove(crop.key)
+            crop.key.addCollectionCounter(CropCollectionType.BREAKING_CROPS, amount?.toLong() ?: 0)
         }
 
         if (mooshroomCowCrops > 0) {
