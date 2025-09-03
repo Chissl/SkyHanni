@@ -362,7 +362,7 @@ object EliteFarmersLeaderboard {
         lastPlayer[leaderboardType] = apiData.previous?.firstOrNull()
         nextPlayers[leaderboardType] = mutableListOf()
         apiData.upcomingPlayers.forEach {
-            nextPlayers[leaderboardType]?.add(it)
+            if (apiData.rank != 1) nextPlayers[leaderboardType]?.add(it)
             /*if (it.amount > (getAmount(leaderboardType) ?: apiData.amount)) {
 
             }*/
