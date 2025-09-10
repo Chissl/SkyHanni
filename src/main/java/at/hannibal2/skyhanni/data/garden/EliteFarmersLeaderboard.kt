@@ -3,9 +3,12 @@ package at.hannibal2.skyhanni.data.garden
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.api.EliteDevApi
 import at.hannibal2.skyhanni.api.event.HandleEvent
+import at.hannibal2.skyhanni.config.features.garden.leaderboards.EliteLeaderboardConfigApi.getLeaderboardConfig
+import at.hannibal2.skyhanni.config.features.garden.leaderboards.EliteLeaderboardConfigApi.getLeaderboardRankConfig
+import at.hannibal2.skyhanni.config.features.garden.leaderboards.EliteLeaderboardConfigApi.getRankConfig
+import at.hannibal2.skyhanni.config.features.garden.leaderboards.EliteLeaderboardConfigApi.getRankGoalIfValid
+import at.hannibal2.skyhanni.config.features.garden.leaderboards.generics.EliteDisplayGenericConfig.LeaderboardTextEntry
 import at.hannibal2.skyhanni.data.garden.CropCollectionApi.getCollection
-import at.hannibal2.skyhanni.data.garden.EliteFarmersRankGoals.getLeaderboardRankConfig
-import at.hannibal2.skyhanni.data.garden.EliteFarmersRankGoals.getRankFromConfig
 import at.hannibal2.skyhanni.data.garden.FarmingWeightData.getFactor
 import at.hannibal2.skyhanni.data.garden.FarmingWeightData.getWeight
 import at.hannibal2.skyhanni.data.garden.FarmingWeightData.profileId
@@ -21,8 +24,6 @@ import at.hannibal2.skyhanni.events.garden.pests.PestKillEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenApi
-import at.hannibal2.skyhanni.features.garden.leaderboarddisplays.EliteLeaderboardDisplayManager.getLeaderboardChangeConfig
-import at.hannibal2.skyhanni.features.garden.leaderboarddisplays.EliteLeaderboardDisplayManager.getRankGoalConfig
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
@@ -40,7 +41,11 @@ import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object EliteFarmersLeaderboard {
-    val loadingLeaderboardMutex = Mutex()
+    val loadingLeaderboardMutex = mutableMapOf<KClass<out EliteLeaderboardType>, Mutex>(
+        EliteLeaderboardType.Crop::class to Mutex(),
+        EliteLeaderboardType.Weight::class to Mutex(),
+        EliteLeaderboardType.Pest::class to Mutex()
+    )
     private val storage get() = GardenApi.storage?.farmingWeight
     private val leaderboardPosMap: MutableMap<EliteLeaderboardType, Int>? get() = storage?.lastLeaderboardPosMap
     private val leaderboardAmountMap: MutableMap<EliteLeaderboardType, Double>? get() = storage?.leaderboardAmountMap
@@ -60,6 +65,8 @@ object EliteFarmersLeaderboard {
     private var lastFetchAttempt = SimpleTimeMark.farPast()
 
     fun clearEntries(leaderboardType: EliteLeaderboardType) {
+        lastApiData.remove(leaderboardType)
+        rankGoal.remove(leaderboardType)
         leaderboardPosMap?.remove(leaderboardType)
         shouldRefreshLeaderboard.remove(leaderboardType)
         nextPlayers.remove(leaderboardType)
@@ -67,6 +74,8 @@ object EliteFarmersLeaderboard {
     }
 
     fun clearCategories(category: KClass<out EliteLeaderboardType>) {
+        lastApiData.clearCategory(category)
+        rankGoal.clearCategory(category)
         leaderboardPosMap?.clearCategory(category)
         shouldRefreshLeaderboard.clearCategory(category)
         nextPlayers.clearCategory(category)
@@ -120,7 +129,7 @@ object EliteFarmersLeaderboard {
         }
 
         // We want to prevent spamming the api, especially when swapping leaderboard displays
-        if (lastFetchAttempt.passedSince() <= 5.seconds) return null
+        if (lastFetchAttempt.passedSince() <= 3.seconds) return null
         lastFetchAttempt = SimpleTimeMark.now()
         fetchAttempts++
 
@@ -198,13 +207,13 @@ object EliteFarmersLeaderboard {
     }
 
     private fun loadLeaderboardIfAble(leaderboardType: EliteLeaderboardType): Int? {
-        if (loadingLeaderboardMutex.isLocked) return null
+        if (loadingLeaderboardMutex[leaderboardType::class]?.isLocked == true) return null
         if (profileId == "") updateCollections()
 
         val category = leaderboardType::class
 
         SkyHanniMod.launchIOCoroutine {
-            loadingLeaderboardMutex.withLock {
+            loadingLeaderboardMutex[leaderboardType::class]?.withLock {
                 val oldPos = leaderboardPosMap?.get(leaderboardType)
                 val lbPos = loadLeaderboardPosition(leaderboardType)
                 lbPos?.let {
@@ -222,7 +231,7 @@ object EliteFarmersLeaderboard {
     }
 
     private fun checkOffScreenLeaderboardChanges(oldPosition: Int?, leaderboardType: EliteLeaderboardType) {
-        if (!getLeaderboardChangeConfig(leaderboardType)) return
+        if (!getLeaderboardConfig(leaderboardType).showLbChange) return
         if (oldPosition == null) return
         val currentPosition = leaderboardPosMap?.get(leaderboardType) ?: return
 
@@ -245,7 +254,7 @@ object EliteFarmersLeaderboard {
         val upcomingPlayers = getUpcomingPlayerCount(currentPos, leaderboardType)
         // Fetch upcoming players from current lb pos if api hasn't updated, or from rank goal
         val rankGoal = getRankGoal(leaderboardType)
-        val useRankGoal = getRankGoalConfig(leaderboardType).get() && rankGoal != null
+        val useRankGoal = getRankConfig(leaderboardType).useRankGoal.get() && rankGoal != null
         val atRank = getAtRank(currentPos, rankGoal, useRankGoal)
 
         val apiData = EliteDevApi.fetchLeaderboardPositions(
@@ -254,26 +263,34 @@ object EliteFarmersLeaderboard {
             upcomingCount = upcomingPlayers,
             atRank = atRank,
         )
-
+        // elite only updates player profiles once an hour, so assume it's wrong if it's the same as last fetch
         val shouldUpdateData = shouldUpdateData(leaderboardType, apiData)
-        // don't update anything besides upcoming players if data hasn't changed since last request
-        if (shouldUpdateData) handleDiff(leaderboardType, apiData)
-        handleUpcomingPlayers(leaderboardType, apiData)
-
         minAmount?.set(leaderboardType, apiData.minAmount)
         lastApiData[leaderboardType] = apiData
         lastLeaderboardUpdate[leaderboardType] = SimpleTimeMark.now()
-        shouldRefreshLeaderboard[leaderboardType] = false // Don't want to fetch again if api call was successful
+        shouldRefreshLeaderboard[leaderboardType] = false
         apiError = false
         if (apiData.rank <= 0) { // api returns -1 for unranked players
             isUnranked[leaderboardType] = true
+            // correct wrong data
+            leaderboardAmountMap?.remove(leaderboardType)
+            leaderboardPosMap?.remove(leaderboardType)
+            if (!useRankGoal) {
+                nextPlayers.remove(leaderboardType)
+                lastPlayer.remove(leaderboardType)
+            }
+
             return null
         }
-        // api caches data, so prefer our lb pos if api pos hasn't changed since last request
+        isUnranked[leaderboardType] = false
+        if (shouldUpdateData) handleDiff(leaderboardType, apiData)
+        handleUpcomingPlayers(leaderboardType, apiData)
+        // prefer our lb pos
         return if (!shouldUpdateData && currentPos != Int.MAX_VALUE) currentPos else apiData.rank
     }
 
     private fun getUpcomingPlayerCount(currentPos: Int, leaderboardType: EliteLeaderboardType): Int {
+        if (LeaderboardTextEntry.OVERTAKE !in getLeaderboardConfig(leaderboardType).display.text.get()) return 0
         if (leaderboardType.mode == EliteLeaderboardMode.ALL_TIME) {
             return when {
                 currentPos > 10_000 -> 50
@@ -367,15 +384,13 @@ object EliteFarmersLeaderboard {
     }
 
     fun getRankGoal(leaderboardType: EliteLeaderboardType): Int? {
-        val property = getRankFromConfig(leaderboardType) ?: return null
+        val goal = getRankGoalIfValid(leaderboardType)?.get()?.toIntOrNull() ?: return null
 
         val currentLeaderboardPos = leaderboardPosMap?.get(leaderboardType) ?: Int.MAX_VALUE
 
-        val goal = property.get().toIntOrNull() ?: return null
-
         if (goal < 1 || goal >= currentLeaderboardPos) {
             if (goal < 1 && !hasWarned) {
-                getLeaderboardRankConfig(leaderboardType).let { prop ->
+                getLeaderboardRankConfig(leaderboardType)?.let { prop ->
                     ChatUtils.chatAndOpenConfig(
                         "Invalid $leaderboardType Rank Goal! Click here to edit the Rank Goal config value " +
                             "to a positive number less than your current leaderboard position to use this feature!",
