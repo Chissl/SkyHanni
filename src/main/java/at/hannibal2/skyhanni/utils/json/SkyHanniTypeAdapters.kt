@@ -77,6 +77,8 @@ object SkyHanniTypeAdapters {
         }
     }
 
+    val ELITE_LEADERBOARD_TYPE: TypeAdapter<EliteLeaderboardType> = EliteLeaderboardTypeAdapter()
+
     val STOPWATCH: TypeAdapter<Stopwatch> = SimpleStringTypeAdapter(
         { this.getDuration().inWholeMilliseconds.toString() },
         { this.toLongOrNull()?.milliseconds?.let { Stopwatch(it) } ?: error("Could not parse Stopwatch duration from '$this'") },
