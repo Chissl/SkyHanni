@@ -116,6 +116,7 @@ object PestSpawnTimer {
 
     @HandleEvent
     fun onPestSpawn(event: PestSpawnEvent) {
+        shouldRepeatWarning = false
         val spawnTime = lastPestSpawnTime.passedSince()
 
         if (!lastPestSpawnTime.isFarPast()) {
@@ -169,7 +170,7 @@ object PestSpawnTimer {
         }
         if ((pestCooldownEndTime - ((config.cooldownWarningTime.seconds) + 1.seconds)).isInPast()) {
             cooldownReminder()
-        }
+        } else shouldRepeatWarning = false
     }
 
     @HandleEvent
