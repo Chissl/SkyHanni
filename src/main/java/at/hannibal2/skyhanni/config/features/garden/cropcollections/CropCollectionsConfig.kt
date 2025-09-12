@@ -1,42 +1,36 @@
-package at.hannibal2.skyhanni.config.features.garden.cropcollections;
+package at.hannibal2.skyhanni.config.features.garden.cropcollections
 
-import at.hannibal2.skyhanni.config.FeatureToggle;
-import at.hannibal2.skyhanni.config.core.config.Position;
-import com.google.gson.annotations.Expose;
-import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean;
-import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList;
-import io.github.notenoughupdates.moulconfig.annotations.ConfigLink;
-import io.github.notenoughupdates.moulconfig.annotations.ConfigOption;
+import at.hannibal2.skyhanni.config.FeatureToggle
+import at.hannibal2.skyhanni.config.core.config.Position
+import at.hannibal2.skyhanni.config.features.misc.tracker.IndividualTrackerConfig
+import com.google.gson.annotations.Expose
+import io.github.notenoughupdates.moulconfig.annotations.Accordion
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList
+import io.github.notenoughupdates.moulconfig.annotations.ConfigLink
+import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig.CropCollectionDisplayText.defaultCollectionDisplayList;
-
-public class CropCollectionsConfig {
+class CropCollectionsConfig {
     @Expose
     @ConfigOption(
         name = "Collection Display",
-        desc = "Show the progress and ETA until the next crop milestone is reached and the current crops/minute value.\n" +
-            "§eRequires a tool with either a counter or Cultivating enchantment for full accuracy."
+        desc = """Show the progress and ETA until the next crop milestone is reached and the current crops/minute value.
+§eRequires a tool with either a counter or Cultivating enchantment for full accuracy."""
     )
     @ConfigEditorBoolean
     @FeatureToggle
-    public boolean collectionDisplay = true;
+    var collectionDisplay: Boolean = true
 
     @Expose
-    @ConfigOption(
-        name = "Save Session on game start",
-        desc = "Don't reset session display mode when the game starts."
-    )
+    @ConfigOption(name = "Save Session on game start", desc = "Don't reset session display mode when the game starts.")
     @ConfigEditorBoolean
     @FeatureToggle
-    public boolean saveSession = false;
+    var saveSession: Boolean = false
 
     @Expose
-    @ConfigLink(owner = CropCollectionsConfig.class, field = "collectionDisplay")
-    public Position collectionDisplayPos = new Position(-400, -200, false, true);
+    @ConfigLink(owner = CropCollectionsConfig::class, field = "collectionDisplay")
+    var collectionDisplayPos: Position = Position(-400, -200, false, true)
 
     @Expose
     @ConfigOption(
@@ -44,9 +38,18 @@ public class CropCollectionsConfig {
         desc = "Drag text to change what displays in the summary card."
     )
     @ConfigEditorDraggableList
-    public List<CropCollectionDisplayText> statDisplayList = new ArrayList<>(defaultCollectionDisplayList);
+    var statDisplayList: List<CropCollectionDisplayText> =
+        ArrayList(CropCollectionDisplayText.defaultCollectionDisplayList)
 
-    public enum CropCollectionDisplayText {
+    @Expose
+    @ConfigOption(
+        name = "Tracker Settings",
+        desc = ""
+    )
+    @Accordion
+    val perTrackerConfig: IndividualTrackerConfig = IndividualTrackerConfig()
+
+    enum class CropCollectionDisplayText(private val display: String) {
         TITLE("Melon Crop Collection"),
         ALL_TIME("All time: 27,898,115"),
         SESSION("Today: 18,211,121"),
@@ -61,22 +64,18 @@ public class CropCollectionsConfig {
         PEST_BASE("- Pest Base Drops: 129,128"),
         ;
 
-        public static final List<CropCollectionDisplayText> defaultCollectionDisplayList = Arrays.asList(
-            TITLE,
-            ALL_TIME,
-            SESSION,
-            PER_HOUR
-        );
-
-        private final String display;
-
-        CropCollectionDisplayText(String display) {
-            this.display = display;
+        override fun toString(): String {
+            return display
         }
 
-        @Override
-        public String toString() {
-            return display;
+        companion object {
+            @Suppress("StorageNeedsExpose")
+            val defaultCollectionDisplayList: List<CropCollectionDisplayText> = Arrays.asList(
+                TITLE,
+                ALL_TIME,
+                SESSION,
+                PER_HOUR
+            )
         }
     }
 }

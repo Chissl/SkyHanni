@@ -1,5 +1,7 @@
 package at.hannibal2.skyhanni.utils.tracker
 
+import at.hannibal2.skyhanni.config.features.misc.tracker.GenericIndividualTrackerConfig
+import at.hannibal2.skyhanni.config.features.misc.tracker.TrackerGenericConfig
 import at.hannibal2.skyhanni.config.storage.ProfileSpecificStorage
 import at.hannibal2.skyhanni.data.ProfileStorageData
 import at.hannibal2.skyhanni.events.utils.TimedTrackerUpdateEvent
@@ -18,18 +20,20 @@ import at.hannibal2.skyhanni.utils.renderables.toRenderable
 import java.time.LocalDate
 
 @Suppress("SpreadOperator")
-class SkyhanniTimedTracker<Data : TrackerData>(
+class SkyhanniTimedTracker<Data : TrackerData, Type : GenericIndividualTrackerConfig<*>>(
     name: String,
     createNewSession: () -> Data,
     private var storage: (ProfileSpecificStorage) -> TimedTrackerData<Data>,
     drawDisplay: (Data) -> List<Searchable>,
     extraDisplayModes: Map<DisplayMode, (ProfileSpecificStorage) -> Data> = emptyMap(),
-) : SkyHanniTracker<Data>(
+    trackerConfig: () -> Type
+) : SkyHanniTracker<Data, Type>(
     name,
     createNewSession,
     { throw UnsupportedOperationException("getStorage not used") },
     extraDisplayModes,
-    drawDisplay = drawDisplay
+    drawDisplay = drawDisplay,
+    trackerConfig = trackerConfig
 ) {
     override val availableTrackers = listOf(
         DisplayMode.TOTAL,
@@ -39,6 +43,9 @@ class SkyhanniTimedTracker<Data : TrackerData>(
         DisplayMode.MONTH,
         DisplayMode.YEAR,
     ) + extraDisplayModes.keys
+
+    private val config: TrackerGenericConfig
+        get() = if (trackerSpecificConfig.useUniversalConfig) universalTracker else trackerSpecificConfig.trackerConfig
 
     var date = LocalDate.now()
     var week = date.format(weekFormatter).weekToLocalDate()

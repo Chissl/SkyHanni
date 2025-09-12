@@ -37,11 +37,12 @@ import kotlin.time.Duration.Companion.seconds
 object CropCollectionDisplay {
     private val config get() = GardenApi.config.cropCollections
     private var needsInventory = false
-    private val tracker = SkyhanniTimedTracker<Data>(
+    private val tracker = SkyhanniTimedTracker(
         "Crop Collection Tracker",
         { Data() },
         { it.garden.cropCollectionTracker },
-        { drawDisplay(it) }
+        { drawDisplay(it) },
+        trackerConfig = { config.perTrackerConfig }
     )
 
     // reset session on game start

@@ -42,11 +42,12 @@ import kotlin.time.Duration.Companion.seconds
 object GardenUptimeTracker {
     private val config get() = GardenApi.config.gardenUptime
 
-    private val tracker = SkyhanniTimedTracker<Data>(
+    private val tracker = SkyhanniTimedTracker(
         "Garden Uptime Tracker",
         { Data() },
         { it.garden.uptimeTracker },
-        { drawDisplay(it) }
+        { drawDisplay(it) },
+        trackerConfig = { config.perTrackerConfig }
     )
 
     class TimeData : TimedTrackerData<Data>({ Data() }) {
