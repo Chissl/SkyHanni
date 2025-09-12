@@ -330,6 +330,38 @@ object PestSpawnTimer {
         COOLDOWN_COUNTDOWN
     }
 
+    @JvmStatic
+    fun playUserSound() {
+        with(config.sound) {
+            SoundUtils.createSound(name, pitch).playSound()
+        }
+    }
+
+    // TODO: Change to countdown title when that works
+    private fun countdownWarn(timeLeft: Duration) {
+        countdownTitleContext = TitleManager.sendTitle(
+            "§cPest spawn cooldown expires in ${timeLeft.format()}",
+            duration = 1.seconds,
+            intention = PestTitleIntention.COOLDOWN_COUNTDOWN,
+            addType = TitleManager.TitleAddType.FORCE_FIRST,
+            // countDownDisplayType = TitleManager.CountdownTitleDisplayType.WHOLE_SECONDS,
+        )
+    }
+
+    private fun repeatSound() {
+        with(config) {
+            if (!enabled || !GardenApi.inGarden()) return
+            if (lastPlayedSound.passedSince() >= sound.repeatDuration.ticks) {
+                lastPlayedSound = SimpleTimeMark.now()
+                playUserSound()
+            }
+        }
+    }
+
+    private enum class PestTitleIntention {
+        COOLDOWN_COUNTDOWN
+    }
+
     @HandleEvent
     fun onConfigFix(event: ConfigUpdaterMigrator.ConfigFixEvent) {
         val userSelections: List<HeldItem> = buildList {

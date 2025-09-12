@@ -92,6 +92,7 @@ object PestProfitTracker {
         { BucketData() },
         { it.garden.pestProfitTracker },
         { drawDisplay(it) },
+        trackerConfig = { config.perTrackerConfig }
     )
     private var adjustmentMap: Map<PestType, Map<NeuInternalName, Int>> = mapOf()
 

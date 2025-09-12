@@ -33,7 +33,6 @@ import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import at.hannibal2.skyhanni.utils.tracker.ItemTrackerData
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniItemTracker
-import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import com.google.gson.annotations.Expose
 
 @SkyHanniModule
@@ -57,6 +56,7 @@ object CrystalNucleusTracker {
         "Crystal Nucleus Tracker",
         { Data() },
         { it.mining.crystalNucleusTracker },
+        trackerConfig = { config.perTrackerConfig }
     ) { drawDisplay(it) }
 
     class Data : ItemTrackerData() {
@@ -127,7 +127,7 @@ object CrystalNucleusTracker {
         val runsCompleted = data.runsCompleted
         if (runsCompleted > 0) {
             var profit = tracker.drawItems(data, { true }, this)
-            val jungleKeyCost: Double = SkyHanniTracker.getPricePer(JUNGLE_KEY_ITEM) * runsCompleted
+            val jungleKeyCost: Double = tracker.getPricePer(JUNGLE_KEY_ITEM) * runsCompleted
             profit -= jungleKeyCost
             val jungleKeyCostFormat = jungleKeyCost.shortFormat()
             add(
@@ -141,7 +141,7 @@ object CrystalNucleusTracker {
             )
 
             val usesApparatus = CrystalNucleusApi.usesApparatus()
-            val partsCost = CrystalNucleusApi.getPrecursorRunPrice { SkyHanniTracker.getPricePer(it) }
+            val partsCost = CrystalNucleusApi.getPrecursorRunPrice { tracker.getPricePer(it) }
             val totalSapphireCost: Double = partsCost * runsCompleted
             val rawConfigString = config.professorUsage.get().toString()
             val usageString = if (usesApparatus) StringUtils.pluralize(
