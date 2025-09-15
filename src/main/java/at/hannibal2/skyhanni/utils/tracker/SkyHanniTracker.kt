@@ -34,10 +34,12 @@ import at.hannibal2.skyhanni.utils.renderables.container.VerticalContainerRender
 import at.hannibal2.skyhanni.utils.renderables.primitives.empty
 import at.hannibal2.skyhanni.utils.renderables.primitives.text
 import at.hannibal2.skyhanni.utils.renderables.toRenderable
+import com.sun.org.apache.xpath.internal.operations.Bool
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.client.gui.inventory.GuiInventory
 import kotlin.reflect.KClass
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @Suppress("TooManyFunctions")
@@ -47,7 +49,7 @@ open class SkyHanniTracker<Data : TrackerData>(
     private val getStorage: (ProfileSpecificStorage) -> Data,
     private val extraDisplayModes: Map<DisplayMode, (ProfileSpecificStorage) -> Data> = emptyMap(),
     private val trackUptime: Boolean = true,
-    private val sessionUptimeType: KClass<out SessionUptime> = SessionUptime.Normal::class,
+    private val customUptimeControl: Boolean = false,
     private val drawDisplay: (Data) -> List<Searchable>,
 ) {
     private var inventoryOpen = false
@@ -58,7 +60,6 @@ open class SkyHanniTracker<Data : TrackerData>(
     private var wasSearchEnabled = config.trackerSearchEnabled.get()
     private var dirty = false
     private var lastUpdate: SimpleTimeMark = SimpleTimeMark.farPast()
-    private var currentTrackerMode = SessionUptime.Normal(NormalSession.NORMAL)
     val textInput = SearchTextInput()
 
     @SkyHanniModule
@@ -165,11 +166,11 @@ open class SkyHanniTracker<Data : TrackerData>(
         config.showUptime.get() && (!config.onlyShowSession.get() || displayMode != DisplayMode.TOTAL)
 
     private fun checkAfk() {
-        if (getSessionUptime()?.isPaused() == true) {
+        if (getCurrentStopwatch()?.isPaused() == true) {
             return
         }
         val sharedTracker = getSharedTracker() ?: return
-        val afkTime = sharedTracker.get(DisplayMode.TOTAL).sessionUptime[currentTrackerMode]?.getLapTime() // Afk time should be the same for all valid displays
+        val afkTime = sharedTracker.get(DisplayMode.TOTAL).getActiveStopwatch()?.getLapTime() // Afk time should be the same for all valid displays
         if (afkTime == null || afkTime > config.afkTimeout.seconds) {
             pauseSessionUptime()
             return
@@ -177,28 +178,37 @@ open class SkyHanniTracker<Data : TrackerData>(
         update()
     }
 
-    open fun getSessionUptime(): Stopwatch? = displayMode?.let { getSharedTracker()?.get(it)?.sessionUptime?.get(currentTrackerMode) }
+    fun getTotalUptime(): Duration? = displayMode?.let { getSharedTracker()?.get(it)?.getTotalUptime() }
+
+    open fun getCurrentStopwatch(): Stopwatch? = displayMode?.let { getSharedTracker()?.get(it)?.getActiveStopwatch() }
 
     private fun startSessionUptime() {
         if (!this.trackUptime) return
         val sharedTracker = getSharedTracker() ?: return
-        sharedTracker.modify { it.sessionUptime[currentTrackerMode]?.start(true) }
-        unpausedTrackers.add(this)
+        sharedTracker.modify { it.getActiveStopwatch()?.start(true) }
+        if (!customUptimeControl) unpausedTrackers.add(this)
         update()
     }
 
     private fun pauseSessionUptime() {
         if (!this.trackUptime) return
         val sharedTracker = getSharedTracker() ?: return
-        sharedTracker.modify { it.sessionUptime[currentTrackerMode]?.pause(true) }
-        unpausedTrackers.remove(this)
+        sharedTracker.modify { it.getActiveStopwatch()?.pause(true) }
+        if (!customUptimeControl) unpausedTrackers.remove(this)
+        update()
+    }
+
+    private fun swapActiveSession(session: SessionUptime) {
+        if (!this.customUptimeControl) return
+        val sharedTracker = getSharedTracker() ?: return
+        sharedTracker.modify { it.setActiveSession(session) }
         update()
     }
 
     private fun buildSessionUptime(): Renderable {
-        val sessionUptime = getSessionUptime()?.getDuration() ?: return Renderable.empty()
+        val sessionUptime = getTotalUptime() ?: return Renderable.empty()
         val isTotalDisplay = displayMode == DisplayMode.TOTAL
-        val pausedText = if (getSessionUptime()?.isPaused() == true) " §c(Paused!)" else ""
+        val pausedText = if (getCurrentStopwatch()?.isPaused() == true) " §c(Paused!)" else ""
         // Uptime added after trackers already had data
         return if (isTotalDisplay) {
             Renderable.hoverTips(
