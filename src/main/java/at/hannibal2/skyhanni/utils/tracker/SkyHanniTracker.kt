@@ -37,6 +37,7 @@ import at.hannibal2.skyhanni.utils.renderables.toRenderable
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.client.gui.inventory.GuiInventory
+import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.seconds
 
 @Suppress("TooManyFunctions")
@@ -46,6 +47,7 @@ open class SkyHanniTracker<Data : TrackerData>(
     private val getStorage: (ProfileSpecificStorage) -> Data,
     private val extraDisplayModes: Map<DisplayMode, (ProfileSpecificStorage) -> Data> = emptyMap(),
     private val trackUptime: Boolean = true,
+    private val sessionUptimeType: KClass<out SessionUptime> = SessionUptime.Normal::class,
     private val drawDisplay: (Data) -> List<Searchable>,
 ) {
     private var inventoryOpen = false
