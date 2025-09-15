@@ -2,12 +2,18 @@ package at.hannibal2.skyhanni.utils.tracker
 
 import at.hannibal2.skyhanni.utils.Stopwatch
 import com.google.gson.annotations.Expose
+import kotlin.time.Duration
 
 abstract class TrackerData {
     @Expose
     open var sessionUptime: Map<SessionUptime, Stopwatch> = mapOf(
         Pair(SessionUptime.Normal(NormalSession.NORMAL), Stopwatch())
     )
+
+    open fun getTotalUptime(): Duration =
+        sessionUptime.values.fold(Duration.ZERO) { acc, stopwatch ->
+            acc + stopwatch.getDuration()
+        }
 
     fun reset() {
         for (session in sessionUptime.entries) {
