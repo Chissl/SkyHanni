@@ -56,6 +56,7 @@ open class SkyHanniTracker<Data : TrackerData>(
     private var wasSearchEnabled = config.trackerSearchEnabled.get()
     private var dirty = false
     private var lastUpdate: SimpleTimeMark = SimpleTimeMark.farPast()
+    private var currentTrackerMode = SessionUptime.Normal(NormalSession.NORMAL)
     val textInput = SearchTextInput()
 
     @SkyHanniModule
@@ -166,7 +167,7 @@ open class SkyHanniTracker<Data : TrackerData>(
             return
         }
         val sharedTracker = getSharedTracker() ?: return
-        val afkTime = sharedTracker.get(DisplayMode.TOTAL).sessionUptime.getLapTime() // Afk time should be the same for all valid displays
+        val afkTime = sharedTracker.get(DisplayMode.TOTAL).sessionUptime[currentTrackerMode]?.getLapTime() // Afk time should be the same for all valid displays
         if (afkTime == null || afkTime > config.afkTimeout.seconds) {
             pauseSessionUptime()
             return
@@ -174,12 +175,12 @@ open class SkyHanniTracker<Data : TrackerData>(
         update()
     }
 
-    private fun getSessionUptime(): Stopwatch? = displayMode?.let { getSharedTracker()?.get(it)?.sessionUptime }
+    open fun getSessionUptime(): Stopwatch? = displayMode?.let { getSharedTracker()?.get(it)?.sessionUptime?.get(currentTrackerMode) }
 
     private fun startSessionUptime() {
         if (!this.trackUptime) return
         val sharedTracker = getSharedTracker() ?: return
-        sharedTracker.modify { it.sessionUptime.start(true) }
+        sharedTracker.modify { it.sessionUptime[currentTrackerMode]?.start(true) }
         unpausedTrackers.add(this)
         update()
     }
@@ -187,7 +188,7 @@ open class SkyHanniTracker<Data : TrackerData>(
     private fun pauseSessionUptime() {
         if (!this.trackUptime) return
         val sharedTracker = getSharedTracker() ?: return
-        sharedTracker.modify { it.sessionUptime.pause(true) }
+        sharedTracker.modify { it.sessionUptime[currentTrackerMode]?.pause(true) }
         unpausedTrackers.remove(this)
         update()
     }
