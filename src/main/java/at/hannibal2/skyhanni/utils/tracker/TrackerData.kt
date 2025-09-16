@@ -2,7 +2,6 @@ package at.hannibal2.skyhanni.utils.tracker
 
 import at.hannibal2.skyhanni.utils.Stopwatch
 import com.google.gson.annotations.Expose
-import kotlin.reflect.KClass
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -12,13 +11,23 @@ abstract class TrackerData {
         Pair(SessionUptime.Normal(NormalSession.NORMAL), Stopwatch())
     )
 
-    private var activeSession: SessionUptime? = sessionUptime.keys.firstOrNull()
+    private var _activeSession: SessionUptime? = null
 
-    fun getActiveSession(): SessionUptime? = activeSession
+    // avoid initializing until we need it since subclass overrides sessionUptime
+    private var activeSession: SessionUptime?
+        get() {
+            if (_activeSession == null) {
+                _activeSession = sessionUptime.keys.firstOrNull()
+            }
+            return _activeSession
+        }
+        private set(value) {
+            _activeSession = value
+        }
 
     fun getActiveStopwatch(): Stopwatch? = activeSession?.let { sessionUptime[it] }
 
-    fun setActiveSession(session: SessionUptime) {
+    fun setActiveStopwatch(session: SessionUptime) {
         require(sessionUptime.containsKey(session)) {
             "Session $session not part of this tracker"
         }
@@ -44,7 +53,7 @@ abstract class TrackerData {
     protected abstract fun resetData()
 }
 
-abstract class GardenTrackerData: TrackerData() {
+abstract class GardenTrackerData : TrackerData() {
     @Expose
     override var sessionUptime: Map<SessionUptime, Stopwatch> = mapOf(
         Pair(SessionUptime.Garden(GardenSession.CROP), Stopwatch()),
@@ -54,17 +63,16 @@ abstract class GardenTrackerData: TrackerData() {
 }
 
 sealed class SessionUptime {
-    data class Normal(val sessionType: NormalSession): SessionUptime()
-    data class Garden(val sessionType: GardenSession): SessionUptime()
+    data class Normal(val sessionType: NormalSession) : SessionUptime()
+    data class Garden(val sessionType: GardenSession) : SessionUptime()
 }
 
-enum class NormalSession(private val displayName: String) {
-    NORMAL("Normal"),
-    ;
+enum class NormalSession {
+    NORMAL,
 }
 
-enum class GardenSession(private val displayName: String) {
-    PEST("Pest"),
-    VISITOR("Visitor"),
-    CROP("Crop", ),
+enum class GardenSession {
+    PEST,
+    VISITOR,
+    CROP,
 }

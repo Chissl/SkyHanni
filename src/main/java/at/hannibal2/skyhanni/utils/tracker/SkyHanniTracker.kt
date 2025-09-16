@@ -34,11 +34,9 @@ import at.hannibal2.skyhanni.utils.renderables.container.VerticalContainerRender
 import at.hannibal2.skyhanni.utils.renderables.primitives.empty
 import at.hannibal2.skyhanni.utils.renderables.primitives.text
 import at.hannibal2.skyhanni.utils.renderables.toRenderable
-import com.sun.org.apache.xpath.internal.operations.Bool
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.client.gui.inventory.GuiInventory
-import kotlin.reflect.KClass
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -170,7 +168,8 @@ open class SkyHanniTracker<Data : TrackerData>(
             return
         }
         val sharedTracker = getSharedTracker() ?: return
-        val afkTime = sharedTracker.get(DisplayMode.TOTAL).getActiveStopwatch()?.getLapTime() // Afk time should be the same for all valid displays
+        // Afk time should be the same for all valid displays
+        val afkTime = sharedTracker.get(DisplayMode.TOTAL).getActiveStopwatch()?.getLapTime()
         if (afkTime == null || afkTime > config.afkTimeout.seconds) {
             pauseSessionUptime()
             return
@@ -201,7 +200,7 @@ open class SkyHanniTracker<Data : TrackerData>(
     private fun swapActiveSession(session: SessionUptime) {
         if (!this.customUptimeControl) return
         val sharedTracker = getSharedTracker() ?: return
-        sharedTracker.modify { it.setActiveSession(session) }
+        sharedTracker.modify { it.setActiveStopwatch(session) }
         update()
     }
 
