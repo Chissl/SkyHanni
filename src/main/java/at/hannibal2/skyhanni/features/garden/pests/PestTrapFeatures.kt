@@ -24,7 +24,6 @@ import at.hannibal2.skyhanni.utils.StringUtils
 import at.hannibal2.skyhanni.utils.compat.InventoryCompat
 import io.github.notenoughupdates.moulconfig.observer.Property
 import net.minecraft.client.audio.ISound
-import net.minecraft.client.gui.inventory.GuiContainer
 import kotlin.math.max
 import kotlin.time.Duration.Companion.seconds
 
