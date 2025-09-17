@@ -62,16 +62,6 @@ object PestTrapFeatures {
     fun onKeybind(event: GuiKeyPressEvent) {
         if (!PestTrapApi.inInventory) return
         if (!config.releaseHotkey.isKeyHeld()) return
-        val inventory = event.guiContainer as? AccessorGuiContainer ?: return
-        inventory as GuiContainer
-        val slot = inventory.slots()[16]
-        InventoryCompat.clickInventorySlot(slot.slotIndex, mouseButton = 0, mode = 0)
-    }
-
-    @HandleEvent
-    fun onKeybind(event: GuiKeyPressEvent) {
-        if (!PestTrapApi.inInventory) return
-        if (!config.releaseHotkey.isKeyHeld()) return
         if (event.guiContainer !is AccessorGuiContainer) return
         InventoryCompat.clickInventorySlot(16, mouseButton = 0, mode = 0)
     }
