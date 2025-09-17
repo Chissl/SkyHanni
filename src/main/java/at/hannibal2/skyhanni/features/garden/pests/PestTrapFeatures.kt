@@ -16,7 +16,6 @@ import at.hannibal2.skyhanni.mixins.transformers.gui.AccessorGuiContainer
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.ConditionalUtils
-import at.hannibal2.skyhanni.utils.InventoryUtils.slots
 import at.hannibal2.skyhanni.utils.KeyboardManager.isKeyHeld
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.SoundUtils
@@ -70,7 +69,15 @@ object PestTrapFeatures {
     }
 
     @HandleEvent
-    fun onConfigLoad(event: ConfigLoadEvent) {
+    fun onKeybind(event: GuiKeyPressEvent) {
+        if (!PestTrapApi.inInventory) return
+        if (!config.releaseHotkey.isKeyHeld()) return
+        if (event.guiContainer !is AccessorGuiContainer) return
+        InventoryCompat.clickInventorySlot(16, mouseButton = 0, mode = 0)
+    }
+
+    @HandleEvent(ConfigLoadEvent::class)
+    fun onConfigLoad() {
         ConditionalUtils.onToggle(config.warningConfig.warningSound) {
             warningSound = refreshSound()
         }
