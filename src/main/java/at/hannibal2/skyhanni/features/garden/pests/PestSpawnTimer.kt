@@ -62,7 +62,7 @@ object PestSpawnTimer {
      */
 
     private val pestCooldownPattern by patternGroup.pattern(
-        "cooldown",
+        "cooldowntime",
         "\\sCooldown: §r§.(?:§.)?(?<time>\\d{1,2}[ms](?: \\d{1,2}s?)?)?(?<ready>READY)?(?<maxPests>MAX PESTS)?.*",
     )
 
@@ -84,7 +84,7 @@ object PestSpawnTimer {
         if (!event.isWidget(TabWidget.PESTS)) return
 
         pestCooldownPattern.firstMatcher(event.widget.lines) {
-            val time = groupOrNull("time")?.getTablistEndTime(pestCooldownEndTime)
+            val time = groupOrNull("time")?.let { getTablistEndTime(it, pestCooldownEndTime) }
             ready = hasGroup("ready")
             maxPests = hasGroup("maxPests")
 

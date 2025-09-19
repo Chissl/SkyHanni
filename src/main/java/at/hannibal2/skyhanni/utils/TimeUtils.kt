@@ -3,6 +3,7 @@ package at.hannibal2.skyhanni.utils
 import at.hannibal2.skyhanni.SkyHanniMod
 import at.hannibal2.skyhanni.data.ScoreboardData
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
+import at.hannibal2.skyhanni.utils.RegexUtils.groupOrNull
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -13,6 +14,7 @@ import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.ChronoField
 import java.time.temporal.WeekFields
 import java.util.Locale
+import java.util.regex.Matcher
 import kotlin.math.absoluteValue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -21,8 +23,8 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
+@Suppress("TooManyFunctions")
 object TimeUtils {
 
     val isAprilFoolsDay: Boolean by RecalculatingValue(1.seconds) {
@@ -111,20 +113,7 @@ object TimeUtils {
     fun getDurationOrNull(string: String): Duration? = getMillis(string.preFixDurationString())
 
     private fun getMillis(string: String) = UtilsPatterns.timeAmountPattern.matchMatcher(string.lowercase().trim()) {
-        val years = group("y")?.toLong() ?: 0L
-        val days = group("d")?.toLong() ?: 0L
-        val hours = group("h")?.toLong() ?: 0L
-        val minutes = group("m")?.toLong() ?: 0L
-        val seconds = group("s")?.toLong() ?: 0L
-
-        var millis = 0L
-        millis += seconds * 1000
-        millis += minutes * 60 * 1000
-        millis += hours * 60 * 60 * 1000
-        millis += days * 24 * 60 * 60 * 1000
-        millis += (years * 365.25 * 24 * 60 * 60 * 1000).toLong()
-
-        millis.toDuration(DurationUnit.MILLISECONDS)
+        years("y") + days("d") + hours("h") + minutes("m") + seconds("s")
     } ?: tryAlternativeFormat(string)
 
     private fun tryAlternativeFormat(string: String): Duration? {
@@ -210,13 +199,13 @@ object TimeUtils {
     // TODO move into lorenz logger. then rewrite lorenz logger and use something different entirely
     fun SimpleDateFormat.formatCurrentTime(): String = this.format(System.currentTimeMillis())
 
-    fun String.getTablistEndTime(currentCooldownEnd: SimpleTimeMark?): SimpleTimeMark? =
-        UtilsPatterns.timeAmountPattern.matchMatcher(this.lowercase().trim()) {
-            val years = group("y")?.toLong()?.times(365.25)?.days ?: 0.seconds
-            val days = group("d")?.toLong()?.days ?: 0.seconds
-            val hours = group("h")?.toLong()?.hours ?: 0.seconds
-            val minutes = group("m")?.toLong()?.minutes
-            val seconds = group("s")?.toLong()?.seconds
+    fun getTablistEndTime(string: String, currentCooldownEnd: SimpleTimeMark?): SimpleTimeMark? =
+        UtilsPatterns.timeAmountPattern.matchMatcher(string.lowercase().trim()) {
+            val years = years("y")
+            val days = days("d")
+            val hours = hours("h")
+            val minutes = minutesOrNull("m")
+            val seconds = secondsOrNull("s")
 
             // we don't care about precision with these values
             val largerDuration = years + days + hours
@@ -234,12 +223,8 @@ object TimeUtils {
                 if (seconds == null) {
                     // tablist always rounds down, so we'll assume it just updated and add a minute
                     tabCooldownEnd + 1.minutes + largerDuration
-                } else {
-                    tabCooldownEnd + largerDuration
-                }
-            } else {
-                currentCooldownEnd
-            }
+                } else tabCooldownEnd + largerDuration
+            } else currentCooldownEnd
         }
 
     private fun shouldSetCooldown(tabCooldownEnd: SimpleTimeMark, currentCooldownEnd: SimpleTimeMark?, seconds: Duration?): Boolean = when {
@@ -275,6 +260,14 @@ object TimeUtils {
             .appendValue(weekFields.weekOfYear())
             .parseDefaulting(ChronoField.DAY_OF_WEEK, weekFields.firstDayOfWeek.value.toLong())
             .toFormatter()
+
+    private fun Matcher.years(string: String) = groupOrNull(string)?.toLong()?.years ?: 0.seconds
+    private fun Matcher.days(string: String) = groupOrNull(string)?.toLong()?.days ?: 0.seconds
+    private fun Matcher.hours(string: String) = groupOrNull(string)?.toLong()?.hours ?: 0.seconds
+    private fun Matcher.minutesOrNull(string: String) = groupOrNull(string)?.toLong()?.minutes
+    private fun Matcher.minutes(string: String) = minutesOrNull(string) ?: 0.seconds
+    private fun Matcher.secondsOrNull(string: String) = groupOrNull(string)?.toLong()?.seconds
+    private fun Matcher.seconds(string: String) = secondsOrNull(string) ?: 0.seconds
 }
 
 private const val FACTOR_SECONDS = 1000L
@@ -314,4 +307,6 @@ val Duration.inPartialSeconds: Double get() = toDouble(DurationUnit.SECONDS)
 val Duration.inPartialMinutes: Double get() = inPartialSeconds / 60
 val Duration.inPartialHours: Double get() = inPartialSeconds / 3600
 val Duration.inPartialDays: Double get() = inPartialSeconds / 86_400
+val Duration.inPartialYears: Double get() = inPartialSeconds / (86_400 * 365.25)
+val Long.years: Duration get() = this.times(365.25).days
 
