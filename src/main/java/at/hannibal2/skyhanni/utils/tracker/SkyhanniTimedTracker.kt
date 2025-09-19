@@ -20,7 +20,7 @@ import at.hannibal2.skyhanni.utils.renderables.toRenderable
 import java.time.LocalDate
 
 @Suppress("SpreadOperator")
-class SkyhanniTimedTracker<Data : TrackerData, Type : GenericIndividualTrackerConfig<*>>(
+class SkyhanniTimedTracker<Data : TrackerData<*>, Type : GenericIndividualTrackerConfig<*>>(
     name: String,
     createNewSession: () -> Data,
     private var storage: (ProfileSpecificStorage) -> TimedTrackerData<Data>,

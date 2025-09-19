@@ -29,6 +29,7 @@ import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.container.VerticalContainerRenderable.Companion.vertical
 import at.hannibal2.skyhanni.utils.renderables.primitives.StringRenderable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker.DisplayMode
 import at.hannibal2.skyhanni.utils.tracker.SkyhanniTimedTracker
@@ -50,7 +51,7 @@ object GardenUptimeTracker {
         trackerConfig = { config.perTrackerConfig }
     )
 
-    class TimeData : TimedTrackerData<Data>({ Data() }) {
+    class TimeData : TimedTrackerData<Data, SessionUptime.Garden>(SessionUptime.Garden::class, { Data() }) {
         init {
             if (config.resetSession) {
                 getOrPutEntry(SkyHanniTracker.DisplayMode.SESSION).reset()
@@ -58,7 +59,7 @@ object GardenUptimeTracker {
         }
     }
 
-    class Data : TrackerData() {
+    class Data : TrackerData<SessionUptime.Garden>(SessionUptime.Garden::class) {
         override fun resetData() {
             cropBreakTime = 0
             visitorTime = 0
@@ -292,6 +293,4 @@ object GardenUptimeTracker {
         VISITOR("Visitor"),
         PEST("Pest"),
     }
-
-
 }

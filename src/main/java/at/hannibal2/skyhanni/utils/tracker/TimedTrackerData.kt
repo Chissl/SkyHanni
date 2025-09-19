@@ -7,10 +7,12 @@ import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker.DisplayMode
 import com.google.gson.annotations.Expose
 import java.time.LocalDate
 import java.util.*
+import kotlin.reflect.KClass
 
-abstract class TimedTrackerData<Data : TrackerData>(
+abstract class TimedTrackerData<Data : TrackerData<T>, T : SessionUptime>(
+    session: KClass<T>,
     private val createNewSession: () -> Data,
-) : TrackerData() {
+) : TrackerData<T>(session) {
     override fun resetData() {
         sessions = EnumMap(DisplayMode::class.java)
     }

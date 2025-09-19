@@ -25,6 +25,7 @@ import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.container.HorizontalContainerRenderable.Companion.horizontal
 import at.hannibal2.skyhanni.utils.renderables.primitives.StringRenderable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import at.hannibal2.skyhanni.utils.tracker.SkyhanniTimedTracker
 import at.hannibal2.skyhanni.utils.tracker.TimedTrackerData
@@ -42,11 +43,11 @@ object CropCollectionDisplay {
         { Data() },
         { it.garden.cropCollectionTracker },
         { drawDisplay(it) },
-        trackerConfig = { config.perTrackerConfig }
+        trackerConfig = { config.perTrackerConfig },
     )
 
     // reset session on game start
-    class TimeData : TimedTrackerData<Data>({ Data() }) {
+    class TimeData : TimedTrackerData<Data, SessionUptime.Garden>(SessionUptime.Garden::class, { Data() }) {
         init {
             if (!config.saveSession) {
                 getOrPutEntry(SkyHanniTracker.DisplayMode.SESSION).reset()
@@ -54,7 +55,7 @@ object CropCollectionDisplay {
         }
     }
 
-    class Data : TrackerData() {
+    class Data : TrackerData<SessionUptime.Garden>(SessionUptime.Garden::class) {
         override fun resetData() {
             cropCollection.clear()
         }
