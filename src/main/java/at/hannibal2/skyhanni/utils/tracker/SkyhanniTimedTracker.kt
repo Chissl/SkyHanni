@@ -23,7 +23,7 @@ import java.time.LocalDate
 class SkyhanniTimedTracker<Data : TrackerData<*>, Type : GenericIndividualTrackerConfig<*>>(
     name: String,
     createNewSession: () -> Data,
-    private var storage: (ProfileSpecificStorage) -> TimedTrackerData<Data>,
+    private var storage: (ProfileSpecificStorage) -> TimedTrackerData<Data, *>,
     drawDisplay: (Data) -> List<Searchable>,
     extraDisplayModes: Map<DisplayMode, (ProfileSpecificStorage) -> Data> = emptyMap(),
     trackerConfig: () -> Type
