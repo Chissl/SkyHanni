@@ -23,6 +23,7 @@ import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.tracker.ItemTrackerData
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniItemTracker
 import com.google.gson.annotations.Expose
 import net.minecraft.client.Minecraft
@@ -40,7 +41,7 @@ object ExcavatorProfitTracker {
         trackerConfig = { config.perTrackerConfig }
     ) { drawDisplay(it) }
 
-    class Data : ItemTrackerData() {
+    class Data : ItemTrackerData<SessionUptime.Normal>(SessionUptime.Normal::class) {
         override fun resetItems() {
             timesExcavated = 0
             glacitePowderGained = 0
@@ -96,7 +97,7 @@ object ExcavatorProfitTracker {
             addGlacitePowder(data)
         }
 
-        val duration = data.sessionUptime.getDuration()
+        val duration = data.getTotalUptime()
         addAll(tracker.addTotalProfit(profit, data.timesExcavated, "excavation", duration, "Excavations"))
 
         tracker.addPriceFromButton(this)

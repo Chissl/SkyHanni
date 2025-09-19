@@ -18,6 +18,8 @@ import at.hannibal2.skyhanni.utils.SimpleTimeMark.Companion.asTimeMark
 import at.hannibal2.skyhanni.utils.Stopwatch
 import at.hannibal2.skyhanni.utils.StringUtils
 import at.hannibal2.skyhanni.utils.system.ModVersion
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
+import at.hannibal2.skyhanni.utils.tracker.SessionUptimeTypeAdapter
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
@@ -83,6 +85,8 @@ object SkyHanniTypeAdapters {
     )
 
     val ELITE_LEADERBOARD_TYPE: TypeAdapter<EliteLeaderboardType> = EliteLeaderboardTypeAdapter()
+
+    val SESSION_UPTIME: TypeAdapter<SessionUptime> = SessionUptimeTypeAdapter()
 
     val CROP_TYPE: TypeAdapter<CropType> = SimpleStringTypeAdapter(
         { name },

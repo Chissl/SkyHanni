@@ -32,7 +32,8 @@ open class TrackerGenericConfig {
     @Expose
     @ConfigOption(
         name = "AFK timeout",
-        desc = "Pause the tracker if it is not modified for this amount of seconds."
+        desc = "Pause the tracker if it is not modified for this amount of seconds." +
+            "\nDoes not apply to garden trackers."
     )
     @ConfigEditorSlider(minValue = 15f, maxValue = 900f, minStep = 15f)
     var afkTimeout: Int = 300
@@ -54,7 +55,6 @@ open class TrackerGenericConfig {
         val config = SkyHanniMod.feature.misc
         onlyShowSession.set(config.tracker.onlyShowSession.get())
         afkTimeout = config.tracker.afkTimeout
-        onlyShowSession.set(config.tracker.onlyShowSession.get())
         showUptime.set(config.tracker.showUptime.get())
         defaultDisplayMode.set(config.tracker.defaultDisplayMode.get())
         trackerSearchEnabled.set(config.tracker.trackerSearchEnabled.get())

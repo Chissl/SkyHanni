@@ -24,6 +24,7 @@ import at.hannibal2.skyhanni.utils.collection.CollectionUtils.sortedDesc
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addSearchString
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import at.hannibal2.skyhanni.utils.tracker.TrackerData
 import com.google.gson.JsonObject
@@ -47,17 +48,17 @@ object ArmorDropTracker {
 
     private var hasArmor = false
 
-    private val tracker = SkyHanniTracker(
+    val tracker = SkyHanniTracker(
         "Armor Drop Tracker",
         { Data() },
         { it.garden.armorDropTracker },
-        trackerConfig = { config.perTrackerConfig }
-
+        trackerConfig = { config.perTrackerConfig },
+        customUptimeControl = true
     ) {
         drawDisplay(it)
     }
 
-    class Data : TrackerData() {
+    class Data : TrackerData<SessionUptime.Garden>(SessionUptime.Garden::class) {
 
         override fun resetData() {
             drops.clear()

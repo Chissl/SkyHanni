@@ -23,6 +23,7 @@ import at.hannibal2.skyhanni.utils.RenderUtils.renderRenderables
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.Stopwatch
 import at.hannibal2.skyhanni.utils.TimeUtils.format
+import at.hannibal2.skyhanni.utils.collection.CollectionUtils.addAll
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.RenderableUtils.addRenderableNullableButton
 import at.hannibal2.skyhanni.utils.renderables.SearchTextInput
@@ -35,15 +36,17 @@ import at.hannibal2.skyhanni.utils.renderables.toRenderable
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.client.gui.inventory.GuiInventory
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @Suppress("TooManyFunctions")
-open class SkyHanniTracker<Data : TrackerData, Config : GenericIndividualTrackerConfig<*>>(
+open class SkyHanniTracker<Data : TrackerData<*>, Config : GenericIndividualTrackerConfig<*>>(
     val name: String,
     private val createNewSession: () -> Data,
     private val getStorage: (ProfileSpecificStorage) -> Data,
     private val extraDisplayModes: Map<DisplayMode, (ProfileSpecificStorage) -> Data> = emptyMap(),
     private val trackUptime: Boolean = true,
+    private val customUptimeControl: Boolean = false,
     private val trackerConfig: () -> Config,
     protected val drawDisplay: (Data) -> List<Searchable>,
 ) {
@@ -169,11 +172,12 @@ open class SkyHanniTracker<Data : TrackerData, Config : GenericIndividualTracker
         config.showUptime.get() && (!config.onlyShowSession.get() || displayMode != DisplayMode.TOTAL)
 
     private fun checkAfk() {
-        if (getSessionUptime()?.isPaused() == true) {
+        if (getCurrentStopwatch()?.isPaused() == true) {
             return
         }
         val sharedTracker = getSharedTracker() ?: return
-        val afkTime = sharedTracker.get(DisplayMode.TOTAL).sessionUptime.getLapTime() // Afk time should be the same for all valid displays
+        // Afk time should be the same for all valid displays
+        val afkTime = sharedTracker.get(DisplayMode.TOTAL).getActiveStopwatch()?.getLapTime()
         if (afkTime == null || afkTime > config.afkTimeout.seconds) {
             pauseSessionUptime()
             return
@@ -181,40 +185,58 @@ open class SkyHanniTracker<Data : TrackerData, Config : GenericIndividualTracker
         update()
     }
 
-    private fun getSessionUptime(): Stopwatch? = displayMode?.let { getSharedTracker()?.get(it)?.sessionUptime }
+    private fun getDisplayModeTracker(dispMode: DisplayMode? = displayMode) = dispMode?.let { getSharedTracker()?.get(it) }
 
-    private fun startSessionUptime() {
+    fun getTotalUptime(): Duration? = getDisplayModeTracker()?.getTotalUptime()
+
+    fun getCurrentStopwatch(): Stopwatch? = getDisplayModeTracker()?.getActiveStopwatch()
+
+    fun startSessionUptime() {
         if (!this.trackUptime) return
         val sharedTracker = getSharedTracker() ?: return
-        sharedTracker.modify { it.sessionUptime.start(true) }
-        unpausedTrackers.add(this)
+        sharedTracker.modify { it.getActiveStopwatch()?.start(true) }
+        if (!customUptimeControl) unpausedTrackers.add(this)
         update()
     }
 
-    private fun pauseSessionUptime() {
+    fun pauseSessionUptime() {
         if (!this.trackUptime) return
         val sharedTracker = getSharedTracker() ?: return
-        sharedTracker.modify { it.sessionUptime.pause(true) }
-        unpausedTrackers.remove(this)
+        sharedTracker.modify { it.getActiveStopwatch()?.pause(true) }
+        if (!customUptimeControl) unpausedTrackers.remove(this)
+        update()
+    }
+
+    fun swapActiveSession(session: SessionUptime, swapExtraTime: Boolean = true) {
+        if (!this.customUptimeControl) return
+        val sharedTracker = getSharedTracker() ?: return
+        sharedTracker.modify { it.setActiveStopwatch(session, swapExtraTime) }
         update()
     }
 
     private fun buildSessionUptime(): Renderable {
-        val sessionUptime = getSessionUptime()?.getDuration() ?: return Renderable.empty()
+        val sessionUptime = getTotalUptime() ?: return Renderable.empty()
         val isTotalDisplay = displayMode == DisplayMode.TOTAL
-        val pausedText = if (getSessionUptime()?.isPaused() == true) " §c(Paused!)" else ""
-        // Uptime added after trackers already had data
-        return if (isTotalDisplay) {
-            Renderable.hoverTips(
-                Renderable.text("§eTotal Uptime: §b${sessionUptime.format()}$pausedText"),
-                tips = listOf(
-                    "§eⓘ §7Uptime tracked only from",
-                    "§7SkyHanni version 6.0.0 onwards",
-                )
-            )
-        } else {
-            Renderable.text("§eSession Uptime: §b${sessionUptime.format()}$pausedText")
+        val pausedText = if (getCurrentStopwatch()?.isPaused() == true) " §c(Paused!)" else ""
+        val sessionList: List<String> = buildList {
+            getDisplayModeTracker()?.getSessionMap()?.entries?.forEach {
+                add("${it.key} Uptime: ${it.value.getDuration().format()}")
+            }
         }
+
+        return Renderable.hoverTips(
+            Renderable.text("§eTotal Uptime: §b${sessionUptime.format()}$pausedText"),
+            tips = buildList {
+                addAll(sessionList)
+                if (isTotalDisplay) {
+                    // Uptime added after trackers already had data
+                    addAll(
+                        "§eⓘ §7Uptime tracked only from",
+                        "§7SkyHanni version 6.0.0 onwards",
+                    )
+                }
+            }
+        )
     }
     protected fun buildSessionResetButton() = Renderable.clickable(
         "§cReset session!",
@@ -298,7 +320,7 @@ open class SkyHanniTracker<Data : TrackerData, Config : GenericIndividualTracker
         )
     }
 
-    inner class SharedTracker<Data : TrackerData>(
+    inner class SharedTracker<Data : TrackerData<*>>(
         private val entries: Map<DisplayMode, Data>,
     ) {
 

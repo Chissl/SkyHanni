@@ -30,6 +30,7 @@ import at.hannibal2.skyhanni.utils.renderables.primitives.ItemStackRenderable.Co
 import at.hannibal2.skyhanni.utils.renderables.primitives.text
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import at.hannibal2.skyhanni.utils.tracker.TrackerData
 import com.google.gson.annotations.Expose
@@ -39,16 +40,17 @@ import java.util.regex.Pattern
 object DicerRngDropTracker {
 
     private val config get() = GardenApi.config.dicerRngDropTracker
-    private val tracker = SkyHanniTracker(
+    val tracker = SkyHanniTracker(
         "Dicer RNG Drop Tracker",
         { Data() },
         { it.garden.dicerDropTracker },
-        trackerConfig = { config.perTrackerConfig }
+        trackerConfig = { config.perTrackerConfig },
+        customUptimeControl = true
     ) {
         drawDisplay(it)
     }
 
-    class Data : TrackerData() {
+    class Data : TrackerData<SessionUptime.Garden>(SessionUptime.Garden::class) {
 
         override fun resetData() {
             drops.clear()
