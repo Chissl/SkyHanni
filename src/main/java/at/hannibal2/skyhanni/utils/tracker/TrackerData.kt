@@ -69,6 +69,10 @@ abstract class TrackerData<T : SessionUptime>(
         return uptime
     }
 
+    fun getSession(session: SessionUptime): Stopwatch? {
+        return sessionUptime[session]
+    }
+
     fun reset() {
         for (session in sessionUptime.entries) {
             sessionUptime[session.key]?.reset()
@@ -88,15 +92,16 @@ abstract class TrackerData<T : SessionUptime>(
     }
 
     private fun filterAndRemove(entryType: KClass<out SessionUptime>, migratedSessionType: SessionUptime) {
+        migrated = true
         val entries = sessionUptime.entries.filter { entry ->
             !entryType.isInstance(entry.key)
         }
+        if (entries.isEmpty()) return
         entries.forEach { entry ->
             val unknown = sessionUptime.getOrPut(migratedSessionType) { Stopwatch() }
             unknown.add(entry.value.getDuration())
             sessionUptime.remove(entry.key)
         }
-        migrated = true
     }
 
     protected abstract fun resetData()

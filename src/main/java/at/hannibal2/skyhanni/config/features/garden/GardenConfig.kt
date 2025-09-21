@@ -94,9 +94,9 @@ class GardenConfig {
     val armorDropTracker: ArmorDropTrackerConfig = ArmorDropTrackerConfig()
 
     @Expose
-    @ConfigOption(name = "Garden Uptime Tracker", desc = "")
+    @ConfigOption(name = "Garden Block Break Tracker", desc = "")
     @Accordion
-    val gardenUptime: GardenUptimeConfig = GardenUptimeConfig()
+    val gardenBpsTracker: GardenBpsTrackerConfig = GardenBpsTrackerConfig()
 
     @Expose
     @ConfigOption(name = "Anita Shop", desc = "")
