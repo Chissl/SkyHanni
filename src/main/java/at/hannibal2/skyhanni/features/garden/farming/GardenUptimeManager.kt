@@ -1,6 +1,7 @@
 package at.hannibal2.skyhanni.features.garden.farming
 
 import at.hannibal2.skyhanni.api.event.HandleEvent
+import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.events.ConfigLoadEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropClickEvent
 import at.hannibal2.skyhanni.events.garden.pests.PestKillEvent
@@ -40,6 +41,11 @@ object GardenUptimeManager {
     }
 
     @HandleEvent
+    fun onWorldChange(event: WorldChangeEvent) {
+        modify { it.pauseSessionUptime() }
+    }
+
+    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
     fun onTick(event: SkyHanniTickEvent) {
         if (!event.isMod(5)) return
         if (!afkTracker.isPaused()) {
