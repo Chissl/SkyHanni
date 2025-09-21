@@ -78,11 +78,6 @@ object CropCollectionApi {
     fun CropType.getCollection(type: CropCollectionType) =
         cropCollectionCounter?.get(this)?.getCollection(type)
 
-    private fun CropType.setCollectionCounter(counter: Long) {
-        cropCollectionCounter?.set(this, counter)
-        CropCollectionUpdateEvent.post()
-    }
-
     // TODO make compatible with crop milestone fixes
     fun CropType.addCollectionCounter(type: CropCollectionType, amount: Long) {
         if (amount == 0L) return
