@@ -20,6 +20,9 @@ import at.hannibal2.skyhanni.utils.RegexUtils.firstMatcher
 import at.hannibal2.skyhanni.utils.RegexUtils.matchGroup
 import at.hannibal2.skyhanni.utils.RegexUtils.matchMatcher
 import at.hannibal2.skyhanni.utils.SimpleTimeMark
+import at.hannibal2.skyhanni.utils.collection.CollectionUtils.sumAllValues
+import com.google.gson.annotations.Expose
+import java.util.EnumMap
 import at.hannibal2.skyhanni.utils.StringUtils.cleanPlayerName
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 
@@ -55,7 +58,7 @@ object CropCollectionApi {
     private val storage get() = GardenApi.storage
 
     private val cropCollectionCounter:
-        MutableMap<CropType, Long>? get() = GardenApi.storage?.cropCollectionCounter
+        MutableMap<CropType, CropCollection>? get() = GardenApi.storage?.cropCollectionCounter
 
     var lastGainedCrop: CropType?
         get() = storage?.lastGainedCrop
@@ -70,7 +73,10 @@ object CropCollectionApi {
     var needCollectionUpdate = true
 
     fun CropType.getCollection() =
-        cropCollectionCounter?.get(this) ?: 0L
+        cropCollectionCounter?.get(this)?.getTotal() ?: 0L
+
+    fun CropType.getCollection(type: CropCollectionType) =
+        cropCollectionCounter?.get(this)?.getCollection(type)
 
     private fun CropType.setCollectionCounter(counter: Long) {
         cropCollectionCounter?.set(this, counter)
@@ -81,12 +87,12 @@ object CropCollectionApi {
     fun CropType.addCollectionCounter(type: CropCollectionType, amount: Long) {
         if (amount == 0L) return
         if (type !in listOf(CropCollectionType.UNKNOWN, CropCollectionType.MOOSHROOM_COW) && amount > 1) lastGainedCrop = this
-
-        this.setCollectionCounter(amount + this.getCollection())
-
         if (type != CropCollectionType.UNKNOWN) {
             lastGainedCollectionTime = SimpleTimeMark.now()
         }
+
+        cropCollectionCounter?.get(this)?.addCollection(type, amount)
+
         CropCollectionAddEvent(this, type, amount).post()
     }
 
@@ -99,8 +105,10 @@ object CropCollectionApi {
             CropCollectionType.PEST_RNG,
         )
 
-    fun CropType.updateTotalCollection(amount: Long) {
-        this.addCollectionCounter(CropCollectionType.UNKNOWN, amount - this.getCollection())
+    fun CropType.setCollectionCounter(counter: Long) {
+        cropCollectionCounter?.get(this)?.setTotal(counter)
+        // Some displays update off add events
+        CropCollectionAddEvent(this, CropCollectionType.UNKNOWN, 0).post()
     }
 
     private fun addCollectionCommand(cropText: String, amount: Long, typeText: String) {
@@ -188,5 +196,32 @@ object CropCollectionApi {
                 ChatUtils.debug("$cropCollectionCounter")
             }
         }
+    }
+
+    class CropCollection {
+        fun getTotal(): Long {
+            return cropCollectionType.sumAllValues().toLong()
+        }
+
+        fun setTotal(amount: Long) {
+            val diff = amount - getTotal()
+            setCollection(CropCollectionType.UNKNOWN, diff)
+        }
+
+        fun getCollection(collectionType: CropCollectionType): Long {
+            return cropCollectionType.getOrPut(collectionType) { 0 }
+        }
+
+        fun addCollection(collectionType: CropCollectionType, amount: Long) {
+            val collection = getCollection(collectionType)
+            setCollection(collectionType, collection + amount)
+        }
+
+        fun setCollection(collectionType: CropCollectionType, amount: Long) {
+            cropCollectionType[collectionType] = amount
+        }
+
+        @Expose
+        var cropCollectionType: MutableMap<CropCollectionType, Long> = EnumMap(CropCollectionType::class.java)
     }
 }
