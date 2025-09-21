@@ -14,6 +14,7 @@ import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker
 import at.hannibal2.skyhanni.features.garden.tracker.GardenBpsTracker
 import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
+import at.hannibal2.skyhanni.features.garden.tracker.CropCollectionTracker
 import at.hannibal2.skyhanni.features.garden.tracker.DicerRngDropTracker
 import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
@@ -31,6 +32,7 @@ object GardenUptimeManager {
         ArmorDropTracker.tracker,
         DicerRngDropTracker.tracker,
         PestProfitTracker.tracker,
+        CropCollectionTracker.tracker,
         GardenBpsTracker.tracker
     )
     private val afkTracker = Stopwatch()
