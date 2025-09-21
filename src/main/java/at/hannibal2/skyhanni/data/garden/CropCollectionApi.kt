@@ -5,6 +5,7 @@ import at.hannibal2.skyhanni.config.commands.CommandCategory
 import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
 import at.hannibal2.skyhanni.config.commands.brigadier.BrigadierArguments
 import at.hannibal2.skyhanni.events.InventoryFullyOpenedEvent
+import at.hannibal2.skyhanni.data.garden.CropCollectionApi.setCollectionCounter
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
@@ -57,7 +58,7 @@ object CropCollectionApi {
     private val storage get() = GardenApi.storage
 
     private val cropCollectionCounter:
-        MutableMap<CropType, CropCollection>? get() = GardenApi.storage?.cropCollectionCounter
+        MutableMap<CropType, CropCollection>? get() = storage?.cropCollectionCounter
 
     var lastGainedCrop: CropType?
         get() = storage?.lastGainedCrop
@@ -77,7 +78,6 @@ object CropCollectionApi {
     fun CropType.getCollection(type: CropCollectionType) =
         cropCollectionCounter?.get(this)?.getCollection(type)
 
-    // TODO make compatible with crop milestone fixes
     fun CropType.addCollectionCounter(type: CropCollectionType, amount: Long) {
         if (amount == 0L) return
         if (type !in listOf(CropCollectionType.UNKNOWN, CropCollectionType.MOOSHROOM_COW) && amount > 1) lastGainedCrop = this
@@ -85,7 +85,8 @@ object CropCollectionApi {
             lastGainedCollectionTime = SimpleTimeMark.now()
         }
 
-        cropCollectionCounter?.get(this)?.addCollection(type, amount)
+        val collectionCounter = cropCollectionCounter?.getOrPut(this) { CropCollection() }
+        collectionCounter?.addCollection(type, amount)
 
         CropCollectionAddEvent(this, type, amount).post()
     }
@@ -100,7 +101,8 @@ object CropCollectionApi {
         )
 
     fun CropType.setCollectionCounter(counter: Long) {
-        cropCollectionCounter?.get(this)?.setTotal(counter)
+        val collectionCounter = cropCollectionCounter?.getOrPut(this) { CropCollection() }
+        collectionCounter?.setTotal(counter)
         // Some displays update off add events
         CropCollectionAddEvent(this, CropCollectionType.UNKNOWN, 0).post()
     }
