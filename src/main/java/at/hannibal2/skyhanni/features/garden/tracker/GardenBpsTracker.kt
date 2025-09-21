@@ -13,7 +13,6 @@ import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
 import at.hannibal2.skyhanni.utils.ConditionalUtils.afterChange
 import at.hannibal2.skyhanni.utils.NumberUtil.addSeparators
 import at.hannibal2.skyhanni.utils.NumberUtil.roundTo
-import at.hannibal2.skyhanni.utils.inPartialSeconds
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.primitives.StringRenderable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
@@ -78,14 +77,14 @@ object GardenBpsTracker {
 
     private fun drawDisplay(data: Data): List<Searchable> = buildList {
         val lineMap = mutableMapOf<GardenUptimeDisplayText, Searchable>()
-        lineMap[GardenUptimeDisplayText.TITLE] = StringRenderable("§6Garden Block Break Tracker").toSearchable()
+        lineMap[GardenUptimeDisplayText.TITLE] = StringRenderable("§Crop Break Tracker").toSearchable()
 
         val uptime = data.getTotalUptime()
 
         var bps = 0.0
         // impossible bps amounts when under a second
         if (uptime > 1.seconds) bps =
-            (data.blocksBroken.toDouble()) / uptime.inPartialSeconds
+            (data.blocksBroken.toDouble()) / uptime.inWholeSeconds
         if (bps > 0) {
             lineMap[GardenUptimeDisplayText.BPS] =
                 StringRenderable("§7Blocks/Second: §e${bps.roundTo(2)}").toSearchable()
