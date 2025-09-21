@@ -5,7 +5,6 @@ import at.hannibal2.skyhanni.config.commands.CommandCategory
 import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
 import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.skyhannimodule.SkyHanniModule
-import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.ChatUtils.chat
 import at.hannibal2.skyhanni.utils.PlayerUtils
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
@@ -17,10 +16,6 @@ object GardenUptimeCommand {
     private val storage get() = GardenApi.storage?.gardenBpsTracker
 
     fun onCommand(args: Array<String>) {
-        if (!config.showDisplay) {
-            ChatUtils.userError("shgardenuptime requires 'Show Garden Uptime' to be enabled")
-        }
-
         val dayAmount = args.getOrNull(0)?.toIntOrNull()?.coerceAtMost(31) ?: 7
 
         val date = LocalDate.now()
@@ -37,12 +32,6 @@ object GardenUptimeCommand {
             val day = date.minusDays(num.toLong())
             val entry = storage?.getEntry(SkyHanniTracker.DisplayMode.DAY, day)
             val uptime = entry?.getTotalUptime() ?: 0.seconds
-
-            val cropBreakTime = entry?.cropBreakTime ?: 0
-            val pestTime = if (config.includePests.get()) entry?.pestTime ?: 0 else 0
-            val visitorTime = if (config.includeVisitors.get()) entry?.visitorTime ?: 0 else 0
-
-            val uptime = cropBreakTime + pestTime + visitorTime
 
             val dayString = if (day == LocalDate.now()) "Today" else day.toString()
 
