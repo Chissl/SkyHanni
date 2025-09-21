@@ -2,14 +2,14 @@ package at.hannibal2.skyhanni.config.features.garden.cropcollections
 
 import at.hannibal2.skyhanni.config.FeatureToggle
 import at.hannibal2.skyhanni.config.core.config.Position
-import at.hannibal2.skyhanni.config.features.misc.tracker.IndividualTrackerConfig
+import at.hannibal2.skyhanni.config.features.misc.tracker.timed.TimedGardenIndividualTrackerConfig
 import com.google.gson.annotations.Expose
 import io.github.notenoughupdates.moulconfig.annotations.Accordion
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList
 import io.github.notenoughupdates.moulconfig.annotations.ConfigLink
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
-import java.util.*
+import java.util.Arrays
 
 class CropCollectionsConfig {
     @Expose
@@ -21,12 +21,6 @@ class CropCollectionsConfig {
     @ConfigEditorBoolean
     @FeatureToggle
     var collectionDisplay: Boolean = true
-
-    @Expose
-    @ConfigOption(name = "Save Session on game start", desc = "Don't reset session display mode when the game starts.")
-    @ConfigEditorBoolean
-    @FeatureToggle
-    var saveSession: Boolean = false
 
     @Expose
     @ConfigLink(owner = CropCollectionsConfig::class, field = "collectionDisplay")
@@ -47,7 +41,7 @@ class CropCollectionsConfig {
         desc = ""
     )
     @Accordion
-    val perTrackerConfig: IndividualTrackerConfig = IndividualTrackerConfig()
+    val perTrackerConfig: TimedGardenIndividualTrackerConfig = TimedGardenIndividualTrackerConfig()
 
     enum class CropCollectionDisplayText(private val display: String) {
         TITLE("Melon Crop Collection"),

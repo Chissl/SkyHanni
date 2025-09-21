@@ -46,7 +46,7 @@ class GardenConfig {
     val cropMilestones: CropMilestonesConfig = CropMilestonesConfig()
 
     @Expose
-    @Category(name = "Crop Collections", desc = "Crop Collection Settings")
+    @Category(name = "Crop Collection Tracker", desc = "Crop Collection Tracker Settings")
     val cropCollections: CropCollectionsConfig = CropCollectionsConfig()
 
     // TODO Write ConditionalUtils.onToggle()-s for these values in their feature classes

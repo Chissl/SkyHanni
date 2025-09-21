@@ -41,6 +41,7 @@ import at.hannibal2.skyhanni.features.garden.leaderboarddisplays.PestLeaderboard
 import at.hannibal2.skyhanni.features.garden.leaderboarddisplays.WeightLeaderboardStorage
 import at.hannibal2.skyhanni.features.garden.pests.stereo.VinylType
 import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
+import at.hannibal2.skyhanni.features.garden.tracker.CropCollectionTracker
 import at.hannibal2.skyhanni.features.garden.tracker.DicerRngDropTracker
 import at.hannibal2.skyhanni.features.garden.tracker.GardenUptimeTracker
 import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker
@@ -74,6 +75,9 @@ import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.SimpleTimeMark.Companion.farPast
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.enumMapOf
 import at.hannibal2.skyhanni.utils.tracker.SessionUptime
+import at.hannibal2.skyhanni.utils.tracker.TimedTrackerData
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
+import at.hannibal2.skyhanni.utils.tracker.SkyhanniTimedTracker
 import at.hannibal2.skyhanni.utils.tracker.TimedTrackerData
 import com.google.gson.annotations.Expose
 import net.minecraft.item.ItemStack
@@ -653,6 +657,10 @@ class ProfileSpecificStorage(
 
         @Expose
         var activeVinyl: VinylType? = null
+
+        @Expose
+        var cropCollectionTracker: TimedTrackerData<CropCollectionTracker.Data, SessionUptime.Garden> =
+            TimedTrackerData(SessionUptime.Garden::class) { CropCollectionTracker.Data() }
 
         @Expose
         var uptimeTracker: TimedTrackerData<GardenBpsTracker.Data, SessionUptime.Garden> =
