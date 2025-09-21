@@ -14,8 +14,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object GardenUptimeCommand {
-    private val config get() = GardenApi.config.trackerUptimeSettings
-    private val storage get() = GardenApi.storage?.uptimeTracker
+    private val storage get() = GardenApi.storage?.gardenBpsTracker
 
     fun onCommand(args: Array<String>) {
         if (!config.showDisplay) {
