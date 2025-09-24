@@ -28,9 +28,9 @@ object GardenUptimeManager {
     private val trackerSet: Set<SkyHanniTracker<*, *>> = setOf(
         ArmorDropTracker.tracker,
         DicerRngDropTracker.tracker,
-        PestProfitTracker.tracker,
-        CropCollectionTracker.tracker,
-        GardenBpsTracker.tracker
+        PestProfitTracker,
+        GardenBpsTracker.tracker,
+        CropCollectionTracker.tracker
     )
     private val afkTracker = Stopwatch()
 
