@@ -652,9 +652,6 @@ class ProfileSpecificStorage(
         var activeVinyl: VinylType? = null
 
         @Expose
-        var cropCollectionTracker: CropCollectionTracker.TimedData = CropCollectionTracker.TimedData()
-
-        @Expose
         var gardenBpsTracker: GardenBpsTracker.TimedData = GardenBpsTracker.TimedData()
 
         @Expose
