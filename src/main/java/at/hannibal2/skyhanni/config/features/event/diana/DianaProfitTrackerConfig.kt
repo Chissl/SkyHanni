@@ -2,7 +2,7 @@ package at.hannibal2.skyhanni.config.features.event.diana
 
 import at.hannibal2.skyhanni.config.FeatureToggle
 import at.hannibal2.skyhanni.config.core.config.Position
-import at.hannibal2.skyhanni.config.features.misc.tracker.individual.IndividualItemTrackerConfig
+import at.hannibal2.skyhanni.config.features.misc.tracker.timed.TimedIndividualItemTrackerConfig
 import com.google.gson.annotations.Expose
 import io.github.notenoughupdates.moulconfig.annotations.Accordion
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
@@ -26,7 +26,7 @@ class DianaProfitTrackerConfig {
         desc = ""
     )
     @Accordion
-    val perTrackerConfig: IndividualItemTrackerConfig = IndividualItemTrackerConfig()
+    val perTrackerConfig: TimedIndividualItemTrackerConfig = TimedIndividualItemTrackerConfig()
 
     @Expose
     @ConfigLink(owner = DianaProfitTrackerConfig::class, field = "enabled")
