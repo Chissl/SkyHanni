@@ -153,6 +153,7 @@ object VisitorDropTracker : SkyHanniTimedBucketedItemTracker<VisitorRarity, Visi
     fun onChat(event: SkyHanniChatEvent) {
         if (!GardenApi.onBarnPlot) return
         if (!ProfileStorageData.loaded) return
+        if (lastAccept.passedSince() > 1.seconds) return
 
         val message = event.message.removeColor().trim()
 
@@ -370,7 +371,7 @@ object VisitorDropTracker : SkyHanniTimedBucketedItemTracker<VisitorRarity, Visi
         }
 
         val duration = data.getTotalUptime()
-        newList.addAll(addTotalProfit(profit, data.getTotalVisitorCount().toLong(), "visitor", duration, "Visitors"))
+        newList.addAll(addTotalProfit(profit, data.getTotalVisitorCount(), "visitor", duration, "Visitors"))
 
         PestProfitTracker.addPriceFromButton(newList)
 
