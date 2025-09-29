@@ -45,6 +45,7 @@ import com.google.gson.annotations.Expose
 import java.util.EnumMap
 import java.util.regex.Pattern
 import kotlin.math.round
+import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
 object VisitorDropTracker : SkyHanniTimedBucketedItemTracker<VisitorRarity, VisitorDropTracker.BucketData>(
