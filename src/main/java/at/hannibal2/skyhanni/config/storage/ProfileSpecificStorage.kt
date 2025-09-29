@@ -653,6 +653,9 @@ class ProfileSpecificStorage(
 
         @Expose
         var cropCollectionTracker: CropCollectionTracker.TimedData = CropCollectionTracker.TimedData()
+
+        @Expose
+        var gardenBpsTracker: GardenBpsTracker.TimedData = GardenBpsTracker.TimedData()
     }
 
     // - gui
