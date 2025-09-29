@@ -2,9 +2,12 @@ package at.hannibal2.skyhanni.config.features.garden.visitor
 
 import at.hannibal2.skyhanni.config.FeatureToggle
 import at.hannibal2.skyhanni.config.core.config.Position
+import at.hannibal2.skyhanni.config.features.misc.tracker.timed.TimedGardenIndividualItemTrackerConfig
 import com.google.gson.annotations.Expose
+import io.github.notenoughupdates.moulconfig.annotations.Accordion
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
 import io.github.notenoughupdates.moulconfig.annotations.ConfigLink
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.notenoughupdates.moulconfig.observer.Property
@@ -33,10 +36,7 @@ class DropsStatisticsConfig {
             DropsStatisticsTextEntry.COPPER,
             DropsStatisticsTextEntry.FARMING_EXP,
             DropsStatisticsTextEntry.COINS_SPENT,
-            DropsStatisticsTextEntry.OVERGROWN_GRASS,
-            DropsStatisticsTextEntry.GREEN_BANDANA,
-            DropsStatisticsTextEntry.DEDICATION_IV,
-            DropsStatisticsTextEntry.COPPER_DYE
+            DropsStatisticsTextEntry.PROFIT_LIST
         )
     )
 
@@ -59,22 +59,8 @@ class DropsStatisticsConfig {
         BITS("§b4.2k Bits"),
         MITHRIL_POWDER("§220k Mithril Powder"),
         GEMSTONE_POWDER("§d18k Gemstone Powder"),
-
-        // VisitorReward items
-        // Todo: Make these names actually in sync with the VisitorReward enum entries
-        FLOWERING_BOUQUET("§b23 §9Flowering Bouquet"),
-        OVERGROWN_GRASS("§b4 §9Overgrown Grass"),
-        GREEN_BANDANA("§b2 §5Green Bandana"),
-        DEDICATION_IV("§b1 §9Dedication IV"),
-        MUSIC_RUNE_I("§b6 §b◆ Music Rune I"),
-        SPACE_HELMET("§b1 §cSpace Helmet"),
-        CULTIVATING_I("§b1 §9Cultivating I"),
-        REPLENISH_I("§b1 §9Replenish I"),
-        DELICATE("§b1 §9Delicate V"),
-        COPPER_DYE("§b1 §8Copper Dye"),
-        JUNGLE_KEY("§b1 §5Jungle Key"),
-        FRUIT_BOWL("§b1 §9Fruit Bowl"),
-        HARVEST_HARBINGER("§b1 §9Harvest Harbinger V"),
+        // TODO reformat this
+        PROFIT_LIST("Dropped Item List")
         ;
 
         override fun toString() = displayName
@@ -90,18 +76,38 @@ class DropsStatisticsConfig {
     val displayNumbersFirst: Property<Boolean> = Property.of(true)
 
     @Expose
-    @ConfigOption(
-        name = "Display Icons",
-        desc = "Replace the drop names with icons.\n" +
-            "§eNote: Will not update the preview above!"
-    )
-    @ConfigEditorBoolean
-    val displayIcons: Property<Boolean> = Property.of(false)
-
-    @Expose
     @ConfigOption(name = "Only on Barn Plot", desc = "Only show the overlay while on the Barn plot.")
     @ConfigEditorBoolean
     val onlyOnBarn: Property<Boolean> = Property.of(true)
+
+    @Expose
+    @ConfigOption(name = "Copper In Profit Calculations", desc = "Include Copper Profit in Total Profit. Set the coins per copper below.")
+    @ConfigEditorBoolean
+    val includeCopper: Property<Boolean> = Property.of(true)
+
+    @Expose
+    @ConfigOption(name = "Coins Per Copper", desc = "Set the amount of coins each copper is worth.")
+    @ConfigEditorSlider(minValue = 1000f, maxValue = 10000f, minStep = 250f)
+    val coinsPerCopper: Property<Int> = Property.of(5000)
+
+    @Expose
+    @ConfigOption(name = "Bits In Profit Calculations", desc = "Include Bits Profit in Total Profit. Set the coins per bit below.")
+    @ConfigEditorBoolean
+    val includeBits: Property<Boolean> = Property.of(true)
+
+    @Expose
+    @ConfigOption(name = "Bits Per Copper", desc = "Set the amount of bits each copper is worth.")
+    @ConfigEditorSlider(minValue = 0f, maxValue = 2000f, minStep = 100f)
+    val coinsPerBit: Property<Int> = Property.of(1000)
+
+
+    @Expose
+    @ConfigOption(
+        name = "Tracker Settings",
+        desc = ""
+    )
+    @Accordion
+    val perTrackerConfig: TimedGardenIndividualItemTrackerConfig = TimedGardenIndividualItemTrackerConfig()
 
     @Expose
     @ConfigLink(owner = DropsStatisticsConfig::class, field = "enabled")
