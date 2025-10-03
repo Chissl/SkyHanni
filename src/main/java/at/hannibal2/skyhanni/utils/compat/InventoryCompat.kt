@@ -72,21 +72,12 @@ object InventoryCompat {
 
     fun clickInventorySlot(slot: Int, windowId: Int? = getWindowId(), mouseButton: Int, mode: Int) {
         windowId ?: return
-        if (slot < 0) return
-        val gui = Minecraft.getMinecraft().currentScreen
+        val controller = Minecraft.getMinecraft().playerController ?: return
+        val player = Minecraft.getMinecraft().thePlayer ?: return
         //#if FORGE
-        if (gui is GuiContainer) {
-            val accessor = gui as AccessorGuiContainer
-            val slotObj = gui.inventorySlots.getSlot(slot)
-            accessor.handleMouseClick_skyhanni(slotObj, slot, mouseButton, mode)
-        }
+        controller.windowClick(windowId, slot, mouseButton, mode, player)
         //#else
-        //$$ if (gui is HandledScreen<*>) {
-        //$$ val accessor = gui as AccessorHandledScreen
-        //$$ val slotObj = gui.screenHandler.getSlot(slot)
-        //$$ val actionType = SlotActionType.entries[mode]
-        //$$ accessor.handleMouseClick_skyhanni(slotObj, slot, mouseButton, actionType)
-        //$$ }
+        //$$ controller.clickSlot(windowId, slot, mouseButton, SlotActionType.entries[mode], player)
         //#endif
     }
 

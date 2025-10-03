@@ -64,7 +64,7 @@ abstract class SkyHanniTimedBucketedItemTracker<E : Enum<E>, Data : BucketedItem
     final override fun addItem(internalName: NeuInternalName, amount: Int, command: Boolean, message: Boolean) =
         throw UnsupportedOperationException("Use addItem(bucket, internalName, amount, command, message) instead")
 
-    fun addItem(bucket: E, internalName: NeuInternalName, amount: Int, command: Boolean, message: Boolean = true) {
+    open fun addItem(bucket: E, internalName: NeuInternalName, amount: Int, command: Boolean, message: Boolean = true) {
         modify {
             it.addItem(bucket, internalName, amount, command)
         }
@@ -112,6 +112,8 @@ abstract class SkyHanniTimedBucketedItemTracker<E : Enum<E>, Data : BucketedItem
         itemRemover: (NeuInternalName, String) -> Unit,
         itemHider: (NeuInternalName, Boolean) -> Unit,
         getLoreList: (NeuInternalName, ItemTrackerData.TrackedItem) -> List<String>,
+        positiveAmountsOnly: Boolean,
+        sorter: (MutableMap<NeuInternalName, Long>) -> Map<NeuInternalName, Long>
     ): Double = super.drawItems(
         data = data,
         filter = filter,
@@ -136,5 +138,7 @@ abstract class SkyHanniTimedBucketedItemTracker<E : Enum<E>, Data : BucketedItem
             if (internalName == SKYBLOCK_COIN) data.getCoinDescription(selectedBucket, item)
             else data.getDescription(selectedBucket, item.timesGained)
         },
+        positiveAmountsOnly = positiveAmountsOnly,
+        sorter = sorter,
     )
 }

@@ -40,9 +40,11 @@ import at.hannibal2.skyhanni.features.garden.leaderboarddisplays.PestLeaderboard
 import at.hannibal2.skyhanni.features.garden.leaderboarddisplays.WeightLeaderboardStorage
 import at.hannibal2.skyhanni.features.garden.pests.stereo.VinylType
 import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
+import at.hannibal2.skyhanni.features.garden.tracker.ComposterProfitTracker
 import at.hannibal2.skyhanni.features.garden.tracker.CropCollectionTracker
 import at.hannibal2.skyhanni.features.garden.tracker.DicerRngDropTracker
 import at.hannibal2.skyhanni.features.garden.tracker.GardenBpsTracker
+import at.hannibal2.skyhanni.features.garden.tracker.GardenProfitTracker
 import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker
 import at.hannibal2.skyhanni.features.garden.tracker.VisitorDropTracker
 import at.hannibal2.skyhanni.features.gifting.GiftProfitTracker
@@ -78,6 +80,7 @@ import java.time.LocalDate
 import java.util.EnumMap
 import java.util.UUID
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 // put everything under its respective feature, the order of the features is the same as in the folder structure
 class ProfileSpecificStorage(
@@ -444,6 +447,10 @@ class ProfileSpecificStorage(
         @Expose
         var toolCounterData: MutableMap<String, Long> = HashMap()
 
+        // have to store both counters for wheat tools to calculate seed drops
+        @Expose
+        var wheatCultivatingCounterData: MutableMap<String, Long> = HashMap()
+
         @Expose
         var blocksBroken: MutableMap<CropType, Long> = enumMapOf()
 
@@ -495,6 +502,9 @@ class ProfileSpecificStorage(
 
         @Expose
         var composterCurrentFuelItem: NeuInternalName? = NONE
+
+        @Expose
+        var composterProfitTracker: ComposterProfitTracker.TimeData = ComposterProfitTracker.TimeData()
 
         @Expose
         var uniqueVisitors: Int = 0
@@ -561,6 +571,9 @@ class ProfileSpecificStorage(
         var composterEmptyTime: SimpleTimeMark = farPast()
 
         @Expose
+        var composterProfitTrackerTimeLeft: Duration = 0.seconds
+
+        @Expose
         var lastComposterEmptyWarningTime: SimpleTimeMark = farPast()
 
         @Expose
@@ -612,6 +625,12 @@ class ProfileSpecificStorage(
 
         @Expose
         var cropCollectionTracker: CropCollectionTracker.TimedData = CropCollectionTracker.TimedData()
+
+        @Expose
+        var hasImportedProfits: Boolean = false
+
+        @Expose
+        var gardenProfitTracker: GardenProfitTracker.TimeData = GardenProfitTracker.TimeData()
     }
 
     // - gui

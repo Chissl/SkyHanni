@@ -39,14 +39,13 @@ object GardenBpsTracker {
 
     class Data : TrackerData<SessionUptime.Garden>(SessionUptime.Garden::class) {
         @Expose
-        var blocksBroken: Int = 0
+        var blocksBroken: Long = 0
     }
 
     @HandleEvent
     fun onCropBreak(event: CropClickEvent) {
         if (event.clickType != ClickType.LEFT_CLICK) return
         blockBreaksLastFiveTicks++
-
     }
 
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
@@ -54,6 +53,7 @@ object GardenBpsTracker {
         if (!event.isMod(5)) return
         if (blockBreaksLastFiveTicks == 0) return
         tracker.modify { it.blocksBroken += blockBreaksLastFiveTicks }
+        GardenProfitTracker.modify { it.blocksBroken += blockBreaksLastFiveTicks }
         blockBreaksLastFiveTicks = 0
     }
 

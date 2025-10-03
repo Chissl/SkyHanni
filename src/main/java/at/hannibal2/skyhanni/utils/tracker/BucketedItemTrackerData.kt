@@ -5,6 +5,7 @@ import at.hannibal2.skyhanni.utils.renderables.ScrollValue
 import com.google.gson.annotations.Expose
 import kotlin.reflect.KClass
 
+@Suppress("TooManyFunctions")
 abstract class BucketedItemTrackerData<E : Enum<E>, T : SessionUptime>(clazz: KClass<E>, session: KClass<T>) : ItemTrackerData<T>(session) {
 
     final override fun getDescription(timesGained: Long): List<String> =
@@ -22,15 +23,22 @@ abstract class BucketedItemTrackerData<E : Enum<E>, T : SessionUptime>(clazz: KC
 
     abstract fun getCoinDescription(bucket: E?, item: TrackedItem): List<String>
 
+    final override fun addItem(internalName: NeuInternalName, amount: Long, command: Boolean) =
+        throw UnsupportedOperationException("Use addItem(bucket, internalName, amount) instead")
+
     final override fun addItem(internalName: NeuInternalName, amount: Int, command: Boolean) =
         throw UnsupportedOperationException("Use addItem(bucket, internalName, amount) instead")
 
-    fun addItem(bucket: E, internalName: NeuInternalName, stackSize: Int, command: Boolean, timesAdded: Int = 1,) {
+    fun addItem(bucket: E, internalName: NeuInternalName, stackSize: Long, command: Boolean, timesAdded: Long = 1) {
         val bucketMap = bucketedItems.getOrPut(bucket) { HashMap() }
         val item = bucketMap.getOrPut(internalName) { TrackedItem() }
         item.processAdd(internalName, stackSize, command, timesAdded) {
             removeItem(bucket, internalName)
         }
+    }
+
+    fun addItem(bucket: E, internalName: NeuInternalName, stackSize: Int, command: Boolean, timesAdded: Int = 1) {
+        addItem(bucket, internalName, stackSize.toLong(), command, timesAdded.toLong())
     }
 
     @Deprecated("Make data class extend Resettable instead")
@@ -66,7 +74,7 @@ abstract class BucketedItemTrackerData<E : Enum<E>, T : SessionUptime>(clazz: KC
 
     abstract fun bucketName(): String
 
-    private val buckets: Array<E> = clazz.java.enumConstants
+    protected val buckets: Array<E> = clazz.java.enumConstants
     val selectableBuckets: List<E> = buckets.filter { it.isBucketSelectable() }
 
     private val scrollValues: Map<E?, ScrollValue> = buckets.associateWith { ScrollValue() } + (null to ScrollValue())
@@ -80,10 +88,10 @@ abstract class BucketedItemTrackerData<E : Enum<E>, T : SessionUptime>(clazz: KC
 
     fun getBucketedItems(bucket: E) = bucketedItems[bucket] ?: flattenBucketsItems()
 
-    private val E.items get() = bucketedItems[this] ?: mutableMapOf()
+    protected val E.items get() = bucketedItems[this] ?: mutableMapOf()
     val selectedBucketItems get() = selectedBucket?.items ?: flattenBucketsItems()
 
-    private fun flattenBucketsItems(): MutableMap<NeuInternalName, TrackedItem> =
+    open fun flattenBucketsItems(): MutableMap<NeuInternalName, TrackedItem> =
         buckets.distinct().fold(mutableMapOf()) { acc, bucket ->
             bucket.items.entries.distinctBy { it.key }
                 .forEach { (key, value) ->
@@ -92,7 +100,7 @@ abstract class BucketedItemTrackerData<E : Enum<E>, T : SessionUptime>(clazz: KC
             acc
         }
 
-    private fun mergeBuckets(existing: TrackedItem, new: TrackedItem): TrackedItem = existing.copy(
+    protected fun mergeBuckets(existing: TrackedItem, new: TrackedItem): TrackedItem = existing.copy(
         hidden = false,
         totalAmount = existing.totalAmount + new.totalAmount,
         timesGained = existing.timesGained + new.timesGained,

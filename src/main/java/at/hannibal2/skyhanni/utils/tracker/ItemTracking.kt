@@ -38,6 +38,7 @@ import at.hannibal2.skyhanni.utils.renderables.primitives.text
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker.Companion.universalTracker
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker.DisplayMode
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.min
 import kotlin.time.Duration
@@ -124,6 +125,8 @@ interface ItemTracking<Data : ItemTrackerData<*>, ConfigType : GenericIndividual
             if (internalName == SKYBLOCK_COIN) data.getCoinDescription(item)
             else data.getDescription(item.timesGained)
         },
+        positiveAmountsOnly: Boolean = false,
+        sorter: (MutableMap<NeuInternalName, Long>) -> Map<NeuInternalName, Long> = { it.sortedDesc() }
     ): Double {
         var profit = 0.0
         val items = mutableMapOf<NeuInternalName, Long>()
@@ -146,11 +149,12 @@ interface ItemTracking<Data : ItemTrackerData<*>, ConfigType : GenericIndividual
 
         val table = mutableMapOf<List<Renderable>, String>()
 
-        for ((internalName, price) in items.sortedDesc()) {
+        for ((internalName, price) in sorter(items)) {
             val itemProfit = dataItems[internalName] ?: error("Item not found for $internalName")
 
             val amount = itemProfit.totalAmount
-            val displayAmount = if (internalName == SKYBLOCK_COIN) itemProfit.timesGained else amount
+            var displayAmount = if (internalName == SKYBLOCK_COIN) itemProfit.timesGained else amount
+            if (positiveAmountsOnly) displayAmount = abs(displayAmount)
 
             val cleanName = internalName.getCleanName(dataItems, getCoinName)
 
@@ -296,10 +300,10 @@ interface ItemTracking<Data : ItemTrackerData<*>, ConfigType : GenericIndividual
         return listOf(profitRenderable.toSearchable(), profitPerHourRenderable.toSearchable())
     }
 
-    private fun shouldShowProfitPerHour() =
+    fun shouldShowProfitPerHour() =
         itemTrackerConfig.profitPerHour.get() && !(tracker.getDisplayMode() == DisplayMode.TOTAL && config.onlyShowSession.get())
 
-    private fun profitPerHourRenderable(profit: Double, duration: Duration): Renderable {
+    fun profitPerHourRenderable(profit: Double, duration: Duration): Renderable {
         if (duration == 0.seconds) return Renderable.empty()
         val profitPerHour = profit / duration.inPartialHours
         val profitPerHourFormat = profitPerHour.roundTo(0).addSeparators()

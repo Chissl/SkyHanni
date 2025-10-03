@@ -224,6 +224,11 @@ object PestProfitTracker : SkyHanniTimedBucketedItemTracker<PestType, PestProfit
         adjustmentMap = event.getConstant<GardenJson>("Garden").pestRareDrops
     }
 
+    override fun addItem(bucket: PestType, internalName: NeuInternalName, amount: Int, command: Boolean, message: Boolean) {
+        super.addItem(bucket, internalName, amount, command, message)
+        GardenProfitTracker.addItem(GardenTrackerTypes.PESTS, internalName, amount, command)
+    }
+
     private fun Int.fixAmount(internalName: NeuInternalName, pestType: PestType) =
         adjustmentMap.takeIf { it.isNotEmpty() }?.get(pestType)?.get(internalName) ?: this
 
