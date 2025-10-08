@@ -1,7 +1,7 @@
 package at.hannibal2.skyhanni.config.storage
 
 import at.hannibal2.skyhanni.api.HotmApi.PowderType
-import at.hannibal2.skyhanni.api.SkillApi
+import at.hannibal2.skyhanni.data.SkillApi
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.MaxwellApi.ThaumaturgyPowerTuning
 import at.hannibal2.skyhanni.data.jsonobjects.local.HotxTree

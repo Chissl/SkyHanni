@@ -1,12 +1,12 @@
 package at.hannibal2.skyhanni.features.skillprogress
 
 import at.hannibal2.skyhanni.SkyHanniMod
-import at.hannibal2.skyhanni.api.SkillApi
-import at.hannibal2.skyhanni.api.SkillApi.activeSkill
-import at.hannibal2.skyhanni.api.SkillApi.lastUpdate
-import at.hannibal2.skyhanni.api.SkillApi.oldSkillInfoMap
-import at.hannibal2.skyhanni.api.SkillApi.showDisplay
-import at.hannibal2.skyhanni.api.SkillApi.skillXPInfoMap
+import at.hannibal2.skyhanni.data.SkillApi
+import at.hannibal2.skyhanni.data.SkillApi.activeSkill
+import at.hannibal2.skyhanni.data.SkillApi.lastUpdate
+import at.hannibal2.skyhanni.data.SkillApi.oldSkillInfoMap
+import at.hannibal2.skyhanni.data.SkillApi.showDisplay
+import at.hannibal2.skyhanni.data.SkillApi.skillXPInfoMap
 import at.hannibal2.skyhanni.api.event.HandleEvent
 import at.hannibal2.skyhanni.config.features.skillprogress.SkillProgressConfig
 import at.hannibal2.skyhanni.events.ActionBarUpdateEvent

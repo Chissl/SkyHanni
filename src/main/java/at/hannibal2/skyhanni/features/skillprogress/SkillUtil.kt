@@ -1,9 +1,9 @@
 package at.hannibal2.skyhanni.features.skillprogress
 
-import at.hannibal2.skyhanni.api.SkillApi
-import at.hannibal2.skyhanni.api.SkillApi.activeSkill
-import at.hannibal2.skyhanni.api.SkillApi.exactLevelingMap
-import at.hannibal2.skyhanni.api.SkillApi.levelingMap
+import at.hannibal2.skyhanni.data.SkillApi
+import at.hannibal2.skyhanni.data.SkillApi.activeSkill
+import at.hannibal2.skyhanni.data.SkillApi.exactLevelingMap
+import at.hannibal2.skyhanni.data.SkillApi.levelingMap
 import com.google.common.base.Splitter
 
 object SkillUtil {
