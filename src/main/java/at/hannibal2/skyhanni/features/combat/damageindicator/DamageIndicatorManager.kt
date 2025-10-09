@@ -572,8 +572,7 @@ object DamageIndicatorManager {
     private fun checkBlazeSlayer(entity: EntityLiving, entityData: EntityData, health: Int, maxHealth: Int): String {
         var found = false
         for (shield in HellionShield.entries) {
-            val armorStand = entity.getNameTagWith(3, shield.name)
-            if (armorStand != null) {
+            entity.getNameTagWith(3, shield.name)?.let { armorStand ->
                 val number = armorStand.name.split(" ♨")[1].substring(0, 1)
                 entity.setHellionShield(shield)
                 if (SlayerApi.config.blazes.hellion.coloredMobs) {
@@ -997,6 +996,7 @@ object DamageIndicatorManager {
                 if (name.contains("Overflux")) return
                 if (name.contains("Mana Flux")) return
                 if (name.contains("Radiant")) return
+                if (!entity.hasCustomName()) return
                 event.cancel()
             }
         }
