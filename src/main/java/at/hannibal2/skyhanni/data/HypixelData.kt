@@ -66,16 +66,6 @@ object HypixelData {
     )
 
     /**
-     * REGEX-TEST: §b§lArea: §r§7Private Island
-     * REGEX-TEST: §b§lDungeon: §r§7Catacombs
-     */
-    @Suppress("UnusedPrivateProperty")
-    private val islandNamePattern by patternGroup.pattern(
-        "islandname",
-        "(?:§.)*(?:Area|Dungeon): (?:§.)*(?<island>.*)",
-    )
-
-    /**
      * REGEX-TEST: §711/15/24 §8m19CJ
      * REGEX-TEST: §711/15/24 §8m1F
      */
@@ -137,10 +127,14 @@ object HypixelData {
      * REGEX-TEST: SKYBLOCK
      * REGEX-TEST: SKYBLOCK GUEST
      * REGEX-TEST: SKYBLOCK CO-OP
+     * REGEX-TEST: SKYBLOCK ♲
+     * REGEX-TEST: SKYBLOCK ☀
+     * REGEX-TEST: SKYBLOCK Ⓑ
+     *
      */
     private val scoreboardTitlePattern by patternGroup.pattern(
         "scoreboard.title",
-        "SK[YI]BLOCK(?: CO-OP| GUEST)?",
+        "SK[YI]BLOCK(?: CO-OP| GUEST)?(?: ♲|☀|Ⓑ)?",
     )
 
     /**
@@ -487,7 +481,7 @@ object HypixelData {
 
         val inSkyBlock = checkScoreboard()
         if (inSkyBlock) {
-            checkSidebar()
+            checkSpecialModes()
             checkCurrentServerId()
         } else {
             if (!skyBlock) {
@@ -579,11 +573,20 @@ object HypixelData {
         HypixelLocationApi.checkEquals()
     }
 
-    private fun checkSidebar() {
+    private fun checkSpecialModes() {
+        val scoreboardTitle = getScoreboardTitle() ?: return
+        if (scoreboardTitle.contains("GUEST")) return
         ironman = false
         stranded = false
         bingo = false
 
+
+
+        if (scoreboardTitle.contains("♲")) ironman = true
+        else if (scoreboardTitle.contains("☀")) stranded = true
+
+        // remove once update is on main
+        // make sure to keep the bingo part when you remove it
         for (line in ScoreboardData.sidebarLinesFormatted) {
             if (BingoApi.getRankFromScoreboard(line) != null) {
                 bingo = true
@@ -646,11 +649,16 @@ object HypixelData {
         return islandType
     }
 
-    private fun checkScoreboard(): Boolean {
-        val world = MinecraftCompat.localWorldOrNull ?: return false
+    fun getScoreboardTitle(): String? {
+        val world = MinecraftCompat.localWorldOrNull ?: return null
 
-        val objective = world.scoreboard.getSidebarObjective() ?: return false
+        val objective = world.scoreboard.getSidebarObjective() ?: return null
         val displayName = objective.displayName
+        return displayName
+    }
+
+    private fun checkScoreboard(): Boolean {
+        val displayName = getScoreboardTitle() ?: return false
         val scoreboardTitle = displayName.removeColor()
         return scoreboardTitlePattern.matches(scoreboardTitle)
     }

@@ -54,11 +54,11 @@ object PestSpawnTimer {
     private val patternGroup = RepoPattern.group("garden.pests")
 
     /**
-     * REGEX-TEST:  Cooldown: §r§a§lREADY
-     * REGEX-TEST:  Cooldown: §r§e1m 58s
-     * REGEX-TEST:  Cooldown: §r§e1m
-     * REGEX-TEST:  Cooldown: §r§e58s
-     * REGEX-TEST:  Cooldown: §r§c§lMAX PESTS
+     * WRAPPED-REGEX-TEST: " Cooldown: §r§a§lREADY"
+     * WRAPPED-REGEX-TEST: " Cooldown: §r§e1m 58s"
+     * WRAPPED-REGEX-TEST: " Cooldown: §r§e1m"
+     * WRAPPED-REGEX-TEST: " Cooldown: §r§e58s"
+     * WRAPPED-REGEX-TEST: " Cooldown: §r§c§lMAX PESTS"
      */
 
     private val pestCooldownPattern by patternGroup.pattern(
@@ -96,9 +96,7 @@ object PestSpawnTimer {
             if (time == null) return
             pestCooldownEndTime = if (config.customCooldown.get()) {
                 lastPestSpawnTime + config.customCooldownTime.get().seconds
-            } else {
-                time
-            }
+            } else time
 
             if (pestSpawned) {
                 hasWarned = false
@@ -107,8 +105,8 @@ object PestSpawnTimer {
         }
     }
 
-    @HandleEvent
-    fun onPestSpawn(event: PestSpawnEvent) {
+    @HandleEvent(PestSpawnEvent::class)
+    fun onPestSpawn() {
         shouldRepeatWarning = false
         val spawnTime = lastPestSpawnTime.passedSince()
 
@@ -127,8 +125,8 @@ object PestSpawnTimer {
         lastPestSpawnTime = SimpleTimeMark.now()
     }
 
-    @HandleEvent
-    fun onRenderOverlay(event: GuiRenderEvent.GuiOverlayRenderEvent) {
+    @HandleEvent(GuiRenderEvent.GuiOverlayRenderEvent::class, onlyOnIsland = IslandType.GARDEN)
+    fun onRenderOverlay() {
         if (!shouldRender) return
         config.position.renderRenderables(display, posLabel = "Pest Spawn Timer")
     }
@@ -145,8 +143,8 @@ object PestSpawnTimer {
         lastCropBrokenTime = SimpleTimeMark.now()
     }
 
-    @HandleEvent
-    fun onSecondPassed(event: SecondPassedEvent) {
+    @HandleEvent(SecondPassedEvent::class, onlyOnIsland = IslandType.GARDEN)
+    fun onSecondPassed() {
         if (!isEnabled()) return
         update()
         if (shouldRepeatWarning) {
@@ -181,15 +179,14 @@ object PestSpawnTimer {
         shouldRender = shouldRender()
     }
 
-    @HandleEvent(onlyOnIsland = IslandType.GARDEN)
-    fun onIslandChange(event: IslandChangeEvent) {
+    @HandleEvent(IslandChangeEvent::class, onlyOnIsland = IslandType.GARDEN)
+    fun onIslandChange() {
         shouldRepeatWarning = false
         longestCropBrokenTime = lastCropBrokenTime.passedSince()
     }
 
-    @HandleEvent
-    fun onConfigChange(event: ConfigLoadEvent) {
-        ChatUtils.debug("Config load event")
+    @HandleEvent(ConfigLoadEvent::class)
+    fun onConfigLoad() {
         config.customCooldown.onToggle {
             setCustomCooldown()
         }
@@ -236,9 +233,8 @@ object PestSpawnTimer {
         return formatDisplay(lineMap)
     }
 
-    private fun formatDisplay(lineMap: Map<PestTimerTextEntry, Renderable>): List<Renderable> {
-        return config.pestDisplay.mapNotNull { lineMap[it] }
-    }
+    private fun formatDisplay(lineMap: Map<PestTimerTextEntry, Renderable>): List<Renderable> =
+        config.pestDisplay.mapNotNull { lineMap[it] }
 
     private fun update() {
         display = drawDisplay()
