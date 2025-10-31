@@ -7,6 +7,7 @@ If you want to see these features polished and added to the regular version of s
 Make sure auto-updater is turned off.
 Report any bugs that happen on this branch and not normal skyhanni and are not listed below to chissl on discord; suggestions are also appreciated!
 
+Do not use the 1.8.9 jar in the multi-version zip of the actions tab; workflows are broken and it will be corrupted. 
 
 ## Features
 - Garden Profit Tracker
