@@ -27,6 +27,7 @@ import at.hannibal2.skyhanni.test.command.ErrorManager
 import at.hannibal2.skyhanni.utils.ChatUtils
 import at.hannibal2.skyhanni.utils.DelayedRun
 import at.hannibal2.skyhanni.utils.EntityUtils
+import at.hannibal2.skyhanni.utils.InventoryDetector
 import at.hannibal2.skyhanni.utils.InventoryUtils
 import at.hannibal2.skyhanni.utils.ItemCategory
 import at.hannibal2.skyhanni.utils.ItemUtils.getItemCategoryOrNull
@@ -73,7 +74,7 @@ object PestApi {
 
     fun SprayType.getPests() = PestType.filterableEntries.filter { it.spray == this }
 
-    val patternGroup = RepoPattern.group("garden.pestsapi")
+    val patternGroup = RepoPattern.group("garden.pests-api")
     private val pestsInScoreboardPattern by patternGroup.pattern(
         "scoreboard.pests",
         " §7⏣ §[ac]The Garden §4§lൠ§7 x(?<pests>.*)",
@@ -84,7 +85,7 @@ object PestApi {
      * REGEX-TEST:  §7⏣ §aThe Garden
      */
     private val noPestsInScoreboardPattern by patternGroup.pattern(
-        "scoreboard.nopests",
+        "scoreboard.no-pests",
         " §7⏣ §a(?:The Garden|Plot §7- §b.+)$",
     )
 
@@ -100,7 +101,7 @@ object PestApi {
      * REGEX-TEST:  §aPlot §7- §b3
      */
     private val noPestsInPlotScoreboardPattern by patternGroup.pattern(
-        "scoreboard.plot.nopests",
+        "scoreboard.plot.no-pests",
         "\\s*(?:§.)*Plot (?:§.)*- (?:§.)*(?<plot>.{1,3})$",
     )
     private val pestInventoryPattern by patternGroup.pattern(
@@ -112,7 +113,7 @@ object PestApi {
      * REGEX-TEST:  Plots: §r§b4§r§f, §r§b12§r§f, §r§b13§r§f, §r§b18§r§f, §r§b20
      */
     private val infestedPlotsTabListPattern by patternGroup.pattern(
-        "tablist.infectedplots",
+        "tablist.infected-plots",
         "\\sPlots: (?<plots>.*)",
     )
 
@@ -122,11 +123,11 @@ object PestApi {
      * REGEX-TEST: §eYou received §a64x Enchanted Sugar §efor killing a §2Mosquito§e!
      */
     val pestDeathChatPattern by patternGroup.pattern(
-        "chat.pestdeath",
+        "chat.pest-death",
         "§eYou received §a(?<amount>[0-9]*)x (?<item>.*) §efor killing an? §2(?<pest>.*)§e!",
     )
     val noPestsChatPattern by patternGroup.pattern(
-        "chat.nopests",
+        "chat.no-pests",
         "§cThere are not any Pests on your Garden right now! Keep farming!",
     )
 
@@ -135,9 +136,35 @@ object PestApi {
      * REGEX-TEST: §9§lMOUSE TRAP #2§r
      * REGEX-TEST: §9§lMOUSE TRAP #2
      */
-    val pestTrapPattern by patternGroup.pattern(
-        "entity.pesttrap",
+    private val pestTrapPattern by patternGroup.pattern(
+        "entity.pest-trap",
         "(?:§.)+§l(?<type>PEST|MOUSE) TRAP(?: #(?<number>\\d+))?(?:§.)*",
+    )
+
+    /**
+     * REGEX-TEST: Stereo Harmony
+     */
+    private val stereoInventoryPattern by patternGroup.pattern(
+        "stereo.inventory",
+        "Stereo Harmony"
+    )
+    val stereoInventory = InventoryDetector { name -> stereoInventoryPattern.matches(name) }
+
+    /**
+     * REGEX-TEST: §7Now Playing: §aWings of Harmony §8(Moth)
+     * REGEX-TEST: §7Now Playing: §a§cNone
+     */
+    val stereoPlayingPattern by patternGroup.pattern(
+        "stereo.playing",
+        "§7Now Playing: (?:§.)*(?<vinyl>[^§]+).*"
+    )
+
+    /**
+     * REGEX-TEST: §a§lPLAYING
+     */
+    val stereoPlayingItemPattern by patternGroup.pattern(
+        "stereo.playing.item",
+        "§a§lPLAYING",
     )
 
     private var gardenJoinTime = SimpleTimeMark.farPast()
