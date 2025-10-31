@@ -1,8 +1,9 @@
+# WARNING: This is a work in progress! Make backups of your config before using this; going back to a normal build of skyhanni may cause partial or full config wipes!
+
 Chissl's Branch of Skyhanni containing Garden Profit Tracker and related features. 
 
 If you want to see these features polished and added to the regular version of skyhanni, please like my [pull request](https://github.com/hannibal002/SkyHanni/pull/4748)!
 
-**WARNING: Make backups of your config before using this; going back to a normal build of skyhanni may cause partial or full config wipes!**
 Make sure auto-updater is turned off.
 Report any bugs that happen on this branch and not normal skyhanni and are not listed below to chissl on discord; suggestions are also appreciated!
 
