@@ -17,11 +17,16 @@ Do not use the 1.8.9 jar in the multi-version zip of the actions tab; workflows 
 - Tracker Uptime
 - Elite Pests and Collection Leaderboard Displays
 - Day, Week, Month, and Year modes for trackers
-- Pest drops are tracked by milestones
 - Custom pest spawn sound
 - Blocks broken/Bps tracker
 
+## Fixes
+- Elite farming weight should desync/error less
+- Crop milestones include pest/dicer drops and should be a lot more accurate
+- Fixed other various issues with crop milestones/farming weight
+
 ## Known issues
+- Farming weight display overshoots because it doesn't subtract weight from pest kills
 - Tracker uptime not properly pausing when active during a date change
 - Confusing config options
     * If tracker uptime isn't showing up, disable "only show session" for that specific tracker"
