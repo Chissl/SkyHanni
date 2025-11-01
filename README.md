@@ -5,7 +5,7 @@ Chissl's Branch of Skyhanni containing Garden Profit Tracker and related feature
 If you want to see these features polished and added to the regular version of skyhanni, please like my [pull request](https://github.com/hannibal002/SkyHanni/pull/4748)!
 
 Make sure auto-updater is turned off.
-Report any bugs that happen on this branch and not normal skyhanni and are not listed below to chissl on discord; suggestions are also appreciated!
+Report any bugs not listed below that happen on this branch and not normal skyhanni to chissl on discord; suggestions are also appreciated!
 
 **Do not use the 1.8.9 jar in the multi-version zip of the actions tab; workflows are broken and it will be corrupted.** 
 
