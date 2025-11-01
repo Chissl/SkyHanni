@@ -26,6 +26,8 @@ Do not use the 1.8.9 jar in the multi-version zip of the actions tab; workflows 
 - Fixed other various issues with crop milestones/farming weight
 
 ## Known issues
+- Error messages regarding elite farming weight are sent when swapping lobbies/joining hypixel
+    + Ignore these, they're wrong and shouldn't be sent at all
 - Farming weight display overshoots because it doesn't subtract weight from pest kills
 - Tracker uptime not properly pausing when active during a date change
 - Confusing config options
