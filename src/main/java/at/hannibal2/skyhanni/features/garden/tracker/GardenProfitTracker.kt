@@ -173,7 +173,7 @@ object GardenProfitTracker : SkyHanniTimedBucketedItemTracker<GardenTrackerTypes
                                     // handling for skyblock coins
                                     acc.merge(key, value, ::mergeBuckets)
                                     return@forEach
-                                }                                
+                                }
                                 val compactedCrop = when (config.compactMode.get()) {
                                     HarvestedCropsMode.BASE -> crop.internalName
                                     HarvestedCropsMode.COMPACTED -> crop.compactedName

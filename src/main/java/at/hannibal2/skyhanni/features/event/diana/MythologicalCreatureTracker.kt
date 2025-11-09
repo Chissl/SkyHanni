@@ -6,8 +6,6 @@ import at.hannibal2.skyhanni.config.ConfigManager
 import at.hannibal2.skyhanni.config.ConfigUpdaterMigrator
 import at.hannibal2.skyhanni.config.commands.CommandCategory
 import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
-import at.hannibal2.skyhanni.config.storage.Resettable
-import at.hannibal2.skyhanni.data.ElectionApi.getElectionYear
 import at.hannibal2.skyhanni.data.jsonobjects.repo.DianaJson
 import at.hannibal2.skyhanni.events.RepositoryReloadEvent
 import at.hannibal2.skyhanni.events.chat.SkyHanniChatEvent
@@ -31,7 +29,6 @@ import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker.DisplayMode
 import at.hannibal2.skyhanni.utils.tracker.SkyhanniTimedTracker
 import at.hannibal2.skyhanni.utils.tracker.TimedTrackerData
 import at.hannibal2.skyhanni.utils.tracker.TrackerData
-import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import com.google.gson.JsonElement
 import com.google.gson.annotations.Expose
 
