@@ -19,6 +19,7 @@ import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
 import io.github.notenoughupdates.moulconfig.annotations.ConfigLink
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.notenoughupdates.moulconfig.annotations.SearchTag
+import io.github.notenoughupdates.moulconfig.observer.Property
 
 class GardenConfig {
     @Expose
@@ -167,6 +168,14 @@ class GardenConfig {
     )
     @ConfigEditorDropdown
     var burrowingSporesNotificationType: BurrowingSporesNotificationType = BurrowingSporesNotificationType.TITLE
+
+    @Expose
+    @ConfigOption(
+        name = "Aqua Affinity Fix",
+        desc = "Fixes Aqua Affinity not working client-side. USE AT YOUR OWN RISK!"
+    )
+    @ConfigEditorBoolean
+    var aquaAffinityFix: Property<Boolean> = Property.of(false)
 
     enum class BurrowingSporesNotificationType(val displayName: String) {
         TITLE("Title"),
