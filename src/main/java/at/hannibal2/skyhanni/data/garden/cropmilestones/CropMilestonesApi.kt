@@ -7,6 +7,7 @@ import at.hannibal2.skyhanni.config.commands.CommandRegistrationEvent
 import at.hannibal2.skyhanni.data.garden.CropCollectionApi.addsToMilestone
 import at.hannibal2.skyhanni.data.garden.cropmilestones.CustomGoals.getCustomGoal
 import at.hannibal2.skyhanni.data.jsonobjects.repo.GardenJson
+import at.hannibal2.skyhanni.events.DebugDataCollectEvent
 import at.hannibal2.skyhanni.events.ProfileJoinEvent
 import at.hannibal2.skyhanni.events.RepositoryReloadEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
@@ -51,10 +52,18 @@ object CropMilestonesApi {
      * REGEX-TEST:  Cocoa Beans 31: §r§a68%
      * REGEX-TEST:  Potato 32: §r§a97.7%
      */
-    @Suppress("MaxLineLength")
-    val tabListPattern by patternGroup.pattern(
-        "tablist",
-        " (?<crop>Wheat|Carrot|Potato|Pumpkin|Sugar Cane|Melon Slice|Cactus|Cocoa Beans|Mushroom|Nether Wart) (?<tier>\\d+): §r§a(?<percentage>.*)%",
+    val tabListPercentPattern by patternGroup.pattern(
+        "tablist.percent",
+        " (?<crop>[\\w ]+) (?<tier>\\d+): §r§a(?<percentage>.*)%",
+    )
+
+    /**
+     * REGEX-TEST:  Potato 46: §r§c§lMAX
+     * REGEX-TEST:  Cocoa Beans 46: §r§c§lMAX
+     */
+    val tabListMaxPattern by patternGroup.pattern(
+        "tablist.max",
+        " (?<crop>[\\w ]+) (?<tier>\\d+): §r§c§lMAX"
     )
 
     /**
@@ -379,16 +388,17 @@ object CropMilestonesApi {
                 chat("§cReset Crop Milestones!")
             }
         }
-        event.registerBrigadier("shshowcropcache") {
-            description = "Show Cached Milestone Information."
-            category = CommandCategory.DEVELOPER_DEBUG
-            callback {
-                for (crop in cropMilestoneTierCache) {
-                    chat("Crop: ${crop.key}, Tier: ${crop.value}")
-                }
-                for (crop in amountToNextTierCache) {
-                    chat("Crop: ${crop.key}, Progress: ${crop.value}")
-                }
+    }
+
+    @HandleEvent
+    fun onDebug(event: DebugDataCollectEvent) {
+        event.title("Crop Milestones Api")
+        event.addIrrelevant {
+            for (crop in cropMilestoneTierCache) {
+                add("Crop: ${crop.key}, Tier: ${crop.value}")
+            }
+            for (crop in amountToNextTierCache) {
+                add("Crop: ${crop.key}, Progress: ${crop.value}")
             }
         }
     }
