@@ -57,7 +57,8 @@ object CropFeverTracker : SkyHanniBucketedItemTracker<CropType, CropFeverTracker
         @Expose var rngDrops: MutableMap<CropType, MutableMap<RngDropEnum, Long>> = EnumMap(CropType::class.java),
     ) : BucketedItemTrackerData<CropType, SessionUptime.Garden>(CropType::class, SessionUptime.Garden::class) {
         override fun getDescription(bucket: CropType?, timesGained: Long): List<String> {
-            val dropRate = if (timesGained == 0L) 0 else blocksBrokenDuring[bucket]?.div(timesGained) ?: 0
+            val blocksBroken = blocksBrokenDuring[bucket] ?: getTotalDuringCount()
+            val dropRate = if (timesGained == 0L) 0 else blocksBroken.div(timesGained)
             return listOf(
                 "§7Dropped §e${timesGained.addSeparators()} §7times.",
                 "§7Average Blocks Broken Per Drop: §c$dropRate.",
@@ -235,10 +236,16 @@ object CropFeverTracker : SkyHanniBucketedItemTracker<CropType, CropFeverTracker
             cropFeverAmount + partialFeverAmount
         }
 
+        val blocksOutside = if (bucketData.selectedBucket == null) {
+            bucketData.getTotalOutsideCount()
+        } else {
+            bucketData.blocksBrokenOutside[bucketData.selectedBucket]
+        }
+
         val breaksPerFever: Long = if (feverAmount == 0L) {
             0L
         } else {
-            (bucketData.blocksBrokenOutside[bucketData.selectedBucket] ?: 0L) / feverAmount
+            (blocksOutside ?: 0L) / feverAmount
         }
 
         lineMap[CropFeverTrackerTextEntry.FEVER_AMOUNT] =
@@ -288,9 +295,9 @@ object CropFeverTracker : SkyHanniBucketedItemTracker<CropType, CropFeverTracker
 
         RngDropEnum.entries.forEach {
             val drops = rngMap[it] ?: 0
-            val blocksBroken = if (data.selectedBucket == null) data.getTotalOutsideCount()
-            else data.blocksBrokenOutside[data.selectedBucket] ?: 0
-            val breaksPerDrop = if (blocksBroken == 0L) 0 else drops / blocksBroken
+            val blocksBroken = if (data.selectedBucket == null) data.getTotalDuringCount()
+            else data.blocksBrokenDuring[data.selectedBucket] ?: 0
+            val breaksPerDrop = if (drops == 0L) 0 else blocksBroken / drops
             add(
                 Renderable.hoverTips(
                     Renderable.text("§7- §e${drops}x $it"),
@@ -315,7 +322,7 @@ object CropFeverTracker : SkyHanniBucketedItemTracker<CropType, CropFeverTracker
                 CropFeverTrackerTextEntry.TOTAL_PROFIT -> {
                     val duration = bucketData.getTotalUptime()
                     addAll(
-                        addTotalProfit(profit, bucketData.getTotalFeverCount(), "drop", duration, "Drops"),
+                        addTotalProfit(profit, bucketData.getTotalFeverCount(), "fever", duration, "Fevers"),
                     )
                 }
                 else -> { lineMap[line]?.let { add(it) } }
@@ -326,11 +333,11 @@ object CropFeverTracker : SkyHanniBucketedItemTracker<CropType, CropFeverTracker
 
     @HandleEvent
     fun onCommandRegistration(event: CommandRegistrationEvent) {
-        event.register("shresetcropfevertracker") {
+        event.registerBrigadier("shresetcropfevertracker") {
             aliases = listOf("shresetcft")
             description = "Resets the Crop Fever Tracker"
             category = CommandCategory.USERS_RESET
-            callback { resetCommand() }
+            simpleCallback { resetCommand() }
         }
     }
 }
