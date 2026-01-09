@@ -1,5 +1,7 @@
 package at.hannibal2.skyhanni.utils.tracker
 
+import at.hannibal2.skyhanni.config.features.misc.tracker.ItemTrackerGenericConfig
+import at.hannibal2.skyhanni.config.features.misc.tracker.individual.GenericIndividualTrackerConfig
 import at.hannibal2.skyhanni.config.storage.ProfileSpecificStorage
 import at.hannibal2.skyhanni.data.ItemAddManager
 import at.hannibal2.skyhanni.events.ItemAddEvent
@@ -10,20 +12,22 @@ import at.hannibal2.skyhanni.utils.renderables.RenderableUtils.addNullableButton
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 
 @Suppress("SpreadOperator")
-abstract class SkyHanniBucketedItemTracker<E : Enum<E>, BucketedData : BucketedItemTrackerData<E>>(
+abstract class SkyHanniBucketedItemTracker<E : Enum<E>, BucketedData : BucketedItemTrackerData<E, *>>(
     name: String,
     createNewSession: () -> BucketedData,
     getStorage: (ProfileSpecificStorage) -> BucketedData,
     drawDisplay: (BucketedData) -> List<Searchable>,
     extraDisplayModes: Map<DisplayMode, (ProfileSpecificStorage) -> BucketedData> = emptyMap(),
+    trackerConfig: () -> GenericIndividualTrackerConfig<ItemTrackerGenericConfig>,
     customUptimeControl: Boolean = false
 ) : SkyHanniItemTracker<BucketedData>(
     name,
     createNewSession,
     getStorage,
     extraDisplayModes,
+    customUptimeControl = customUptimeControl,
     drawDisplay = drawDisplay,
-    customUptimeControl = customUptimeControl
+    trackerConfig = { trackerConfig() },
 ) {
 
     final override fun addCoins(amount: Int, command: Boolean) =
@@ -108,6 +112,8 @@ abstract class SkyHanniBucketedItemTracker<E : Enum<E>, BucketedData : BucketedI
         itemRemover: (NeuInternalName, String) -> Unit,
         itemHider: (NeuInternalName, Boolean) -> Unit,
         getLoreList: (NeuInternalName, ItemTrackerData.TrackedItem) -> List<String>,
+        positiveAmountsOnly: Boolean,
+        sorter: (MutableMap<NeuInternalName, Long>) -> Map<NeuInternalName, Long>
     ): Double = super.drawItems(
         data = data,
         filter = filter,
@@ -132,5 +138,7 @@ abstract class SkyHanniBucketedItemTracker<E : Enum<E>, BucketedData : BucketedI
             if (internalName == SKYBLOCK_COIN) data.getCoinDescription(selectedBucket, item)
             else data.getDescription(selectedBucket, item.timesGained)
         },
+        positiveAmountsOnly = positiveAmountsOnly,
+        sorter = sorter
     )
 }

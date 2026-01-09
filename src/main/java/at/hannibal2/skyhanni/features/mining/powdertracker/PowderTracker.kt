@@ -24,6 +24,7 @@ import at.hannibal2.skyhanni.utils.collection.CollectionUtils.addOrPut
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addSearchString
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import at.hannibal2.skyhanni.utils.tracker.TrackerData
 import com.google.gson.JsonArray
@@ -135,14 +136,19 @@ object PowderTracker {
     }
 
     private val tracker =
-        SkyHanniTracker("Powder Tracker", ::Data, { it.powderTracker }) { formatDisplay(drawDisplay(it)) }
+        SkyHanniTracker(
+            "Powder Tracker",
+            ::Data,
+            { it.powderTracker },
+            trackerConfig = { config.perTrackerConfig }
+        ) { formatDisplay(drawDisplay(it)) }
 
     data class Data(
         @Expose var totalChestPicked: Long = 0,
         @Expose var totalHardStoneCompacted: Long = 0,
         // TODO remove this field and transform this into a ItemProfitTracker
         @Expose var rewards: MutableMap<PowderChestReward, Long> = mutableMapOf(),
-    ) : TrackerData()
+    ) : TrackerData<SessionUptime.Normal>(SessionUptime.Normal::class)
 
     init {
         tracker.initRenderer({ config.position }) { shouldShowDisplay() }

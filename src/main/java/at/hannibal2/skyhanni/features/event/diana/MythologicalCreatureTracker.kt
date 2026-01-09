@@ -26,6 +26,7 @@ import at.hannibal2.skyhanni.utils.collection.CollectionUtils.addOrPut
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.sumAllValues
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addSearchString
 import at.hannibal2.skyhanni.utils.renderables.Searchable
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import at.hannibal2.skyhanni.utils.tracker.TrackerData
 import com.google.gson.JsonElement
@@ -46,6 +47,7 @@ object MythologicalCreatureTracker {
                 )
             },
         ),
+        trackerConfig = { config.perTrackerConfig }
     ) { drawDisplay(it) }
 
     // TODO create a draggable list from repo one that can be done
@@ -58,7 +60,7 @@ object MythologicalCreatureTracker {
     data class Data(
         @Expose var since: MutableMap<String, Int> = mutableMapOf(),
         @Expose var count: MutableMap<String, Int> = mutableMapOf(),
-    ) : TrackerData()
+    ) : TrackerData<SessionUptime.Normal>(SessionUptime.Normal::class)
 
     @HandleEvent
     fun onChat(event: SkyHanniChatEvent) {

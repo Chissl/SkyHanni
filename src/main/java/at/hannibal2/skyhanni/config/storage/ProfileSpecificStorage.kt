@@ -4,6 +4,10 @@ import at.hannibal2.skyhanni.api.HotmApi.PowderType
 import at.hannibal2.skyhanni.api.SkillApi
 import at.hannibal2.skyhanni.data.IslandType
 import at.hannibal2.skyhanni.data.MaxwellApi.ThaumaturgyPowerTuning
+import at.hannibal2.skyhanni.data.garden.CropCollectionApi
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteLeaderboardMode
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteLeaderboardType
+import at.hannibal2.skyhanni.data.jsonobjects.elitedev.FarmingWeight
 import at.hannibal2.skyhanni.data.jsonobjects.local.HotxTree
 import at.hannibal2.skyhanni.data.model.ComposterUpgrade
 import at.hannibal2.skyhanni.data.model.SkyblockStat
@@ -31,11 +35,18 @@ import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenPlotApi.PlotData
 import at.hannibal2.skyhanni.features.garden.farming.lane.FarmingLane
 import at.hannibal2.skyhanni.features.garden.fortuneguide.FarmingItemType
+import at.hannibal2.skyhanni.features.garden.leaderboarddisplays.CropLeaderboardStorage
+import at.hannibal2.skyhanni.features.garden.leaderboarddisplays.PestLeaderboardStorage
+import at.hannibal2.skyhanni.features.garden.leaderboarddisplays.WeightLeaderboardStorage
 import at.hannibal2.skyhanni.features.garden.pests.stereo.VinylType
 import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
+import at.hannibal2.skyhanni.features.garden.tracker.ComposterProfitTracker
+import at.hannibal2.skyhanni.features.garden.tracker.CropCollectionTracker
+import at.hannibal2.skyhanni.features.garden.tracker.GardenBpsTracker
+import at.hannibal2.skyhanni.features.garden.tracker.GardenProfitTracker
 import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker
 import at.hannibal2.skyhanni.features.garden.tracker.CropFeverTracker
-import at.hannibal2.skyhanni.features.garden.visitor.VisitorReward
+import at.hannibal2.skyhanni.features.garden.tracker.VisitorDropTracker
 import at.hannibal2.skyhanni.features.gifting.GiftProfitTracker
 import at.hannibal2.skyhanni.features.hunting.HuntingProfitTracker
 import at.hannibal2.skyhanni.features.inventory.EquipmentApi
@@ -71,6 +82,7 @@ import java.time.LocalDate
 import java.util.EnumMap
 import java.util.UUID
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 // put everything under its respective feature, the order of the features is the same as in the folder structure
 class ProfileSpecificStorage(
@@ -433,6 +445,12 @@ class ProfileSpecificStorage(
         var lastGainedCrop: CropType? = null
 
         @Expose
+        var lastGainedCropCollectionTime: SimpleTimeMark = farPast()
+
+        @Expose
+        var cropCollectionCounter: MutableMap<CropType, CropCollectionApi.CropCollection> = enumMapOf()
+
+        @Expose
         var cropMilestoneCounter: MutableMap<CropType, Long> = EnumMap(CropType::class.java)
 
         @Expose
@@ -469,7 +487,7 @@ class ProfileSpecificStorage(
         var nextSixthVisitorArrival: SimpleTimeMark = farPast()
 
         @Expose
-        var armorDropTracker: ArmorDropTracker.Data = ArmorDropTracker.Data()
+        var armorDropTracker: ArmorDropTracker.TimeData = ArmorDropTracker.TimeData()
 
         @Expose
         var composterUpgrades: MutableMap<ComposterUpgrade, Int> = enumMapOf()
@@ -484,48 +502,13 @@ class ProfileSpecificStorage(
         var composterCurrentFuelItem: NeuInternalName? = NONE
 
         @Expose
+        var composterProfitTracker: ComposterProfitTracker.TimeData = ComposterProfitTracker.TimeData()
+
+        @Expose
         var uniqueVisitors: Int = 0
 
         @Expose
-        var visitorDrops: VisitorDrops = VisitorDrops()
-
-        // Todo: Move to a SkyhanniTracker (preferably bucketed by rarity)
-        class VisitorDrops : Resettable {
-            @Expose
-            var acceptedVisitors: Int = 0
-
-            @Expose
-            var deniedVisitors: Int = 0
-
-            fun getTotalVisitors() = acceptedVisitors + deniedVisitors
-
-            @Expose
-            var acceptedRarities: MutableMap<LorenzRarity, Long> = enumMapOf()
-
-            @Expose
-            var copper: Int = 0
-
-            @Expose
-            var farmingExp: Long = 0
-
-            @Expose
-            var gardenExp: Int = 0
-
-            @Expose
-            var coinsSpent: Long = 0
-
-            @Expose
-            var bits: Long = 0
-
-            @Expose
-            var mithrilPowder: Long = 0
-
-            @Expose
-            var gemstonePowder: Long = 0
-
-            @Expose
-            var rewardsCount: MutableMap<VisitorReward, Int> = enumMapOf()
-        }
+        var visitorDropTracker: VisitorDropTracker.TimeData = VisitorDropTracker.TimeData()
 
         @Expose
         var plotIcon: PlotIcon = PlotIcon()
@@ -592,6 +575,9 @@ class ProfileSpecificStorage(
         var composterEmptyTime: SimpleTimeMark = farPast()
 
         @Expose
+        var composterProfitTrackerTimeLeft: Duration = 0.seconds
+
+        @Expose
         var lastComposterEmptyWarningTime: SimpleTimeMark = farPast()
 
         @Expose
@@ -599,7 +585,24 @@ class ProfileSpecificStorage(
 
         class FarmingWeightConfig {
             @Expose
-            var lastLeaderboard: Int = -1
+            var lastLeaderboardPosMap: MutableMap<EliteLeaderboardType, Int> = mutableMapOf()
+
+            @Expose
+            var leaderboardAmountMap: MutableMap<EliteLeaderboardType, Double> = mutableMapOf()
+
+            @Expose
+            var cropDisplayType: CropLeaderboardStorage = CropLeaderboardStorage(null, EliteLeaderboardMode.ALL_TIME)
+
+            @Expose
+            var pestDisplayType: PestLeaderboardStorage = PestLeaderboardStorage(null, EliteLeaderboardMode.ALL_TIME)
+
+            @Expose
+            var weightDisplayType: WeightLeaderboardStorage =
+                WeightLeaderboardStorage(FarmingWeight.FARMING_WEIGHT, EliteLeaderboardMode.ALL_TIME)
+
+            @Expose
+            var minAmountMap: MutableMap<EliteLeaderboardType, Double> = mutableMapOf()
+
         }
 
         @Expose
@@ -609,10 +612,22 @@ class ProfileSpecificStorage(
         var customGoalMilestone: MutableMap<CropType, Int> = enumMapOf()
 
         @Expose
-        var pestProfitTracker: PestProfitTracker.BucketData = PestProfitTracker.BucketData()
+        var pestProfitTracker: PestProfitTracker.TimeData = PestProfitTracker.TimeData()
 
         @Expose
         var activeVinyl: VinylType? = null
+
+        @Expose
+        var gardenBpsTracker: GardenBpsTracker.TimedData = GardenBpsTracker.TimedData()
+
+        @Expose
+        var cropCollectionTracker: CropCollectionTracker.TimedData = CropCollectionTracker.TimedData()
+
+        @Expose
+        var hasImportedProfits: Boolean = false
+
+        @Expose
+        var gardenProfitTracker: GardenProfitTracker.TimeData = GardenProfitTracker.TimeData()
 
         @Expose
         var overflowHoeLevels: MutableMap<String, Int> = mutableMapOf()

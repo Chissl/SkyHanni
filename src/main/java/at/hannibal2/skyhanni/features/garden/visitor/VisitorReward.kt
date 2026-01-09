@@ -26,28 +26,13 @@ enum class VisitorReward(rawInternalName: String, val displayName: String) {
     FARMING_EXP_BOOST_EPIC("PET_ITEM_FARMING_SKILL_BOOST_EPIC", "§5Farming Exp Boost"),
     ;
 
-    private val internalName = rawInternalName.toInternalName()
+    val internalName = rawInternalName.toInternalName()
     val itemStack by AutoUpdatingItemStack(internalName)
     // TODO use this instead of hard coded item names once moulconfig no longer calls toString before the neu repo gets loaded
 //     val displayName by lazy { itemStack.nameWithEnchantment ?: internalName.asString() }
 
     companion object {
         fun getByInternalName(internalName: NeuInternalName) = entries.firstOrNull { it.internalName == internalName }
-    }
-
-    // Todo: Remove this when enum names of this and DropsStatisticsTextEntry are in sync
-    fun toStatsTextEntryOrNull() = when (this) {
-        DEDICATION -> StatsEntry.DEDICATION_IV
-        MUSIC_RUNE -> StatsEntry.MUSIC_RUNE_I
-        CULTIVATING -> StatsEntry.CULTIVATING_I
-        REPLENISH -> StatsEntry.REPLENISH_I
-        else -> {
-            try {
-                StatsEntry.valueOf(name)
-            } catch (e: IllegalArgumentException) {
-                null
-            }
-        }
     }
 
     override fun toString() = displayName

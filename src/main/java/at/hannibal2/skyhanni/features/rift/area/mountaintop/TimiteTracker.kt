@@ -23,7 +23,9 @@ import at.hannibal2.skyhanni.utils.TimeUtils.format
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addSearchString
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.tracker.ItemTrackerData
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniItemTracker
+import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
@@ -33,14 +35,14 @@ object TimiteTracker {
     private val HIGHLITE = "HIGHLITE".toInternalName()
     private val TIMITE = "TIMITE".toInternalName()
 
-    class Data : ItemTrackerData() {
+    class Data : ItemTrackerData<SessionUptime.Normal>(SessionUptime.Normal::class) {
         override fun getDescription(timesGained: Long): List<String> = emptyList()
 
         override fun getCoinName(item: TrackedItem): String = "§5Motes"
 
         override fun getCoinDescription(item: TrackedItem): List<String> = emptyList()
 
-        override fun getCustomPricePer(internalName: NeuInternalName): Double {
+        override fun getCustomPricePer(internalName: NeuInternalName, tracker: SkyHanniTracker<*, *>): Double {
             return internalName.getItemStack().motesNpcPrice() ?: 0.0
         }
 
@@ -81,7 +83,12 @@ object TimiteTracker {
         addSearchString("§dTotal Profit§7: §5${profit.toInt().shortFormat()} Motes")
     }
 
-    private val tracker = SkyHanniItemTracker("Timite Tracker", ::Data, { it.rift.timiteTracker }) {
+    private val tracker = SkyHanniItemTracker(
+        "Timite Tracker",
+        ::Data,
+        { it.rift.timiteTracker },
+        trackerConfig = { config.perTrackerConfig }
+    ) {
         drawDisplay(it)
     }
 

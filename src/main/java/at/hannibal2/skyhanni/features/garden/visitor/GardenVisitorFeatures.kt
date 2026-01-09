@@ -82,7 +82,6 @@ import net.minecraft.client.player.RemotePlayer
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.item.ItemStack
-import kotlin.math.round
 import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
@@ -372,15 +371,12 @@ object GardenVisitorFeatures {
     @HandleEvent
     fun onVisitorRefused(event: VisitorRefusedEvent) {
         update()
-        GardenApi.storage?.visitorDrops?.let { it.deniedVisitors += 1 }
-        GardenVisitorDropStatistics.saveAndUpdate()
     }
 
     @HandleEvent
     fun onVisitorAccepted(event: VisitorAcceptedEvent) {
-        VisitorAcceptEvent(event.visitor).post()
+        VisitorAcceptEvent(event.visitor, lastFullPrice).post()
         update()
-        GardenApi.storage?.visitorDrops?.let { it.coinsSpent += round(lastFullPrice).toLong() }
     }
 
     @HandleEvent

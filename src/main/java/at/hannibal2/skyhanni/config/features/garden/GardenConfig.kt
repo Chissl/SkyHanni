@@ -5,8 +5,10 @@ import at.hannibal2.skyhanni.config.NoConfigLink
 import at.hannibal2.skyhanni.config.core.config.Position
 import at.hannibal2.skyhanni.config.features.garden.composter.ComposterConfig
 import at.hannibal2.skyhanni.config.features.garden.contest.JacobContestConfig
+import at.hannibal2.skyhanni.config.features.garden.cropcollections.CropCollectionsConfig
 import at.hannibal2.skyhanni.config.features.garden.cropmilestones.CropMilestonesConfig
 import at.hannibal2.skyhanni.config.features.garden.laneswitch.FarmingLaneConfig
+import at.hannibal2.skyhanni.config.features.garden.leaderboards.EliteFarmersLeaderboardsConfig
 import at.hannibal2.skyhanni.config.features.garden.optimalAngles.OptimalAnglesConfig
 import at.hannibal2.skyhanni.config.features.garden.optimalspeed.OptimalSpeedConfig
 import at.hannibal2.skyhanni.config.features.garden.pests.PestsConfig
@@ -30,6 +32,15 @@ class GardenConfig {
     @Expose
     @Category(name = "Visitor", desc = "Visitor Settings")
     val visitors: VisitorConfig = VisitorConfig()
+
+    @Expose
+    @Category(name = "Elite Leaderboards", desc = "")
+    val eliteFarmersLeaderboards: EliteFarmersLeaderboardsConfig = EliteFarmersLeaderboardsConfig()
+
+    @Expose
+    @ConfigOption(name = "Garden Profit Tracker", desc = "")
+    @Accordion
+    val profitTracker: GardenProfitTrackerConfig = GardenProfitTrackerConfig()
 
     @Expose
     @ConfigOption(name = "Numbers", desc = "")
@@ -65,9 +76,9 @@ class GardenConfig {
     val gardenLevels: GardenLevelConfig = GardenLevelConfig()
 
     @Expose
-    @ConfigOption(name = "Farming Weight", desc = "")
+    @ConfigOption(name = "Crop Collection Tracker", desc = "Crop Collection Tracker Settings")
     @Accordion
-    val eliteFarmingWeights: EliteFarmingWeightConfig = EliteFarmingWeightConfig()
+    val cropCollectionTracker: CropCollectionsConfig = CropCollectionsConfig()
 
     @Expose
     @ConfigOption(name = "Money per Hour", desc = "")
@@ -83,6 +94,11 @@ class GardenConfig {
     @ConfigOption(name = "Armor Drop Tracker", desc = "")
     @Accordion
     val armorDropTracker: ArmorDropTrackerConfig = ArmorDropTrackerConfig()
+
+    @Expose
+    @ConfigOption(name = "Crop Break Tracker", desc = "")
+    @Accordion
+    val gardenBpsTracker: GardenBpsTrackerConfig = GardenBpsTrackerConfig()
 
     @Expose
     @ConfigOption(name = "Anita Shop", desc = "")
@@ -141,6 +157,11 @@ class GardenConfig {
     @ConfigOption(name = "Atmospheric Filter Display", desc = "")
     @Accordion
     val atmosphericFilterDisplay: AtmosphericFilterDisplayConfig = AtmosphericFilterDisplayConfig()
+
+    @Expose
+    @ConfigOption(name = "Garden Tracker Uptime Settings", desc = "")
+    @Accordion
+    val trackerUptimeSettings: GardenTrackerUptimeConfig = GardenTrackerUptimeConfig()
 
     @Expose
     @ConfigOption(name = "Hoe Levels Display", desc = "")

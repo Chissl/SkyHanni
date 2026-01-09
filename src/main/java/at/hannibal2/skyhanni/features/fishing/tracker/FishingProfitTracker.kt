@@ -37,6 +37,7 @@ import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import at.hannibal2.skyhanni.utils.tracker.ItemTrackerData
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniItemTracker
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniTracker
 import com.google.gson.annotations.Expose
@@ -64,11 +65,12 @@ object FishingProfitTracker {
         "Fishing Profit Tracker",
         ::Data,
         { it.fishing.fishingProfitTracker },
+        trackerConfig = { config.perTrackerConfig }
     ) { drawDisplay(it) }
 
     data class Data(
         @Expose var totalCatchAmount: Long = 0L
-    ) : ItemTrackerData() {
+    ) : ItemTrackerData<SessionUptime.Normal>(SessionUptime.Normal::class) {
         override fun getDescription(timesGained: Long): List<String> {
             val percentage = timesGained.toDouble() / totalCatchAmount
             val catchRate = percentage.coerceAtMost(1.0).formatPercentage()
@@ -88,10 +90,10 @@ object FishingProfitTracker {
             )
         }
 
-        override fun getCustomPricePer(internalName: NeuInternalName): Double {
+        override fun getCustomPricePer(internalName: NeuInternalName, tracker: SkyHanniTracker<*, *>): Double {
             return if (internalName.getItemCategoryOrNull() == ItemCategory.TROPHY_FISH) {
-                SkyHanniTracker.getPricePer(MAGMA_FISH) * FishingApi.getFilletPerTrophy(internalName)
-            } else super.getCustomPricePer(internalName)
+                tracker.getPricePer(MAGMA_FISH) * FishingApi.getFilletPerTrophy(internalName)
+            } else super.getCustomPricePer(internalName, tracker)
         }
     }
 

@@ -10,6 +10,7 @@ import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
 import io.github.notenoughupdates.moulconfig.annotations.ConfigLink
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
+import io.github.notenoughupdates.moulconfig.annotations.SearchTag
 import io.github.notenoughupdates.moulconfig.observer.Property
 
 class ComposterConfig {
@@ -21,6 +22,12 @@ class ComposterConfig {
     @ConfigEditorBoolean
     @FeatureToggle
     var overlay: Boolean = true
+
+    @Expose
+    @ConfigOption(name = "Profit Tracker", desc = "")
+    @SearchTag("composter profit tracker")
+    @Accordion
+    val profitTracker: ComposterProfitTrackerConfig = ComposterProfitTrackerConfig()
 
     @Expose
     @ConfigOption(

@@ -22,6 +22,7 @@ import at.hannibal2.skyhanni.features.garden.CropCollectionType
 import at.hannibal2.skyhanni.features.garden.CropType
 import at.hannibal2.skyhanni.features.garden.GardenApi
 import at.hannibal2.skyhanni.features.garden.pests.PestApi
+import at.hannibal2.skyhanni.features.garden.pests.PestApi.lastPestKillTimes
 import at.hannibal2.skyhanni.features.garden.pests.PestType
 import at.hannibal2.skyhanni.features.garden.pests.SprayType
 import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker.drawDisplay
@@ -41,7 +42,7 @@ import at.hannibal2.skyhanni.utils.SimpleTimeMark
 import at.hannibal2.skyhanni.utils.chat.TextHelper.asComponent
 import at.hannibal2.skyhanni.utils.collection.CollectionUtils.addOrPut
 import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addSearchString
-import at.hannibal2.skyhanni.utils.collection.TimeLimitedCache
+import at.hannibal2.skyhanni.utils.json.fromJson
 import at.hannibal2.skyhanni.utils.renderables.Renderable
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.renderables.primitives.text
@@ -49,7 +50,9 @@ import at.hannibal2.skyhanni.utils.renderables.toSearchable
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import at.hannibal2.skyhanni.utils.tracker.BucketedItemTrackerData
 import at.hannibal2.skyhanni.utils.tracker.ItemTrackerData.TrackedItem
-import at.hannibal2.skyhanni.utils.tracker.SkyHanniBucketedItemTracker
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
+import at.hannibal2.skyhanni.utils.tracker.SkyHanniTimedBucketedItemTracker
+import at.hannibal2.skyhanni.utils.tracker.TimedTrackerData
 import com.google.gson.JsonPrimitive
 import com.google.gson.annotations.Expose
 import com.google.gson.reflect.TypeToken
@@ -58,11 +61,13 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 @SkyHanniModule
-object PestProfitTracker : SkyHanniBucketedItemTracker<PestType, PestProfitTracker.BucketData>(
+object PestProfitTracker : SkyHanniTimedBucketedItemTracker<PestType, PestProfitTracker.BucketData>(
     "Pest Profit Tracker",
     ::BucketData,
     { it.garden.pestProfitTracker },
-    { drawDisplay(it) },
+    drawDisplay = { drawDisplay(it) },
+    trackerConfig = { SkyHanniMod.feature.garden.pests.pestProfitTracker.perTrackerConfig },
+    customUptimeControl = true
 ) {
     val config: PestProfitTrackerConfig get() = SkyHanniMod.feature.garden.pests.pestProfitTracker
 
@@ -94,14 +99,15 @@ object PestProfitTracker : SkyHanniBucketedItemTracker<PestType, PestProfitTrack
 
     val DUNG_ITEM = "DUNG".toInternalName()
     private val PEST_SHARD = "ATTRIBUTE_SHARD_PEST_LUCK;1".toInternalName()
-    private val lastPestKillTimes = TimeLimitedCache<PestType, SimpleTimeMark>(15.seconds)
     private var adjustmentMap: Map<PestType, Map<NeuInternalName, Int>> = mapOf()
+
+    class TimeData : TimedTrackerData<BucketData>({ BucketData() })
 
     data class BucketData(
         @Expose private var totalPestsKills: Long = 0L,
         @Expose var pestKills: MutableMap<PestType, Long> = EnumMap(PestType::class.java),
         @Expose var spraysUsed: MutableMap<SprayType, Long> = EnumMap(SprayType::class.java),
-    ) : BucketedItemTrackerData<PestType>(PestType::class) {
+    ) : BucketedItemTrackerData<PestType, SessionUptime.Garden>(PestType::class, SessionUptime.Garden::class) {
         override fun getDescription(bucket: PestType?, timesGained: Long): List<String> {
             val percentage = timesGained.toDouble() / getTotalPestCount()
             val dropRate = percentage.coerceAtMost(1.0).formatPercentage()
@@ -209,6 +215,11 @@ object PestProfitTracker : SkyHanniBucketedItemTracker<PestType, PestProfitTrack
     @HandleEvent
     fun onRepoReload(event: RepositoryReloadEvent) {
         adjustmentMap = event.getConstant<GardenJson>("Garden").pestRareDrops
+    }
+
+    override fun addItem(bucket: PestType, internalName: NeuInternalName, amount: Int, command: Boolean, message: Boolean) {
+        super.addItem(bucket, internalName, amount, command, message)
+        GardenProfitTracker.addItem(GardenTrackerTypes.PESTS, internalName, amount, command)
     }
 
     private fun Int.fixAmount(internalName: NeuInternalName, pestType: PestType) =
@@ -375,6 +386,12 @@ object PestProfitTracker : SkyHanniBucketedItemTracker<PestType, PestProfitTrack
         }
         event.move(106, "garden.pests.pestProfitTacker", "garden.pests.pestProfitTracker") { entry ->
             entry
+        }
+
+        event.transform(112, "#profile.garden.pestProfitTracker") { entry ->
+            val timedTrackerData: TimedTrackerData<BucketData> = TimedTrackerData { BucketData() }
+            timedTrackerData.createEntry(DisplayMode.TOTAL, "total", ConfigManager.gson.fromJson<BucketData>(entry))
+            ConfigManager.gson.toJsonTree(timedTrackerData)
         }
     }
 }

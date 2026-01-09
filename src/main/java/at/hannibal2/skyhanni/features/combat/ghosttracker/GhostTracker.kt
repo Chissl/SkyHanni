@@ -42,6 +42,7 @@ import at.hannibal2.skyhanni.utils.collection.RenderableCollectionUtils.addSearc
 import at.hannibal2.skyhanni.utils.renderables.Searchable
 import at.hannibal2.skyhanni.utils.repopatterns.RepoPattern
 import at.hannibal2.skyhanni.utils.tracker.ItemTrackerData
+import at.hannibal2.skyhanni.utils.tracker.SessionUptime
 import at.hannibal2.skyhanni.utils.tracker.SkyHanniItemTracker
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -80,7 +81,9 @@ object GhostTracker {
         "Ghost Tracker",
         ::Data,
         { it.ghostStorage.ghostTracker },
-    ) { drawDisplay(it) }
+        drawDisplay = { drawDisplay(it) },
+        trackerConfig = { config.perTrackerConfig }
+    )
 
     data class Data(
         @Expose var kills: Long = 0L,
@@ -90,7 +93,7 @@ object GhostTracker {
         @Expose var combatXpGained: Long = 0L,
         @Expose var totalMagicFind: Long = 0L,
         @Expose var totalMagicFindKills: Long = 0L,
-    ) : ItemTrackerData() {
+    ) : ItemTrackerData<SessionUptime.Normal>(SessionUptime.Normal::class) {
         override fun getDescription(timesGained: Long): List<String> {
             val percentage = timesGained.toDouble() / kills
             val perKill = percentage.coerceAtMost(1.0).formatPercentage()
