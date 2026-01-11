@@ -26,7 +26,7 @@ object CropCollectionApi {
         MutableMap<CropType, CropCollection>? get() = storage?.cropCollectionCounter
 
     var lastGainedCrop: CropType?
-        get() = storage?.lastGainedCrop
+        get() = GardenApi.storage?.lastGainedCrop
         set(value) {
             value?.let {
                 GardenApi.storage?.lastGainedCrop = it
@@ -50,8 +50,7 @@ object CropCollectionApi {
             lastGainedCollectionTime = SimpleTimeMark.now()
         }
 
-        val collectionCounter = cropCollectionCounter?.getOrPut(this) { CropCollection() }
-        collectionCounter?.addCollection(type, amount)
+        cropCollectionCounter?.getOrPut(this){CropCollection()}?.addCollection(type, amount)
 
         CropCollectionAddEvent(this, type, amount).post()
     }
@@ -67,8 +66,7 @@ object CropCollectionApi {
         )
 
     fun CropType.setCollectionCounter(counter: Long) {
-        val collectionCounter = cropCollectionCounter?.getOrPut(this) { CropCollection() }
-        collectionCounter?.setTotal(counter)
+        cropCollectionCounter?.getOrPut(this){ CropCollection() }?.setTotal(counter)
         // Some displays update off add events
         CropCollectionAddEvent(this, CropCollectionType.UNKNOWN, 0).post()
         ChatUtils.debug("Set $this collection to $counter")
@@ -86,7 +84,7 @@ object CropCollectionApi {
             category = CommandCategory.DEVELOPER_TEST
             arg("crop", EnumArgumentType.custom<CropType>({ it.simpleName })) { crop ->
                 arg("amount", BrigadierArguments.long()) { amount ->
-                    arg("type", EnumArgumentType.custom<CropCollectionType>({ it.toString() })) { type ->
+                    arg("type", EnumArgumentType.custom<CropCollectionType>({ it.toString() }, isGreedy = true)) { type ->
                         callback { addCollectionCommand(getArg(crop), getArg(amount), getArg(type)) }
                     }
                 }
@@ -110,7 +108,8 @@ object CropCollectionApi {
         }
 
         fun setTotal(amount: Long) {
-            val diff = amount - getTotal()
+            val total = cropCollectionType.filter { it.key != CropCollectionType.UNKNOWN }.sumAllValues().toLong()
+            val diff = amount - total
             addCollection(CropCollectionType.UNKNOWN, diff)
         }
 

@@ -42,6 +42,7 @@ import at.hannibal2.skyhanni.features.garden.pests.stereo.VinylType
 import at.hannibal2.skyhanni.features.garden.tracker.ArmorDropTracker
 import at.hannibal2.skyhanni.features.garden.tracker.ComposterProfitTracker
 import at.hannibal2.skyhanni.features.garden.tracker.CropCollectionTracker
+import at.hannibal2.skyhanni.features.garden.tracker.CropFeverTracker
 import at.hannibal2.skyhanni.features.garden.tracker.GardenBpsTracker
 import at.hannibal2.skyhanni.features.garden.tracker.GardenProfitTracker
 import at.hannibal2.skyhanni.features.garden.tracker.PestProfitTracker
@@ -584,6 +585,7 @@ class ProfileSpecificStorage(
         var farmingWeight: FarmingWeightConfig = FarmingWeightConfig()
 
         class FarmingWeightConfig {
+            // TODO config fix this
             @Expose
             var lastLeaderboardPosMap: MutableMap<EliteLeaderboardType, Int> = mutableMapOf()
 
