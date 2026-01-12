@@ -13,6 +13,7 @@ import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteLeaderboardMode
 import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteLeaderboardType
 import at.hannibal2.skyhanni.data.jsonobjects.elitedev.EliteWeightsJson
 import at.hannibal2.skyhanni.data.jsonobjects.elitedev.FarmingWeight
+import at.hannibal2.skyhanni.events.DebugDataCollectEvent
 import at.hannibal2.skyhanni.events.SecondPassedEvent
 import at.hannibal2.skyhanni.events.garden.farming.CropCollectionAddEvent
 import at.hannibal2.skyhanni.events.minecraft.SkyHanniTickEvent
@@ -86,7 +87,6 @@ object FarmingWeightData {
     fun setWeight(leaderboardMode: EliteLeaderboardMode, value: Double) {
         weightMap[leaderboardMode] = value
         weightGain = 0.0
-        // TODO: Update event post
     }
 
     fun getWeight(leaderboardMode: EliteLeaderboardMode, override: Boolean = false, cropWeightOnly: Boolean = false): Double? {
@@ -249,5 +249,15 @@ object FarmingWeightData {
             cropWeightValues[cropType] = crop.value
         }
         hasFetchedCropWeights = true
+    }
+
+    @HandleEvent
+    fun onDebug(event: DebugDataCollectEvent) {
+        event.title("farming weight")
+        event.addIrrelevant {
+            CropType.entries.forEach {
+                add("$it - Weight Factor: ${cropWeightValues[it]}")
+            }
+        }
     }
 }
