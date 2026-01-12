@@ -340,12 +340,20 @@ object PestProfitTracker : SkyHanniTimedBucketedItemTracker<PestType, PestProfit
 
     private fun shouldShowDisplay(): Boolean {
         if (!config.enabled || !GardenApi.inGarden()) return false
-        if (GardenApi.isCurrentlyFarming()) return false
+        if (GardenApi.isCurrentlyFarming() && config.hideWhileFarming) return false
+        if (config.onlyWhenHolding.isEmpty()) return true
         val allInactive = lastPestKillTimes.all {
             it.value.passedSince() > config.timeDisplayed.seconds
         }
-        val notHoldingTool = !PestApi.hasVacuumInHand() && !PestApi.hasSprayonatorInHand()
-        return !(allInactive && notHoldingTool)
+        return config.onlyWhenHolding.any {
+            when (it) {
+                PestProfitTrackerConfig.HeldItem.FARMING_TOOL -> GardenApi.hasFarmingToolInHand()
+                PestProfitTrackerConfig.HeldItem.VACUUM -> PestApi.hasVacuumInHand()
+                PestProfitTrackerConfig.HeldItem.SPRAYONATOR -> PestApi.hasSprayonatorInHand()
+                PestProfitTrackerConfig.HeldItem.LASSO -> PestApi.hasLassoInHand()
+                PestProfitTrackerConfig.HeldItem.TIMEOUT -> !allInactive
+            }
+        }
     }
 
     @HandleEvent(onlyOnIsland = IslandType.GARDEN)
