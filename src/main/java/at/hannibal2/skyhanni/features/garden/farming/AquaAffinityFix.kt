@@ -53,13 +53,15 @@ object AquaAffinityFix {
     fun onDebug(event: DebugDataCollectEvent) {
         event.title("Aqua Affinity")
         event.addIrrelevant {
-            addAll(buildList {
-                val hasAquaAffinity = hasAquaAffinity()
-                val attr = getSubMiningAttr()
-                add("Has Aqua Affinity: $hasAquaAffinity")
-                add("Submerged Mining Speed: ${attr?.value}")
-                add("Enchantments: ${InventoryUtils.getHelmet()?.getHypixelEnchantments()?.keys}")
-            })
+            addAll(
+                buildList {
+                    val hasAquaAffinity = hasAquaAffinity()
+                    val attr = getSubMiningAttr()
+                    add("Has Aqua Affinity: $hasAquaAffinity")
+                    add("Submerged Mining Speed: ${attr?.value}")
+                    add("Enchantments: ${InventoryUtils.getHelmet()?.getHypixelEnchantments()?.keys}")
+                },
+            )
         }
     }
 
