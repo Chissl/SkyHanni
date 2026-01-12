@@ -122,6 +122,7 @@ object MantidKillDisplay {
 
     private fun isEnabled() = config.enabled && GardenApi.inGarden()
     private fun shouldShow() = isEnabled() && checkShowConditions()
+    @Suppress("ReturnCount")
     private fun checkShowConditions(): Boolean {
         for (condition in config.whenToShow) {
             when (condition) {
