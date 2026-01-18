@@ -208,7 +208,8 @@ object CropFeverTracker : SkyHanniBucketedItemTracker<CropType, CropFeverTracker
 
     private fun startCropFever(partialFever: Boolean = false) {
         isCropFever = true
-        val currentCrop = GardenApi.getCurrentlyFarmedCrop() ?: return
+        cropFeverCurrentCrop = GardenApi.getCurrentlyFarmedCrop()
+        val currentCrop = cropFeverCurrentCrop ?: return
         modify {
             if (!partialFever) it.cropFeverAmount.addOrPut(currentCrop, 1)
             else it.partialFeverAmount.addOrPut(currentCrop, 1)
@@ -220,6 +221,7 @@ object CropFeverTracker : SkyHanniBucketedItemTracker<CropType, CropFeverTracker
 
     private fun stopCropFever() {
         isCropFever = false
+        cropFeverCurrentCrop = null
         modify {
             it.cropFeverDuration.forEach { crop ->
                 crop.value.pause()
