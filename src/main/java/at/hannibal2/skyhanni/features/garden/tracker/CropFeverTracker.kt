@@ -207,8 +207,8 @@ object CropFeverTracker : SkyHanniBucketedItemTracker<CropType, CropFeverTracker
             (!config.onlyDuringFever || isCropFever)
 
     private fun startCropFever(partialFever: Boolean = false) {
-        isCropFever = true
         cropFeverCurrentCrop = GardenApi.getCurrentlyFarmedCrop()
+        isCropFever = true
         val currentCrop = cropFeverCurrentCrop ?: return
         modify {
             if (!partialFever) it.cropFeverAmount.addOrPut(currentCrop, 1)
